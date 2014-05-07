@@ -88,13 +88,13 @@ void Player::Update()
 			{
 				if (PlayerRect.y > CURRENTRECT.y && PlayerRect.y < CURRENTRECT.y +  CURRENTRECT.h) YVel = 0;
 				else if (PlayerRect.y + PlayerRect.h > CURRENTRECT.y && PlayerRect.y + PlayerRect.h < CURRENTRECT.y +  CURRENTRECT.h) YVel = 0;
-				TempX = WorldX + XVel;
-				PlayerRect.x = TempX - Camera.x;
+				TempY = WorldY + YVel;
+				PlayerRect.y = TempY - Camera.y;
 
 				if (PlayerRect.x > CURRENTRECT.x && PlayerRect.x < CURRENTRECT.x +  CURRENTRECT.w) XVel = 0;
 				else if (PlayerRect.x + PlayerRect.w > CURRENTRECT.x && PlayerRect.x + PlayerRect.w < CURRENTRECT.x +  CURRENTRECT.w) XVel = 0;
-				TempY = WorldY + YVel;
-				PlayerRect.y = TempY - Camera.y;
+				TempX = WorldX + XVel;
+				PlayerRect.x = TempX - Camera.x;
 			}
 		}
 		WorldX += XVel;

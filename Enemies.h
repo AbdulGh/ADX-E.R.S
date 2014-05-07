@@ -14,7 +14,7 @@ public:
 	int Frametime;
 
 	void Bleed(int ProjectileXVel, int ProjectileYVel);
-	void Shoot (int TargetX, int TargetY);
+	void Shoot (int TargetX, int TargetY, int Type);
 };
 
 class EnemyProjectile
@@ -31,15 +31,5 @@ public:
 std::vector <Enemy> EnemyVector;
 std::vector <EnemyProjectile> EnemyProjectileVector;
 
-void SpawnEnemies(std::vector <int> Enemus) //X Y Type
-{
-	for (int i = 0; i < Enemus.size(); i+=3)
-	{
-		Enemy Teleport;
-		Teleport.Health = Enemus.at(i+ 2);
-		Teleport.WorldX = Enemus.at(i);
-		Teleport.WorldY = Enemus.at(i + 1);
-		Teleport.Frame = 0;
-		Teleport.Frametime = 0;
-	}
-}
+void SpawnEnemies(std::vector <int> Enemus); //X Y Type
+void DoEnemies(int CameraX, int CameraY, SDL_Surface *Screen);

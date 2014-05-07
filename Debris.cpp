@@ -1,4 +1,6 @@
 #include"Debris.h"
+#include<time.h>
+
 
 std::vector<Debris> DebrisVector;
 
@@ -15,9 +17,9 @@ void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Ui
 
 		PushThis.Colour = Colour;
 		int VelX = 0;
-		if (XVel != 0) while (VelX == 0) VelX = XVel + rand() % XVel/4 + -XVel/4;
+		if (XVel != 0) while (VelX == 0) VelX = XVel + rand() % XVel/2 + -XVel/2;
 		int VelY = 0;
-		if (YVel != 0) while (VelY == 0) VelY = YVel + rand() % YVel/4 + -YVel/4;
+		if (YVel != 0) while (VelY == 0) VelY = YVel + rand() % YVel/2 + -YVel/2;
 		PushThis.XVel = VelX;
 		PushThis.YVel = VelY;
 
@@ -41,8 +43,8 @@ void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen)
 			FillThis.w = CURRENTDEBRIS.Rect.w;
 			CURRENTDEBRIS.XVel /= 1.2;
 			CURRENTDEBRIS.YVel /= 1.2;
-			if (CURRENTDEBRIS.XVel == 1 || CURRENTDEBRIS.XVel == -1) CURRENTDEBRIS.XVel = 0;
-			if (CURRENTDEBRIS.YVel == 1 || CURRENTDEBRIS.YVel == -1) CURRENTDEBRIS.YVel = 0;
+			if (CURRENTDEBRIS.XVel < 1 && CURRENTDEBRIS.XVel > -1) CURRENTDEBRIS.XVel = 0;
+			if (CURRENTDEBRIS.YVel < 1 && CURRENTDEBRIS.YVel > -1) CURRENTDEBRIS.YVel = 0;
 			SDL_FillRect(Screen,&FillThis,CURRENTDEBRIS.Colour);
 		}
 	}

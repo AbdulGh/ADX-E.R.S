@@ -4,9 +4,12 @@
 #include"Game.h"
 #include"Options.h"
 
+#include<time.h>	
+
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
 	if (!Init())
 	{
 		OpenDebugWindow("Failed to initalise SDL!");
