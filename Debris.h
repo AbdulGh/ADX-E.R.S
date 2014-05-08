@@ -1,3 +1,5 @@
+#ifndef DEBRIS_H
+#define DEBRIS_H
 #include<SDL.h>
 #include<SDL_main.h>
 #include<vector>
@@ -13,3 +15,4 @@ public:
 
 void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen);
 void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Uint32 Colour);
+#endif

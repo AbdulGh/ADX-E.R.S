@@ -34,6 +34,7 @@ extern SDL_Colour Red;
 extern SDL_Colour Blue;
 
 extern SDL_Rect CursorClips[2];
+extern SDL_Rect TeleportClips[2];
 
 extern int XChange;
 extern int YChange;

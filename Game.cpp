@@ -9,13 +9,15 @@
 #include"GetXYRatio.h"
 #include"DoTiles.h"
 #include"Debris.h"
+#include"Enemies.h"
 #include<fstream>
 
 void Game()
 {
 	ClearScreen();
 	std::string Asimov[11] = {"ADMax Emergent Response System booting...","Directives:","1: You may not injure a human being or, through inaction, allow a human being to","   come to harm.","2: You must obey orders given to you by human beings, except where such orders ", "   would conflict with the First Law.","3: You must protect your own existence as long as such does not conflict with the","   First or Second Law.",". . .", "error C2146: Unable to mount root on block 'NULL'", "Rebooting..."};
-	for (int o = 0; o < 11; o++)
+	bool Skip = false;
+	for (int o = 0; o < 11 && Skip == false; o++)
 	{
 		std::string IntroText = Asimov[o];
 		bool EpicFlag = false;
@@ -43,7 +45,7 @@ void Game()
 			ApplySurface(10, 50 + o * 50, Message, Screen);
 			SDL_Flip(Screen);
 			//SDL_Delay(2);
-			if (o == 8) SDL_Delay(1000);
+			if (o == 8) SDL_Delay(500);
 		}
 	}
 	SDL_Delay(5000);
@@ -59,6 +61,10 @@ void Game()
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
 	FadeText("Trollface is my favourite meme");
+	std::vector <int> SpawnVector;
+	SpawnVector.push_back(Character.WorldX);
+	SpawnVector.push_back(Character.WorldY);
+	SpawnVector.push_back(1);
 	while (!LevelFinished && State == GAME) //Level 1
 	{
 		FPSTimer.start();
@@ -71,6 +77,7 @@ void Game()
 		DoMouse(&x,&y);
 		DoDebris(Camera.x,Camera.y,Screen);
 		Character.Update();
+		DoEnemies(Camera.x,Camera.y,Screen);
 		CheckText();
 		DoProjectiles(Camera.x,Camera.y);
 		SDL_Flip(Screen);
@@ -80,7 +87,7 @@ void Game()
 			if (event.type == SDL_KEYDOWN)
 			{
 				if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; main(NULL,NULL);}
-				else if (event.key.keysym.sym == SDLK_e) CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
+				else if (event.key.keysym.sym == SDLK_e) {CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300); SpawnEnemies(SpawnVector);}
 				else if (event.key.keysym.sym == SDLK_1 && Weapons > 0) CurrentSelection = 1;
 				else if (event.key.keysym.sym == SDLK_2 && Weapons > 1) CurrentSelection = 2;
 			}
