@@ -42,11 +42,11 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 }
 
 #define CURRENTENEMY EnemyVector.at(i)
-void DoEnemies(int CameraX, int CameraY, SDL_Surface *Screen)
+void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY)
 {
 	for (int i = 0; i < EnemyVector.size(); i++)
 	{
-		if (CURRENTENEMY.Type == 0)
+		if (CURRENTENEMY.Type == 0) //Teleport
 		{
 			CURRENTENEMY.Frametime++;
 			ApplySurface(CURRENTENEMY.WorldX - CameraX,CURRENTENEMY.WorldY - CameraY,TeleportSheet,Screen,&TeleportClips[Frame % 2]);
@@ -54,8 +54,31 @@ void DoEnemies(int CameraX, int CameraY, SDL_Surface *Screen)
 			{
 				CURRENTENEMY.Frame++;
 				CURRENTENEMY.Frametime = 0;
-				if (CURRENTENEMY.Frame == 4) {EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1); continue;}
+				if (CURRENTENEMY.Frame == 4) 
+				{
+					Enemy Temp;
+					Temp.WorldX = CURRENTENEMY.WorldX;
+					Temp.WorldY = CURRENTENEMY.WorldY;
+					Temp.Frame = 0;
+					Temp.Frametime = 0;
+					Temp.Type = CURRENTENEMY.Health;
+					Temp.Health = 100;
+					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
+					EnemyVector.push_back(Temp);
+					continue;
+				}
 			}
+		}
+		else if (CURRENTENEMY.Type == 1) //Suicide
+		{
+			float XDiff;
+			float YDiff;
+			float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
+			GetXYRatio(&XDiff, &YDiff, Angle, 5);
+			CURRENTENEMY.WorldX += XDiff;
+			CURRENTENEMY.WorldY += YDiff;
+			ApplySurface(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY,CursorSheet, Screen);
+			//__debugbreak();
 		}
 	}
 }

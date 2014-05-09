@@ -77,7 +77,7 @@ void Game()
 		DoMouse(&x,&y);
 		DoDebris(Camera.x,Camera.y,Screen);
 		Character.Update();
-		DoEnemies(Camera.x,Camera.y,Screen);
+		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY);
 		CheckText();
 		DoProjectiles(Camera.x,Camera.y);
 		SDL_Flip(Screen);

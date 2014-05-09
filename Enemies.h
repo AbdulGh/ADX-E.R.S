@@ -22,8 +22,8 @@ public:
 class EnemyProjectile
 {
 public:
-	int WorldX;
-	int WorldY;
+	float WorldX;
+	float WorldY;
 	int Type;
 	SDL_Rect CollisionRect;
 	int XVel;
@@ -34,5 +34,5 @@ extern std::vector <Enemy> EnemyVector;
 extern std::vector <EnemyProjectile> EnemyProjectileVector;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
-void DoEnemies(int CameraX, int CameraY, SDL_Surface *Screen);
+void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY);
 #endif
