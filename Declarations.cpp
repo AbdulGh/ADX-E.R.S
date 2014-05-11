@@ -29,6 +29,7 @@ SDL_Surface *Message = NULL;
 SDL_Surface *PlayerNormal = NULL;
 SDL_Surface *CursorSheet = NULL;
 SDL_Surface *TeleportSheet = NULL;
+SDL_Surface *Suicide = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -134,6 +135,7 @@ bool Load()
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	CursorSheet = LoadImage("Resources/Images/Cursor.png");
 	TeleportSheet = LoadImage("Resources/Images/Teleport.png");
+	Suicide = LoadImage("Resources/Images/Suicide.png");
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
 }

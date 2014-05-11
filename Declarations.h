@@ -27,6 +27,7 @@ extern SDL_Surface *Message;
 extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
 extern SDL_Surface *TeleportSheet;
+extern SDL_Surface *Suicide;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

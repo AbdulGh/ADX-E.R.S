@@ -77,6 +77,7 @@ void Game()
 		DoMouse(&x,&y);
 		DoDebris(Camera.x,Camera.y,Screen);
 		Character.Update();
+		DoEnemyProjectiles(Camera.x,Camera.y);
 		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY);
 		CheckText();
 		DoProjectiles(Camera.x,Camera.y);
