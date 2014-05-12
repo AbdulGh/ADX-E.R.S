@@ -38,6 +38,6 @@ extern std::vector <Enemy> EnemyVector;
 extern std::vector <EnemyProjectile> EnemyProjectileVector;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
-void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY);
+void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect);
 void DoEnemyProjectiles(int CameraX, int CameraY);
 #endif

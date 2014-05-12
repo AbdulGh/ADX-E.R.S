@@ -64,7 +64,7 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 }
 
 #define CURRENTENEMY EnemyVector.at(i)
-void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY)
+void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect)
 {
 	for (int i = 0; i < EnemyVector.size(); i++)
 	{
@@ -72,6 +72,16 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY)
 		{
 			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - CameraX;
 			CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY - CameraY;
+			PlayerRect.x = PlayerX - CameraX;
+			PlayerRect.y = PlayerY - CameraY;
+			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
+			{
+				if (CURRENTENEMY.Type == 1)
+				{
+					Damaged = true;
+					DamageDealt = 20;
+				}
+			}
 			for (int x = 0; x < ProjectileVector.size(); x++)
 			{
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))

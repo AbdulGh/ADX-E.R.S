@@ -52,7 +52,17 @@ void Game()
 	bool LevelFinished = false;
 	int Weapons = 0;
 	int CurrentSelection = 2;
+	int LevelProgress = 0;
+	SDL_Rect HealthRect;
+	HealthRect.x = 200;
+	HealthRect.h = 20;
+	HealthRect.y = ScreenHeight - 30;
+	HealthRect.w = 200;
+
 	Player Character;
+	SDL_Rect CharacterRect;
+	CharacterRect.w = Character.CurrentSprite->w;
+	CharacterRect.h = Character.CurrentSprite->h;
 	Character.WorldX = 1834;
 	Character.WorldY = 2812;
 	Timer FPSTimer;
@@ -60,11 +70,8 @@ void Game()
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
-	FadeText("Trollface is my favourite meme");
+	//FadeText("Trollface is my favourite meme");
 	std::vector <int> SpawnVector;
-	SpawnVector.push_back(Character.WorldX);
-	SpawnVector.push_back(Character.WorldY);
-	SpawnVector.push_back(1);
 	while (!LevelFinished && State == GAME) //Level 1
 	{
 		FPSTimer.start();
@@ -78,10 +85,44 @@ void Game()
 		DoDebris(Camera.x,Camera.y,Screen);
 		Character.Update();
 		DoEnemyProjectiles(Camera.x,Camera.y);
-		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY);
+		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect);
 		CheckText();
 		DoProjectiles(Camera.x,Camera.y);
+
+		HealthRect.w = 3 * Character.Health;
+		Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
+		ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y, Message, Screen);
+		SDL_FillRect(Screen,&HealthRect,0x00FF00);
+		SpareStream.str("");
+		SpareStream << Character.Health << "%";
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y,Message,Screen);
 		SDL_Flip(Screen);
+
+		if (Character.WorldX < 1400 && LevelProgress < 1)
+		{
+			LevelProgress = 1;
+			SpawnVector.push_back (1300);
+			SpawnVector.push_back (Character.WorldY);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (1250);
+			SpawnVector.push_back (Character.WorldY + 100);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (1550);
+			SpawnVector.push_back (Character.WorldY - 135);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (1150);
+			SpawnVector.push_back (Character.WorldY + 356);
+			SpawnVector.push_back (1);
+
+			SpawnEnemies(SpawnVector);
+
+			FadeText("Happy Birthday Mo!");
+		}
+
 		SDL_PumpEvents();
 		while(SDL_PollEvent(&event))
 		{

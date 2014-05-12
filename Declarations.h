@@ -37,12 +37,15 @@ extern SDL_Colour Blue;
 extern SDL_Rect CursorClips[2];
 extern SDL_Rect TeleportClips[2];
 
+extern bool Damaged;
+
 extern int XChange;
 extern int YChange;
 extern int LevelWidth;
 extern int LevelHeight;
 extern int Frame;
 extern int Frametime;
+extern int DamageDealt;
 
 extern Uint32 LevelColour;
 

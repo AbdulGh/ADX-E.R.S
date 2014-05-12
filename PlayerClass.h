@@ -20,6 +20,7 @@ public:
 	bool NormalMovement;
 	bool NormalCollision;
 	bool Reset;
+	bool Render;
 
 	SDL_Surface *CurrentSprite;
 	

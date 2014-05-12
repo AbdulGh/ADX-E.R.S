@@ -18,22 +18,41 @@ Player::Player()
 	NormalDeath = true;
 	NormalMovement = true;
 	NormalCollision = true;
+	Render = true;
+
 
 	CurrentSprite = PlayerNormal;
 }
 
 void Player::Update()
 {
+
 	if (Health <= 0 && NormalDeath == true)
 	{
 		Health = 100;
 		Lives -= 1;
 		Reset = true;
 	}
+	
+	if (InvunFrames != 0)
+	{
+		InvunFrames--;
+		if (InvunFrames % 10 == 0) Render = !Render;
+	}
+
+	if (Damaged == true)
+	{
+		if (InvunFrames > 0) Damaged = false;
+		else
+		{
+			Health -= DamageDealt;
+			Damaged = false;
+			InvunFrames = 91;
+		}
+	}
 
 	int TempX = 0;
 	int TempY = 0;
-
 
 	if (NormalMovement == true)
 	{
@@ -100,6 +119,6 @@ void Player::Update()
 		WorldX += XVel;
 		WorldY += YVel;
 	}
-	ApplySurface(WorldX - Camera.x, WorldY - Camera.y, CurrentSprite, Screen);
+	if (Render == true) ApplySurface(WorldX - Camera.x, WorldY - Camera.y, CurrentSprite, Screen);
 }
 
