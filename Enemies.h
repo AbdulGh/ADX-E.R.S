@@ -15,6 +15,7 @@ public:
 	int Frame;
 	int Frametime;
 	int ShotCounter;
+	int Speed;
 
 	SDL_Rect CollisionRect;
 

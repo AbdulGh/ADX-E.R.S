@@ -59,6 +59,7 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 		Teleport.Frame = 0;
 		Teleport.Frametime = 0;
 		Teleport.Type = 0;
+		Teleport.Speed = 0;
 		EnemyVector.push_back(Teleport);
 	}
 }
@@ -68,10 +69,10 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 {
 	for (int i = 0; i < EnemyVector.size(); i++)
 	{
+		CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - CameraX;
+		CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY - CameraY;
 		if (CURRENTENEMY.Type != 0)
 		{
-			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - CameraX;
-			CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY - CameraY;
 			PlayerRect.x = PlayerX - CameraX;
 			PlayerRect.y = PlayerY - CameraY;
 			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
@@ -84,6 +85,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			}
 			for (int x = 0; x < ProjectileVector.size(); x++)
 			{
+				ProjectileVector.at(x).ProjectileRect.x = ProjectileVector.at(x).WorldX - CameraX;
+				ProjectileVector.at(x).ProjectileRect.y = ProjectileVector.at(x).WorldY - CameraY;
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc);
@@ -112,7 +115,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Temp.Frame = 0;
 					Temp.Frametime = 0;
 					Temp.Type = CURRENTENEMY.Health;
-					Temp.Health = 100;
+					if (Temp.Type == 1) //suicide
+					{
+						Temp.Health = 100;
+						Temp.Speed = rand() % 4 + 6;
+						Temp.CollisionRect.w = Suicide->w;
+						Temp.CollisionRect.h = Suicide->h;
+					}
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
 					continue;
@@ -124,11 +133,11 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			float XDiff;
 			float YDiff;
 			float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
-			GetXYRatio(&XDiff, &YDiff, Angle, 8);
+			//if (CURRENTENEMY.Speed > 9) __debugbreak();
+			GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
 			CURRENTENEMY.WorldX += XDiff;
 			CURRENTENEMY.WorldY += YDiff;
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Suicide, Screen);
-			//__debugbreak();
 		}
 	if (CURRENTENEMY.Health < 0) EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 	}

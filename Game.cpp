@@ -54,9 +54,9 @@ void Game()
 	int CurrentSelection = 2;
 	int LevelProgress = 0;
 	SDL_Rect HealthRect;
-	HealthRect.x = 200;
+	HealthRect.x = 115;
 	HealthRect.h = 20;
-	HealthRect.y = ScreenHeight - 30;
+	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
 	Player Character;
@@ -75,7 +75,6 @@ void Game()
 	while (!LevelFinished && State == GAME) //Level 1
 	{
 		FPSTimer.start();
-		//int Jew = Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2);
 		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
 		Camera.Update();
 		DoTiles(Camera.x,Camera.y);
@@ -91,12 +90,12 @@ void Game()
 
 		HealthRect.w = 3 * Character.Health;
 		Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
-		ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y, Message, Screen);
+		ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y - 6, Message, Screen);
 		SDL_FillRect(Screen,&HealthRect,0x00FF00);
 		SpareStream.str("");
 		SpareStream << Character.Health << "%";
 		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y,Message,Screen);
+		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
 		SDL_Flip(Screen);
 
 		if (Character.WorldX < 1400 && LevelProgress < 1)
@@ -118,9 +117,27 @@ void Game()
 			SpawnVector.push_back (Character.WorldY + 356);
 			SpawnVector.push_back (1);
 
+			SpawnVector.push_back (900);
+			SpawnVector.push_back (Character.WorldY);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (850);
+			SpawnVector.push_back (Character.WorldY + 100);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (1150);
+			SpawnVector.push_back (Character.WorldY - 135);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (750);
+			SpawnVector.push_back (Character.WorldY + 356);
+			SpawnVector.push_back (1);
+
 			SpawnEnemies(SpawnVector);
 
-			FadeText("Happy Birthday Mo!");
+			FadeText("I'm sorry Dave, I'm afraid I can't do that.");
+			FadeText("Do you get the reference?");
+			FadeText("Of course you don't, that film is at least 500 years old!");
 		}
 
 		SDL_PumpEvents();
