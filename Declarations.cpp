@@ -8,6 +8,7 @@ const int ScreenWidth = 1366;
 const int ScreenHeight = 768;
 
 bool Damaged = false;
+bool Invincible = false;
 
 int XChange = 0;
 int YChange = 0;
@@ -16,6 +17,7 @@ int LevelHeight = 2000;
 int Frame = 0;
 int Frametime = 0;
 int DamageDealt = 0;
+int Enemies = 0;
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -28,6 +30,7 @@ std::stringstream SpareStream;
 Viewport Camera;
 
 SDL_Surface *Screen = NULL;
+SDL_Surface *Gunman = NULL;
 SDL_Surface *Message = NULL;
 SDL_Surface *PlayerNormal = NULL;
 SDL_Surface *CursorSheet = NULL;
@@ -139,6 +142,7 @@ bool Load()
 	CursorSheet = LoadImage("Resources/Images/Cursor.png");
 	TeleportSheet = LoadImage("Resources/Images/Teleport.png");
 	Suicide = LoadImage("Resources/Images/Suicide.png");
+	Gunman = LoadImage("Resources/Images/Gunman.png");
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
 }

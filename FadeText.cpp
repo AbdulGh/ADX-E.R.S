@@ -33,10 +33,10 @@ void CheckText()
 		SDL_SetAlpha(Message,SDL_SRCALPHA,CurrentAlpha);
 		ApplySurface((ScreenWidth - Message->w)/2, ScreenHeight - 100,Message,Screen);
 
-		if (CurrentAlpha > 256) CurrentDirection = 1;
-		else if (CurrentAlpha < 3 && CurrentDirection == 1) CurrentString = "Blastoff!";
+		if (CurrentAlpha > 255) CurrentDirection = 1;
+		else if (CurrentAlpha < 4 && CurrentDirection == 1) CurrentString = "Blastoff!";
 
-		if (CurrentDirection == 0) CurrentAlpha += 2;
-		else CurrentAlpha -= 2;
+		if (CurrentDirection == 0) CurrentAlpha += 3;
+		else CurrentAlpha -= 3;
 	}
 }

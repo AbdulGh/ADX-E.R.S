@@ -23,6 +23,7 @@ extern const int ScreenWidth;
 extern const int ScreenHeight;
 
 extern SDL_Surface *Screen;
+extern SDL_Surface *Gunman;
 extern SDL_Surface *Message;
 extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
@@ -38,6 +39,7 @@ extern SDL_Rect CursorClips[2];
 extern SDL_Rect TeleportClips[2];
 
 extern bool Damaged;
+extern bool Invincible;
 
 extern int XChange;
 extern int YChange;
@@ -46,6 +48,7 @@ extern int LevelHeight;
 extern int Frame;
 extern int Frametime;
 extern int DamageDealt;
+extern int Enemies;
 
 extern Uint32 LevelColour;
 

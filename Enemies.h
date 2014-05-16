@@ -16,12 +16,14 @@ public:
 	int Frametime;
 	int ShotCounter;
 	int Speed;
+	int XVel;
+	int YVel;
 
 	SDL_Rect CollisionRect;
 
 	Enemy(int,int,int);
 	void Bleed(int ProjectileXVel, int ProjectileYVel);
-	void Shoot (int TargetX, int TargetY, int Type);
+	void Shoot (int TargetX, int TargetY, int Type, int XVel, int YVel);
 };
 
 class EnemyProjectile
@@ -39,6 +41,6 @@ extern std::vector <Enemy> EnemyVector;
 extern std::vector <EnemyProjectile> EnemyProjectileVector;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
-void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect);
-void DoEnemyProjectiles(int CameraX, int CameraY);
+void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);
+void DoEnemyProjectiles(int CameraX, int CameraY,SDL_Rect CharacterRect);
 #endif

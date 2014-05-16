@@ -29,7 +29,7 @@ void Player::Update()
 
 	if (Health <= 0 && NormalDeath == true)
 	{
-		Health = 100;
+		Health = 0;
 		Lives -= 1;
 		Reset = true;
 	}
@@ -37,6 +37,7 @@ void Player::Update()
 	if (InvunFrames != 0)
 	{
 		InvunFrames--;
+		if (InvunFrames == 0) Invincible = false;
 		if (InvunFrames % 10 == 0) Render = !Render;
 	}
 
@@ -48,6 +49,7 @@ void Player::Update()
 			Health -= DamageDealt;
 			Damaged = false;
 			InvunFrames = 91;
+			Invincible = true;
 		}
 	}
 

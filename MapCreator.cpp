@@ -8,6 +8,7 @@ void MapCreator()
 	bool Done = false;
 	int Increment = 1;
 	LevelColour = 0x0F0FFF;
+	SDL_ShowCursor(SDL_ENABLE);
 	if (!LoadLevel("Level"))
 	{
 		while (!Done)
@@ -91,10 +92,10 @@ void MapCreator()
 	while(!Done)
 	{
 		Uint8 *Keystates = SDL_GetKeyState(NULL);
-		if (Keystates[SDLK_RIGHT]) CameraX+=1;
-		if (Keystates[SDLK_LEFT]) CameraX-=1;
-		if (Keystates[SDLK_DOWN]) CameraY+=1;
-		if (Keystates[SDLK_UP]) CameraY-=1;
+		if (Keystates[SDLK_RIGHT]) CameraX+=5;
+		if (Keystates[SDLK_LEFT]) CameraX-=5;
+		if (Keystates[SDLK_DOWN]) CameraY+=5;
+		if (Keystates[SDLK_UP]) CameraY-=5;
 		EditorCamera.MoveViewport(CameraX,CameraY);
 		EditorCamera.Update();
 		CameraX = EditorCamera.TargetX;
@@ -176,4 +177,5 @@ void MapCreator()
 		SDL_Flip(Screen);
 		SDL_Delay(10);
 	}
+	SDL_ShowCursor(SDL_DISABLE);
 }
