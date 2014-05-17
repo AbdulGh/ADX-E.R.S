@@ -113,7 +113,7 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
-	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
+	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE/*|SDL_FULLSCREEN*/);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
     SDL_WM_SetCaption("it worked", NULL);

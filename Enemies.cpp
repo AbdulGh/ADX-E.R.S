@@ -25,7 +25,7 @@ void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
 	{
 		int Rand1 = rand() % 8 - 16;
 		int Rand2 = rand() % 8 - 16;
-		CreateDebris(3,1,WorldX,WorldY,ProjectileXVel + Rand1,ProjectileYVel + Rand2,0x808080);
+		CreateDebris(3,1,WorldX + 15,WorldY + 15,ProjectileXVel + Rand1,ProjectileYVel + Rand2,0x808080);
 	}
 }
 
@@ -157,6 +157,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			float XDiff = 0;
 			float YDiff = 0;
+			int TempX = 0;
+			int TempY = 0;
 			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
 			if (Distance > 700 || Distance < 400)
 			{
@@ -166,6 +168,25 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				{
 					XDiff *= -1;
 					YDiff *= -1;
+				}
+			}
+			TempX = CURRENTENEMY.WorldX + XDiff;
+			TempY = CURRENTENEMY.WorldY + YDiff;
+
+			CURRENTENEMY.CollisionRect.x = CameraX - TempX;
+			CURRENTENEMY.CollisionRect.y = CameraY - TempY;
+			for (int x = 0; x < RectVector.size(); x++)
+			{
+				if (CURRENTENEMY.CollisionRect.x < 0) continue;
+				if (CURRENTENEMY.CollisionRect.y < 0) continue;
+
+				if (IsIntersecting(CURRENTENEMY.CollisionRect, RectVector.at(x)));
+				{
+					__debugbreak();
+					XDiff = 0;
+					YDiff = 0;
+					x = RectVector.size();
+					continue;
 				}
 			}
 			CURRENTENEMY.WorldX += XDiff;

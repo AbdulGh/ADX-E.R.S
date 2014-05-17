@@ -11,6 +11,7 @@ public:
 	float XVel;
 	float YVel;
 	Uint32 Colour;
+	int Time;
 };
 
 void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen);

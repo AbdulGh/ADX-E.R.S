@@ -22,6 +22,7 @@ void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Ui
 		if (YVel != 0) while (VelY == 0) VelY = YVel + rand() % YVel/2 + -YVel/2;
 		PushThis.XVel = VelX;
 		PushThis.YVel = VelY;
+		PushThis.Time = 0;
 
 		DebrisVector.push_back(PushThis);
 	}
@@ -46,6 +47,8 @@ void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen)
 			if (CURRENTDEBRIS.XVel < 1 && CURRENTDEBRIS.XVel > -1) CURRENTDEBRIS.XVel = 0;
 			if (CURRENTDEBRIS.YVel < 1 && CURRENTDEBRIS.YVel > -1) CURRENTDEBRIS.YVel = 0;
 			SDL_FillRect(Screen,&FillThis,CURRENTDEBRIS.Colour);
+			CURRENTDEBRIS.Time++;
+			if (CURRENTDEBRIS.Time == 60) DebrisVector.erase(DebrisVector.begin() + i, DebrisVector.begin() + i + 1);
 		}
 	}
 }
