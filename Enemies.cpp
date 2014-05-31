@@ -31,8 +31,8 @@ void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
 
 void Enemy::Shoot(int TargetX, int TargetY, int Type, int XVel, int YVel)
 {
-	float XInc;
-	float YInc;
+	float XInc = 0;
+	float YInc = 0;
 	TargetX += XVel * Speed;
 	TargetY += YVel * Speed;
 	GetXYRatio(&XInc,&YInc,CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY),20);
@@ -166,27 +166,28 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
 				if (Distance < 600)
 				{
-					XDiff *= -1;
-					YDiff *= -1;
+					XDiff *= -2;
+					YDiff *= -2;
 				}
 			}
+			
 			TempX = CURRENTENEMY.WorldX + XDiff;
 			TempY = CURRENTENEMY.WorldY + YDiff;
 
-			CURRENTENEMY.CollisionRect.x = CameraX - TempX;
-			CURRENTENEMY.CollisionRect.y = CameraY - TempY;
+			CURRENTENEMY.CollisionRect.x = TempX - CameraX;
+			CURRENTENEMY.CollisionRect.y = TempY - CameraY;
 			for (int x = 0; x < RectVector.size(); x++)
 			{
 				if (CURRENTENEMY.CollisionRect.x < 0) continue;
 				if (CURRENTENEMY.CollisionRect.y < 0) continue;
 
-				if (IsIntersecting(CURRENTENEMY.CollisionRect, RectVector.at(x)));
+				SDL_Rect Fu = CURRENTENEMY.CollisionRect;
+				SDL_Rect ck = RectVector.at(x);
+				if (IsIntersecting(Fu,ck))
 				{
-					__debugbreak();
 					XDiff = 0;
 					YDiff = 0;
-					x = RectVector.size();
-					continue;
+					break;
 				}
 			}
 			CURRENTENEMY.WorldX += XDiff;
@@ -212,19 +213,43 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 {
+	PlayerRect.x += CameraX;
+	PlayerRect.y += CameraY;
+
 	for (int i = 0; i < EnemyProjectileVector.size(); i++)
 	{
 		CURRENTPROJECTILE.WorldX += CURRENTPROJECTILE.XVel;
 		CURRENTPROJECTILE.WorldY += CURRENTPROJECTILE.YVel;
-		CURRENTPROJECTILE.CollisionRect.x = CURRENTPROJECTILE.WorldX - CameraX;
-		CURRENTPROJECTILE.CollisionRect.y = CURRENTPROJECTILE.WorldY - CameraY;
+		CURRENTPROJECTILE.CollisionRect.x = CURRENTPROJECTILE.WorldX;
+		CURRENTPROJECTILE.CollisionRect.y = CURRENTPROJECTILE.WorldY;
+
 		SDL_FillRect(Screen,&CURRENTPROJECTILE.CollisionRect,0xFFFF00);
 
-		if (IsIntersecting(PlayerRect, CURRENTPROJECTILE.CollisionRect))
+		if (IsIntersecting(PlayerRect, CURRENTPROJECTILE.CollisionRect) && Damaged == false)
 		{
+			SDL_FillRect(Screen,&PlayerRect,0x0000FF);
+			SDL_FillRect(Screen,&CURRENTPROJECTILE.CollisionRect,0xFF0000);
+			SDL_Flip(Screen);
+			SDL_Delay(2000);
+			//__debugbreak();
 			Damaged = true;
 			DamageDealt = 10;
 			EnemyProjectileVector.erase(EnemyProjectileVector.begin() + i, EnemyProjectileVector.begin() + i + 1);
+			continue;
+		}
+
+		for (int y = 0; y < LevelVector.size(); y++)
+		{
+			SDL_Rect TileRect;
+			TileRect.x = LevelVector.at(y).WorldX;
+			TileRect.y = LevelVector.at(y).WorldY;
+			TileRect.w = LevelVector.at(y).Width;
+			TileRect.h = LevelVector.at(y).Height;
+			if (IsIntersecting(CURRENTPROJECTILE.CollisionRect,TileRect))
+			{
+				CreateDebris(3,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,CURRENTPROJECTILE.XVel *-0.5,CURRENTPROJECTILE.YVel * -0.5, 0xFFFFFF);
+				EnemyProjectileVector.erase(EnemyProjectileVector.begin() + i, EnemyProjectileVector.begin() + i + 1);
+			}
 		}
 	}
 }

@@ -42,10 +42,13 @@ void DoProjectiles(int CameraX, int CameraY)
 					if (IsIntersecting(TempRect, CURRENTPROJECTILE.ProjectileRect))
 					{
 						
-						CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
-						ProjectileVector.erase(ProjectileVector.begin() + i, ProjectileVector.begin() + i + 1);
-						IWillNOTUseAGoto = true;
-						break;
+						if (CURRENTPROJECTILE.Type == 1)
+						{
+							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
+							ProjectileVector.erase(ProjectileVector.begin() + i, ProjectileVector.begin() + i + 1);
+							IWillNOTUseAGoto = true;
+							break;
+						}
 					}
 					if (IWillNOTUseAGoto == true) break;
 				}

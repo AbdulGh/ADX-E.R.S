@@ -147,19 +147,13 @@ bool Load()
 	return true;
 }
 
-bool IsIntersecting(SDL_Rect Rect1, SDL_Rect Rect2)
+bool InBetween (int Min, int Value, int Max) {return Value >= Min && Value <= Max;}
+
+bool IsIntersecting(SDL_Rect Small, SDL_Rect Big)
 {
-	if (Rect2.x > Rect1.x && Rect2.x < Rect1.x + Rect1.w)
-	{
-		if (Rect2.y > Rect1.y && Rect2.y < Rect1.y + Rect1.h) return true;
-		else if (Rect2.y + Rect2.h > Rect1.y && Rect2.y + Rect2.h < Rect1.y + Rect1.h) return true;
-	}
-	else if (Rect2.x + Rect2.w > Rect1.x && Rect2.x + Rect2.w < Rect1.x + Rect1.w)
-	{
-		if (Rect2.y > Rect1.y && Rect2.y < Rect1.y + Rect1.h) return true;
-		else if (Rect2.y + Rect2.h > Rect1.y && Rect2.y + Rect2.h < Rect1.y + Rect1.h) return true;
-	}
-	return false;
+	bool XOverLapping = InBetween (Big.x, Small.x, Big.x + Big.w) || InBetween (Small.x, Big.x, Small.x + Small.w);
+	bool YOverLapping = InBetween (Big.y, Small.y, Big.y + Big.h) || InBetween (Small.y, Big.y, Small.y + Small.h);
+	return XOverLapping && YOverLapping;
 }
 
 void ClearScreen()

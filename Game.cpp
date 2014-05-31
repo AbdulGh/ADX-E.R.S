@@ -128,7 +128,7 @@ void Game()
 	SDL_Delay(5000);
 	bool LevelFinished = false;
 	int Weapons = 0;
-	int CurrentSelection = 2;
+	int CurrentSelection = 1;
 	int LevelProgress = 0;
 	Player Character;
 	Timer FPSTimer;
@@ -317,13 +317,12 @@ void Game()
 
 			else if (event.type == SDL_MOUSEBUTTONDOWN && CurrentSelection != 0) 
 			{
-				if (CurrentSelection == 1);
-				else if (CurrentSelection == 2)
+				if (CurrentSelection == 1)
 				{
 					int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 					float XRatio, YRatio;
 					GetXYRatio(&XRatio,&YRatio,Angle,20);
-					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,0);
+					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
 				}
 			}
 		}
