@@ -50,44 +50,38 @@ void GetRandomDeathQuote()
 	}
 }
 
-void DeathScreen(){}
-/*
+void DeathScreen()
 {
 	SDL_Rect CharacterRect;
-	CharacterRect.w = Character.CurrentSprite->w;
-	CharacterRect.h = Character.CurrentSprite->h;
-	Character.WorldX = 1834;
-	Character.WorldY = 2812;
-	
+	CharacterRect.w = 0;
+	CharacterRect.h = 0;
+	CharacterRect.x = 0;
+	CharacterRect.y = 0;
+	Timer remiT;
 	bool EnterPressed = false;
 	FadeVector.erase(FadeVector.begin(),FadeVector.end());
 	GetRandomDeathQuote();
-	Character.Render = false;
-	CreateDebris(3,5,Character.WorldX,Character.WorldY,Character.XVel,Character.YVel,0xFF0000);
-	CreateDebris(3,5,Character.WorldX,Character.WorldY,Character.XVel,Character.YVel,0x00FF00);
-	int x, y;
-	while(!EnterPressed);
+	int x = 0;
+	int y = 0;
+	while(!EnterPressed)
 	{
-		__debugbreak();
-		FPSTimer.start();
+		remiT.start();
 		ClearScreen();
 		DoTiles(Camera.x,Camera.y);
 		DoMouse(&x,&y);
 		DoDebris(Camera.x,Camera.y,Screen);
 		DoProjectiles(Camera.x,Camera.y);
 		DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
+		DoEnemies(Camera.x,Camera.y,0,0,CharacterRect, 0, 0);
 		CheckText();
 		SDL_Flip(Screen);
 		while(SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) EnterPressed = true;
 		}
-		if (FPSTimer.get_ticks() < 1000/60) SDL_Delay((1000/60) - FPSTimer.get_ticks());
+		if (remiT.get_ticks() < 1000/60) SDL_Delay((1000/60) - remiT.get_ticks());
 	}
-	Character.Reset == false;
-	Character.Health = 100;
 }
-*/
 
 void Game()
 {
@@ -132,6 +126,7 @@ void Game()
 	int LevelProgress = 0;
 	Player Character;
 	Timer FPSTimer;
+	Timer SpareTimer;
 	SDL_Rect CharacterRect;
 	CharacterRect.w = Character.CurrentSprite->w;
 	CharacterRect.h = Character.CurrentSprite->h;
@@ -151,15 +146,24 @@ void Game()
 	std::vector <int> SpawnVector;
 	int x = 0;
 	int y = 0;
+	FadeText("Stay RIGHT there. Don't move an inch.");
 	while (!LevelFinished && State == GAME) //Level 1
 	{
 		FPSTimer.start();
 
 		if (Character.Reset == true)
 		{
+			Character.Render = false;
+			CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
+			CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0x00FF00);
 			DeathScreen();
 			Character.Health = 100;
 			Character.Reset = false;
+			Character.WorldX = 1834;
+			Character.WorldY = 2812;
+			LevelProgress = 0;
+			EnemyVector.erase(EnemyVector.begin(),EnemyVector.end());
+			Enemies = 0;
 		}
 
 		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
@@ -170,6 +174,7 @@ void Game()
 		Character.Update();
 		CharacterRect.x = Character.WorldX - Camera.x;
 		CharacterRect.y = Character.WorldY - Camera.y;
+		DoPickups(Camera.x,Camera.y,CharacterRect);
 		DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
 		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
 		CheckText();
@@ -183,6 +188,23 @@ void Game()
 		SpareStream << Character.Health << "%";
 		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
+		SpareStream.str("");
+		switch (CurrentSelection)
+		{
+		case 1:
+			SpareStream << "Pistol: Infinite";
+			break;
+		case 2:
+			SpareStream << "Shotgun: " << ShotgunAmmo;
+		}
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(500,HealthRect.y - 6,Message,Screen);
+
+		SpareStream.str("");
+		SpareStream << "Lives: " << Character.Lives;
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(ScreenWidth - (Message->w + 10),HealthRect.y - 6,Message,Screen);
+
 		if (Enemies != 0)
 		{
 			SpareStream.str("");
@@ -190,6 +212,7 @@ void Game()
 			Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 			ApplySurface((ScreenWidth - Message->w) / 2, 10, Message, Screen);
 		}
+
 		SDL_Flip(Screen);
 
 		if (Character.WorldX < 1400 && LevelProgress < 1)
@@ -230,9 +253,8 @@ void Game()
 			SpawnEnemies(SpawnVector);
 			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
 
-			FadeText("I'm sorry Dave, I'm afraid I can't do that.");
-			FadeText("Do you get the reference?");
-			FadeText("Of course you don't, that film is at least 500 years old!");
+			FadeText("Why do they never listen?");
+			FadeText("I'm sorry, but I'm going to have to kill you.");
 		}
 
 		else if (Enemies == 0 && LevelProgress == 1)
@@ -301,21 +323,98 @@ void Game()
 		{
 			LevelProgress = 4;
 			FadeText("Not bad...");
-			FadeText("Well, I guess as this is a video game, I have to let you go onto the next level");
+			FadeText("Well, I guess as this is a video game, I have to let you go onto the next level.");
+			SpareTimer.start();
 		}
+
+		else if (LevelProgress == 4 && SpareTimer.get_ticks() > 8000)
+		{
+			LevelProgress = 5;
+			SpareTimer.stop();
+			FadeText("I lied again, I'm sorry.");
+			FadeText("I can't believe you bought it though!");
+
+			SpawnVector.push_back (Character.WorldX + 400);
+			SpawnVector.push_back (Character.WorldY + 356);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 145);
+			SpawnVector.push_back (Character.WorldY + 520);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX + 300);
+			SpawnVector.push_back (Character.WorldY + 256);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 445);
+			SpawnVector.push_back (Character.WorldY + 620);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX + 500);
+			SpawnVector.push_back (Character.WorldY + 356);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 345);
+			SpawnVector.push_back (Character.WorldY + 720);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX + 300);
+			SpawnVector.push_back (Character.WorldY + 256);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 445);
+			SpawnVector.push_back (Character.WorldY + 620);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 445);
+			SpawnVector.push_back (Character.WorldY + 620);
+			SpawnVector.push_back (2);
+
+			SpawnVector.push_back (Character.WorldX - 145);
+			SpawnVector.push_back (Character.WorldY + 120);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (Character.WorldX - 300);
+			SpawnVector.push_back (Character.WorldY - 135);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (Character.WorldX - 145);
+			SpawnVector.push_back (Character.WorldY + 120);
+			SpawnVector.push_back (1);
+
+			SpawnVector.push_back (Character.WorldX - 300);
+			SpawnVector.push_back (Character.WorldY - 135);
+			SpawnVector.push_back (1);
+
+			SpawnEnemies(SpawnVector);
+			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+		}
+
+		else if (LevelProgress == 5 && Enemies == 0)
+		{
+			LevelProgress = 6;
+			FadeText("... Wow, you really do have a lot of potential.");
+			FadeText("No one has actually ever made it this far before.");
+			FadeText("Okay, you can go.");
+			SpareTimer.start();
+		}
+
+		else if (LevelProgress == 6 && SpareTimer.get_ticks() > 10000) LevelFinished = true;
+			
+
 
 		SDL_PumpEvents();
 		while(SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_KEYDOWN)
 			{
-				if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; main(NULL,NULL);}
-				else if (event.key.keysym.sym == SDLK_e) Character.Reset = true; //CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
+				if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; Menu();}
+				else if (event.key.keysym.sym == SDLK_e) CurrentSelection = 3 - CurrentSelection; //CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
 				else if (event.key.keysym.sym == SDLK_1 && Weapons > 0) CurrentSelection = 1;
 				else if (event.key.keysym.sym == SDLK_2 && Weapons > 1) CurrentSelection = 2;
 			}
 
-			else if (event.type == SDL_MOUSEBUTTONDOWN && CurrentSelection != 0) 
+			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && CurrentSelection != 0) 
 			{
 				if (CurrentSelection == 1)
 				{
@@ -324,8 +423,126 @@ void Game()
 					GetXYRatio(&XRatio,&YRatio,Angle,20);
 					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
 				}
+
+				else if (CurrentSelection == 2 && ShotgunAmmo != 0)
+				{
+					ShotgunAmmo--;
+					int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
+					float XRatio, YRatio;
+					for (int i = 0; i <= 8; i++)
+					{
+						GetXYRatio(&XRatio,&YRatio,Angle + rand () % 5 - 3, 19);
+						CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
+					}
+				}
+			}
+
+			else if (event.wheel
+		}
+		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
+	}
+
+	LevelFinished = false;
+	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	Character.Lives += 5;
+	Character.WorldX = 1000;
+	Character.WorldY = 1000;
+	LevelProgress = 1;
+	while(LevelFinished == false && State == GAME)
+	{
+		FPSTimer.start();
+
+		if (Character.Reset == true)
+		{
+			Character.Render = false;
+			CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
+			CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0x00FF00);
+			DeathScreen();
+			Character.Health = 100;
+			Character.Reset = false;
+			Character.WorldX = 1000;
+			Character.WorldY = 1000;
+			LevelProgress = 0;
+			EnemyVector.erase(EnemyVector.begin(),EnemyVector.end());
+			Enemies = 0;
+		}
+
+		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
+		Camera.Update();
+		DoTiles(Camera.x,Camera.y);
+		DoMouse(&x,&y);
+		DoDebris(Camera.x,Camera.y,Screen);
+		Character.Update();
+		CharacterRect.x = Character.WorldX - Camera.x;
+		CharacterRect.y = Character.WorldY - Camera.y;
+		DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
+		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
+		CheckText();
+		DoProjectiles(Camera.x,Camera.y);
+
+		HealthRect.w = 3 * Character.Health;
+		Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
+		ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y - 6, Message, Screen);
+		SDL_FillRect(Screen,&HealthRect,0x00FF00);
+		SpareStream.str("");
+		SpareStream << Character.Health << "%";
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
+		SpareStream.str("");
+		SpareStream << "Pistol: Infinite   Lives:" << Character.Lives;
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(500,HealthRect.y - 6,Message,Screen);
+
+		if (Enemies != 0)
+		{
+			SpareStream.str("");
+			SpareStream << "Enemies: " << Enemies;
+			Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+			ApplySurface((ScreenWidth - Message->w) / 2, 10, Message, Screen);
+		}
+
+		SDL_Flip(Screen);
+
+		SDL_PumpEvents();
+		while(SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_KEYDOWN)
+			{
+				if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT;  Menu();}
+				else if (event.key.keysym.sym == SDLK_e) Character.Reset = true; //CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
+				else if (event.key.keysym.sym == SDLK_1 && Weapons > 0) CurrentSelection = 1;
+				else if (event.key.keysym.sym == SDLK_2 && Weapons > 1) CurrentSelection = 2;
+			}
+
+			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && CurrentSelection != 0) 
+			{
+				if (CurrentSelection == 1)
+				{
+					int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
+					float XRatio, YRatio;
+					GetXYRatio(&XRatio,&YRatio,Angle,20);
+					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
+				}
+
+				else if (CurrentSelection == 2 && ShotgunAmmo != 0)
+				{
+					int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
+					float XRatio, YRatio;
+					for (int i = 0; i <= 8; i++)
+					{
+						GetXYRatio(&XRatio,&YRatio,Angle + rand () % 5 - 3, 19);
+						CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
+					}
+				}
 			}
 		}
+
+		if (LevelProgress == 1)
+		{
+			LevelProgress = 2;
+			FadeText("Rused again!");
+		}
+
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 }

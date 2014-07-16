@@ -4,6 +4,7 @@
 #include"Declarations.h"
 #include<time.h>
 
+std::vector <Pickup> PickupVector;
 std::vector <Enemy> EnemyVector;
 std::vector <EnemyProjectile> EnemyProjectileVector;
 
@@ -33,9 +34,9 @@ void Enemy::Shoot(int TargetX, int TargetY, int Type, int XVel, int YVel)
 {
 	float XInc = 0;
 	float YInc = 0;
-	TargetX += XVel * Speed;
-	TargetY += YVel * Speed;
-	GetXYRatio(&XInc,&YInc,CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY),20);
+	TargetX += XVel * Speed * 3;
+	TargetY += YVel * Speed * 3;
+	if (Type == 1) GetXYRatio(&XInc,&YInc,CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY),10);
 
 	EnemyProjectile PushThis;
 	PushThis.WorldX = WorldX;
@@ -45,7 +46,39 @@ void Enemy::Shoot(int TargetX, int TargetY, int Type, int XVel, int YVel)
 	PushThis.Type = Type;
 	PushThis.CollisionRect.w = 3;
 	PushThis.CollisionRect.h = 3;
+	PushThis.Active = true;
 	EnemyProjectileVector.push_back(PushThis);
+}
+
+#define CURRENTPICKUPTYPE PickupVector.at(i).Type
+#define CURRENTPICKUPX PickupVector.at(i).WorldX
+#define CURRENTPICKUPY PickupVector.at(i).WorldY
+void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
+{
+	if (PickupVector.size() != 0)
+	{
+		SDL_Rect TempRect;
+		PlayerRect.x += CameraX;
+		PlayerRect.y += CameraY;
+		for (int i = 0; i < PickupVector.size(); i++)
+		{
+			switch (CURRENTPICKUPTYPE)
+			{
+			case 1: //Shotgun
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Shotgun, Screen);
+				TempRect.x = CURRENTPICKUPX;
+				TempRect.y = CURRENTPICKUPY;
+				TempRect.w = 13;
+				TempRect.h = 13;
+				if (IsIntersecting(TempRect,PlayerRect))
+				{
+					ShotgunAmmo += 10;
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
+			}
+		}
+	}
 }
 
 void SpawnEnemies(std::vector <int> Enemus) //X Y Type
@@ -75,18 +108,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY - CameraY;
 		if (CURRENTENEMY.Type != 0)
 		{
-			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
-			{
-				if (CURRENTENEMY.Type == 1 && Invincible == false)
-				{
-					Damaged = true;
-					DamageDealt = 30;
-					CreateDebris(5,5,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 2,CURRENTENEMY.YVel * 2,0xFFFFFF);
-					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
-					Enemies--;
-					continue;
-				}
-			}
 			for (int x = 0; x < ProjectileVector.size(); x++)
 			{
 				ProjectileVector.at(x).ProjectileRect.x = ProjectileVector.at(x).WorldX - CameraX;
@@ -94,7 +115,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc);
-					CURRENTENEMY.Health -= 25;
+					CURRENTENEMY.Health -= 30;
 
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).XInc / 2;
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).YInc / 2;
@@ -121,18 +142,25 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Temp.Type = CURRENTENEMY.Health;
 					if (Temp.Type == 1) //suicide
 					{
-						Temp.Health = 100;
+						Temp.Health = 140;
 						Temp.Speed = rand() % 4 + 6;
 						Temp.CollisionRect.w = Suicide->w;
 						Temp.CollisionRect.h = Suicide->h;
 					}
 					else if (Temp.Type == 2) //Gunman
 					{
-						Temp.Health = 150;
+						Temp.Health = 100;
 						Temp.ShotCounter = rand() % 90;
 						Temp.Speed = rand() % 2 + 4;
 						Temp.CollisionRect.w = Gunman->w;
 						Temp.CollisionRect.h = Gunman->h;
+					}
+					else if (Temp.Type == 3) //Beheaded Serious Sam guy
+					{
+						Temp.Health = 120;
+						Temp.Speed = rand() % 2 + 4;
+						Temp.CollisionRect.w = Serious->w;
+						Temp.CollisionRect.h = Serious->h;
 					}
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -142,6 +170,19 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		}
 		if (CURRENTENEMY.Type == 1) //Suicide
 		{
+			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
+			{
+				if (CURRENTENEMY.Type == 1 && Invincible == false)
+				{
+					Damaged = true;
+					DamageDealt = 30;
+					CreateDebris(5,5,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 2,CURRENTENEMY.YVel * 2,0xFFFFFF);
+					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
+					Enemies--;
+					continue;
+				}
+			}
+			
 			float XDiff;
 			float YDiff;
 			float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + XVel * (CURRENTENEMY.Speed / 4), CURRENTENEMY.WorldY + YVel * (CURRENTENEMY.Speed / 4), PlayerX, PlayerY);
@@ -160,11 +201,11 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			int TempX = 0;
 			int TempY = 0;
 			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
-			if (Distance > 700 || Distance < 400)
+			if (Distance > 400 || Distance < 300)
 			{
 				float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
 				GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
-				if (Distance < 600)
+				if (Distance < 300)
 				{
 					XDiff *= -2;
 					YDiff *= -2;
@@ -203,53 +244,64 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		}
 		if (CURRENTENEMY.Health < 0) 
 		{
+			int tni = rand() % 100 + 1;
+			if (tni < 20)
+			{
+				Pickup pukciP;
+				pukciP.WorldX = CURRENTENEMY.WorldX;
+				pukciP.WorldY = CURRENTENEMY.WorldY;
+				pukciP.Type = 1;
+				PickupVector.push_back(pukciP);
+			}
+			CreateDebris(5,6,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 4,CURRENTENEMY.YVel * 4,0xFFFFFF);
 			EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 			Enemies--;
 		}
 	}
 }
 
-#define CURRENTPROJECTILE EnemyProjectileVector.at(i)
+#define CURRENTENEMYPROJECTILE EnemyProjectileVector.at(wilk)
 
 void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 {
 	PlayerRect.x += CameraX;
 	PlayerRect.y += CameraY;
 
-	for (int i = 0; i < EnemyProjectileVector.size(); i++)
+	for (int wilk = 0; wilk < EnemyProjectileVector.size(); wilk++)
 	{
-		CURRENTPROJECTILE.WorldX += CURRENTPROJECTILE.XVel;
-		CURRENTPROJECTILE.WorldY += CURRENTPROJECTILE.YVel;
-		CURRENTPROJECTILE.CollisionRect.x = CURRENTPROJECTILE.WorldX;
-		CURRENTPROJECTILE.CollisionRect.y = CURRENTPROJECTILE.WorldY;
+		CURRENTENEMYPROJECTILE.WorldX += CURRENTENEMYPROJECTILE.XVel;
+		CURRENTENEMYPROJECTILE.WorldY += CURRENTENEMYPROJECTILE.YVel;
+		CURRENTENEMYPROJECTILE.CollisionRect.x = CURRENTENEMYPROJECTILE.WorldX;
+		CURRENTENEMYPROJECTILE.CollisionRect.y = CURRENTENEMYPROJECTILE.WorldY;
 
-		SDL_FillRect(Screen,&CURRENTPROJECTILE.CollisionRect,0xFFFF00);
-
-		if (IsIntersecting(PlayerRect, CURRENTPROJECTILE.CollisionRect) && Damaged == false)
+		if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && Damaged == false)
 		{
-			SDL_FillRect(Screen,&PlayerRect,0x0000FF);
-			SDL_FillRect(Screen,&CURRENTPROJECTILE.CollisionRect,0xFF0000);
-			SDL_Flip(Screen);
-			SDL_Delay(2000);
-			//__debugbreak();
 			Damaged = true;
 			DamageDealt = 10;
-			EnemyProjectileVector.erase(EnemyProjectileVector.begin() + i, EnemyProjectileVector.begin() + i + 1);
-			continue;
+			CURRENTENEMYPROJECTILE.Active = false;
 		}
 
-		for (int y = 0; y < LevelVector.size(); y++)
+		for (int may = 0; may < LevelVector.size() && CURRENTENEMYPROJECTILE.Active == true; may++)
 		{
 			SDL_Rect TileRect;
-			TileRect.x = LevelVector.at(y).WorldX;
-			TileRect.y = LevelVector.at(y).WorldY;
-			TileRect.w = LevelVector.at(y).Width;
-			TileRect.h = LevelVector.at(y).Height;
-			if (IsIntersecting(CURRENTPROJECTILE.CollisionRect,TileRect))
+			TileRect.x = LevelVector.at(may).WorldX;
+			TileRect.y = LevelVector.at(may).WorldY;
+			TileRect.w = LevelVector.at(may).Width;
+			TileRect.h = LevelVector.at(may).Height;
+			if (IsIntersecting(CURRENTENEMYPROJECTILE.CollisionRect,TileRect))
 			{
-				CreateDebris(3,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,CURRENTPROJECTILE.XVel *-0.5,CURRENTPROJECTILE.YVel * -0.5, 0xFFFFFF);
-				EnemyProjectileVector.erase(EnemyProjectileVector.begin() + i, EnemyProjectileVector.begin() + i + 1);
+				CreateDebris(3,3,CURRENTENEMYPROJECTILE.WorldX,CURRENTENEMYPROJECTILE.WorldY,CURRENTENEMYPROJECTILE.XVel * -1 ,CURRENTENEMYPROJECTILE.YVel * -1 , 0xFFFFFF);
+				CURRENTENEMYPROJECTILE.Active = false;
 			}
+		}
+		if (CURRENTENEMYPROJECTILE.Active == false) EnemyProjectileVector.erase(EnemyProjectileVector.begin() + wilk, EnemyProjectileVector.begin() + wilk + 1);
+		else
+		{
+			CURRENTENEMYPROJECTILE.CollisionRect.x -= CameraX;
+			CURRENTENEMYPROJECTILE.CollisionRect.y -= CameraY;
+			CURRENTENEMYPROJECTILE.CollisionRect.w = 3;
+			CURRENTENEMYPROJECTILE.CollisionRect.h = 3;
+			SDL_FillRect(Screen,&CURRENTENEMYPROJECTILE.CollisionRect,0xFF0000);
 		}
 	}
 }

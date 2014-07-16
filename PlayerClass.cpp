@@ -60,12 +60,12 @@ void Player::Update()
 	{
 		SDL_PumpEvents();
 		Uint8 *Memestates = SDL_GetKeyState(NULL);
-		if (Memestates[SDLK_RIGHT] && XVel <= TopSpeed) 
+		if ((Memestates[SDLK_RIGHT] || Memestates[SDLK_d]) && XVel <= TopSpeed) 
 		{
 			if (XVel + Speed > TopSpeed) XVel = TopSpeed;
 			else XVel += Speed;
 		}
-		else if (Memestates[SDLK_LEFT] && XVel >= -1 * TopSpeed) 
+		else if ((Memestates[SDLK_LEFT] || Memestates[SDLK_a])&& XVel >= -1 * TopSpeed) 
 		{
 			if (XVel - Speed < TopSpeed * -1) XVel = TopSpeed * -1;
 			else XVel -= Speed;
@@ -75,12 +75,12 @@ void Player::Update()
 			if (XVel > 0) XVel /= 2;
 			else XVel /= 2;
 		}
-		if (Memestates[SDLK_DOWN] && YVel <= TopSpeed) 
+		if ((Memestates[SDLK_DOWN] || Memestates[SDLK_s]) && YVel <= TopSpeed) 
 		{
 			if (YVel + Speed > TopSpeed) YVel = TopSpeed;
 			else YVel += Speed;
 		}
-		else if (Memestates[SDLK_UP] && YVel >= -1 * TopSpeed) 
+		else if ((Memestates[SDLK_UP] || Memestates[SDLK_w]) && YVel >= -1 * TopSpeed) 
 		{
 			if (YVel - Speed < TopSpeed * -1) YVel = TopSpeed * -1;
 			else YVel -= Speed;

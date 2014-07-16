@@ -35,6 +35,15 @@ public:
 	SDL_Rect CollisionRect;
 	int XVel;
 	int YVel;
+	bool Active;
+};
+
+class Pickup
+{
+public: 
+	int WorldX;
+	int WorldY;
+	int Type;
 };
 
 extern std::vector <Enemy> EnemyVector;
@@ -43,4 +52,5 @@ extern std::vector <EnemyProjectile> EnemyProjectileVector;
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);
 void DoEnemyProjectiles(int CameraX, int CameraY,SDL_Rect CharacterRect);
+void DoPickups(int CameraX, int CamerY, SDL_Rect PlayerRect);
 #endif

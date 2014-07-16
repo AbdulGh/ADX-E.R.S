@@ -1,7 +1,6 @@
 #include"Debris.h"
 #include<time.h>
 
-
 std::vector<Debris> DebrisVector;
 
 void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Uint32 Colour)
@@ -17,9 +16,12 @@ void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Ui
 
 		PushThis.Colour = Colour;
 		int VelX = 0;
-		if (XVel != 0) while (VelX == 0) VelX = XVel + rand() % XVel/2 + -XVel/2;
+		if (XVel < 0) VelX = XVel + (rand() % XVel) + XVel;
+		else if (XVel != 0) VelX = XVel + (rand() % XVel) - XVel;
+
 		int VelY = 0;
-		if (YVel != 0) while (VelY == 0) VelY = YVel + rand() % YVel/2 + -YVel/2;
+		if (YVel < 0) VelY = YVel + (rand() % YVel) + YVel;
+		if (YVel != 0) VelY = YVel + (rand() % YVel) - YVel;
 		PushThis.XVel = VelX;
 		PushThis.YVel = VelY;
 		PushThis.Time = 0;

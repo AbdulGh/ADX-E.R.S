@@ -20,12 +20,11 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 #define CURRENTPROJECTILE ProjectileVector.at(i)
 void DoProjectiles(int CameraX, int CameraY)
 {
-	int What = ProjectileVector.size();
-	if (What > 0)
+	if (ProjectileVector.size() > 0)
 	{
 		for( int i = 0; i < ProjectileVector.size(); i++ )
 		{	
-			bool IWillNOTUseAGoto = false;
+			bool Erase = false;
 			CURRENTPROJECTILE.WorldX += CURRENTPROJECTILE.XInc;
 			CURRENTPROJECTILE.WorldY += CURRENTPROJECTILE.YInc;
 			CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX;
@@ -45,21 +44,22 @@ void DoProjectiles(int CameraX, int CameraY)
 						if (CURRENTPROJECTILE.Type == 1)
 						{
 							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
-							ProjectileVector.erase(ProjectileVector.begin() + i, ProjectileVector.begin() + i + 1);
-							IWillNOTUseAGoto = true;
+							Erase = true; 
 							break;
 						}
 					}
-					if (IWillNOTUseAGoto == true) break;
+					if (Erase == true) break;
 				}
 			}
 
-			if (IWillNOTUseAGoto == false)
+			if (Erase == false)
 			{
 				CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX - CameraX;
 				CURRENTPROJECTILE.ProjectileRect.y = CURRENTPROJECTILE.WorldY - CameraY;
 				SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFFFF00);
 			}
+
+			else ProjectileVector.erase(ProjectileVector.begin() + i, ProjectileVector.begin() + i + 1);
 		}
 	}
 }

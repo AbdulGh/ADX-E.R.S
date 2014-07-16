@@ -18,6 +18,7 @@ int Frame = 0;
 int Frametime = 0;
 int DamageDealt = 0;
 int Enemies = 0;
+int ShotgunAmmo = 0;
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -30,12 +31,14 @@ std::stringstream SpareStream;
 Viewport Camera;
 
 SDL_Surface *Screen = NULL;
+SDL_Surface *Serious = NULL;
 SDL_Surface *Gunman = NULL;
 SDL_Surface *Message = NULL;
 SDL_Surface *PlayerNormal = NULL;
 SDL_Surface *CursorSheet = NULL;
 SDL_Surface *TeleportSheet = NULL;
 SDL_Surface *Suicide = NULL;
+SDL_Surface *Shotgun = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -113,7 +116,7 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
-	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE/*|SDL_FULLSCREEN*/);
+	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
     SDL_WM_SetCaption("it worked", NULL);
@@ -139,10 +142,12 @@ bool Load()
 	if (Start == NULL || Sys == NULL) return false;
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
+	Serious = LoadImage("Resources/Images/Serious.png");
 	CursorSheet = LoadImage("Resources/Images/Cursor.png");
 	TeleportSheet = LoadImage("Resources/Images/Teleport.png");
 	Suicide = LoadImage("Resources/Images/Suicide.png");
 	Gunman = LoadImage("Resources/Images/Gunman.png");
+	Shotgun = LoadImage("Resources/Images/Shotgun.png");
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
 }

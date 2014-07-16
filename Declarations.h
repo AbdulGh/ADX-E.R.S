@@ -29,6 +29,8 @@ extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
 extern SDL_Surface *TeleportSheet;
 extern SDL_Surface *Suicide;
+extern SDL_Surface *Shotgun;
+extern SDL_Surface *Serious;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -49,6 +51,7 @@ extern int Frame;
 extern int Frametime;
 extern int DamageDealt;
 extern int Enemies;
+extern int ShotgunAmmo;
 
 extern Uint32 LevelColour;
 
