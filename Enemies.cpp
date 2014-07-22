@@ -158,7 +158,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					else if (Temp.Type == 3) //Beheaded Serious Sam guy
 					{
 						Temp.Health = 120;
-						Temp.Speed = rand() % 2 + 4;
+						Temp.Speed = rand() % 4 + 10;
 						Temp.CollisionRect.w = Serious->w;
 						Temp.CollisionRect.h = Serious->h;
 					}
@@ -172,7 +172,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
 			{
-				if (CURRENTENEMY.Type == 1 && Invincible == false)
+				if (Invincible == false)
 				{
 					Damaged = true;
 					DamageDealt = 30;
@@ -242,7 +242,44 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.ShotCounter = 0;
 			}
 		}
-		if (CURRENTENEMY.Health < 0) 
+		else if (CURRENTENEMY.Type == 3) //Serious sam beheaded kamakazie
+		{
+			float XDiff;
+			float YDiff;
+			float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + XVel * (CURRENTENEMY.Speed / 4), CURRENTENEMY.WorldY + YVel * (CURRENTENEMY.Speed / 4), PlayerX, PlayerY);
+			GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
+			CURRENTENEMY.XVel = XDiff;
+			CURRENTENEMY.YVel = YDiff;
+			CURRENTENEMY.WorldX += XDiff;
+			CURRENTENEMY.WorldY += YDiff;
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Serious, Screen);
+
+			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
+			if (Distance < 100)
+			{
+				EnemyProjectile PushThis;
+				PushThis.WorldX = CURRENTENEMY.WorldX;
+				PushThis.WorldY = CURRENTENEMY.WorldY;
+				PushThis.Type = 1;
+				PushThis.CollisionRect.w = 3;
+				PushThis.CollisionRect.h = 3;
+				PushThis.Active = true;
+
+				for (int i = 0; i < 360; i += 45)
+				{
+					float ex = 0;
+					float why = 0;
+					GetXYRatio(&ex,&why,i,5);
+					
+					PushThis.XVel = ex;
+					PushThis.YVel = why;
+					EnemyProjectileVector.push_back(PushThis);
+				}
+				CURRENTENEMY.Health = 0;
+			}
+		}
+
+		if (CURRENTENEMY.Health <= 0) 
 		{
 			int tni = rand() % 100 + 1;
 			if (tni < 20)

@@ -123,7 +123,7 @@ void Game()
 	bool LevelFinished = false;
 	int Weapons = 0;
 	int CurrentSelection = 1;
-	int LevelProgress = 0;
+	int LevelProgress = 5;
 	Player Character;
 	Timer FPSTimer;
 	Timer SpareTimer;
@@ -436,8 +436,6 @@ void Game()
 					}
 				}
 			}
-
-			else if (event.wheel
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
@@ -448,6 +446,12 @@ void Game()
 	Character.WorldX = 1000;
 	Character.WorldY = 1000;
 	LevelProgress = 1;
+	LevelColour = 0x000000;
+	SpawnVector.push_back(50);
+	SpawnVector.push_back(50);
+	SpawnVector.push_back(3);
+	Camera.LevelHeight = LevelHeight;
+	Camera.LevelWidth = LevelWidth;
 	while(LevelFinished == false && State == GAME)
 	{
 		FPSTimer.start();
@@ -489,9 +493,21 @@ void Game()
 		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 		ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
 		SpareStream.str("");
-		SpareStream << "Pistol: Infinite   Lives:" << Character.Lives;
+		switch (CurrentSelection)
+		{
+		case 1:
+			SpareStream << "Pistol: Infinite";
+			break;
+		case 2:
+			SpareStream << "Shotgun: " << ShotgunAmmo;
+		}
 		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 		ApplySurface(500,HealthRect.y - 6,Message,Screen);
+
+		SpareStream.str("");
+		SpareStream << "Lives: " << Character.Lives;
+		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
+		ApplySurface(ScreenWidth - (Message->w + 10),HealthRect.y - 6,Message,Screen);
 
 		if (Enemies != 0)
 		{
@@ -509,7 +525,7 @@ void Game()
 			if (event.type == SDL_KEYDOWN)
 			{
 				if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT;  Menu();}
-				else if (event.key.keysym.sym == SDLK_e) Character.Reset = true; //CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
+				else if (event.key.keysym.sym == SDLK_e) SpawnEnemies(SpawnVector); //CreateDebris(3,5,Character.WorldX,Character.WorldY,20,20,0x7F3300);
 				else if (event.key.keysym.sym == SDLK_1 && Weapons > 0) CurrentSelection = 1;
 				else if (event.key.keysym.sym == SDLK_2 && Weapons > 1) CurrentSelection = 2;
 			}
