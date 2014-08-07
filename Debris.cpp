@@ -22,6 +22,10 @@ void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Ui
 		int VelY = 0;
 		if (YVel < 0) VelY = YVel + (rand() % YVel) + YVel;
 		if (YVel != 0) VelY = YVel + (rand() % YVel) - YVel;
+
+		if (VelX == 0) VelX = rand () % 20 - 10;
+		if (VelY == 0) VelY = rand () % 20 - 10;
+
 		PushThis.XVel = VelX;
 		PushThis.YVel = VelY;
 		PushThis.Time = 0;

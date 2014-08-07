@@ -1,6 +1,8 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
+#define WEAPONS 3
+
 #include<iostream>
 #include<vector>
 #include<string>
@@ -15,6 +17,7 @@
 #include "MapCreator.h"
 #include "CameraClass.h"
 #include "DoProjectiles.h"
+#include "SDL_rotozoom.h"
 #include <fstream>
 
 extern SDL_Event event;
@@ -31,6 +34,12 @@ extern SDL_Surface *TeleportSheet;
 extern SDL_Surface *Suicide;
 extern SDL_Surface *Shotgun;
 extern SDL_Surface *Serious;
+extern SDL_Surface *Ship;
+extern SDL_Surface *ShipProjectile;
+extern SDL_Surface *Worm;
+extern SDL_Surface *Invader;
+extern SDL_Surface *MachineGun;
+extern SDL_Surface *Health;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -39,9 +48,14 @@ extern SDL_Colour Blue;
 
 extern SDL_Rect CursorClips[2];
 extern SDL_Rect TeleportClips[2];
+extern SDL_Rect WormFrames[2];
+extern SDL_Rect AmmoFrames[2];
+extern SDL_Rect ShipFrames[3];
+extern SDL_Rect InvaderFrames[2];
 
 extern bool Damaged;
 extern bool Invincible;
+extern bool Boss;
 
 extern int XChange;
 extern int YChange;
@@ -51,7 +65,10 @@ extern int Frame;
 extern int Frametime;
 extern int DamageDealt;
 extern int Enemies;
-extern int ShotgunAmmo;
+
+extern Uint8 MouseStates;
+
+extern int Ammo[WEAPONS];
 
 extern Uint32 LevelColour;
 
@@ -67,6 +84,7 @@ extern TTF_Font *Start;
 extern TTF_Font *StartBig;
 extern TTF_Font *Sys;
 extern TTF_Font *SysSmall;
+extern TTF_Font *Small;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
 extern Gamestate State;

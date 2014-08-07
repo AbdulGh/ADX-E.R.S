@@ -9,6 +9,7 @@ const int ScreenHeight = 768;
 
 bool Damaged = false;
 bool Invincible = false;
+bool Boss = false;
 
 int XChange = 0;
 int YChange = 0;
@@ -18,7 +19,10 @@ int Frame = 0;
 int Frametime = 0;
 int DamageDealt = 0;
 int Enemies = 0;
-int ShotgunAmmo = 0;
+
+Uint8 MouseStates;
+
+int Ammo[WEAPONS] = {1,0,0};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -39,6 +43,12 @@ SDL_Surface *CursorSheet = NULL;
 SDL_Surface *TeleportSheet = NULL;
 SDL_Surface *Suicide = NULL;
 SDL_Surface *Shotgun = NULL;
+SDL_Surface *Ship = NULL;
+SDL_Surface *ShipProjectile = NULL;
+SDL_Surface *Worm = NULL;
+SDL_Surface *Invader = NULL;
+SDL_Surface *MachineGun = NULL;
+SDL_Surface *Health = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -49,9 +59,14 @@ TTF_Font *Start = NULL;
 TTF_Font *StartBig = NULL;
 TTF_Font *Sys = NULL;
 TTF_Font *SysSmall = NULL;
+TTF_Font *Small = NULL;
 
 SDL_Rect CursorClips[2];
 SDL_Rect TeleportClips[2];
+SDL_Rect WormFrames[2];
+SDL_Rect AmmoFrames[2];
+SDL_Rect ShipFrames[3];
+SDL_Rect InvaderFrames[2];
 
 void SetClips()
 {
@@ -74,12 +89,57 @@ void SetClips()
 	TeleportClips[1].y = 40;
 	TeleportClips[1].w = 40;
 	TeleportClips[1].h = 40;
+
+	WormFrames[0].x = 0;
+	WormFrames[0].y = 0;
+	WormFrames[0].w = 50;
+	WormFrames[0].h = 50;
+
+	WormFrames[1].x = 50;
+	WormFrames[1].y = 0;
+	WormFrames[1].w = 50;
+	WormFrames[1].h = 50;
+
+	AmmoFrames[0].x = 0;
+	AmmoFrames[0].y = 0;
+	AmmoFrames[0].w = 25;
+	AmmoFrames[0].h = 25;
+
+	AmmoFrames[1].x = 25;
+	AmmoFrames[1].y = 0;
+	AmmoFrames[1].w = 25;
+	AmmoFrames[1].h = 25;
+
+	ShipFrames[0].x = 0;
+	ShipFrames[0].y = 0;
+	ShipFrames[0].w = 50;
+	ShipFrames[0].h = 20;
+
+	ShipFrames[1].x = 50;
+	ShipFrames[1].y = 0;
+	ShipFrames[1].w = 50;
+	ShipFrames[1].h = 20;
+
+	ShipFrames[2].x = 100;
+	ShipFrames[2].y = 0;
+	ShipFrames[2].w = 50;
+	ShipFrames[2].h = 20;
+
+	InvaderFrames[0].x = 0;
+	InvaderFrames[0].y = 0;
+	InvaderFrames[0].w = 50;
+	InvaderFrames[0].h = 50;
+
+	InvaderFrames[1].x = 50;
+	InvaderFrames[1].y = 0;
+	InvaderFrames[1].w = 50;
+	InvaderFrames[1].h = 50;
 }
 
 void DoMouse(int * ex, int * why)
 {
 	SDL_PumpEvents();
-	SDL_GetMouseState(ex,why);
+	MouseStates = SDL_GetMouseState(ex,why);
 
 	Frametime++;
 	if (Frametime > 30) 
@@ -116,7 +176,7 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
-	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE/*|SDL_FULLSCREEN*/);
+	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
     SDL_WM_SetCaption("it worked", NULL);
@@ -126,6 +186,7 @@ bool Init()
 	XChange = 0;
 	YChange = 0;
 }
+
 void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip)
 {
     SDL_Rect offset;
@@ -133,13 +194,15 @@ void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, 
     offset.y = y + YChange;
     SDL_BlitSurface( Source, Clip, Destination, &offset );
 }
+
 bool Load()
 {
 	Start = TTF_OpenFont("Resources/Fonts/Start.ttf",40);
+	Small = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",14);
 	StartBig = TTF_OpenFont("Resources/Fonts/Start.ttf",128);
 	Sys = TTF_OpenFont("Resources/Fonts/Sys.ttf",160);
 	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf",32);
-	if (Start == NULL || Sys == NULL) return false;
+	if (Start == NULL || Sys == NULL || Small == NULL) return false;
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	Serious = LoadImage("Resources/Images/Serious.png");
@@ -148,6 +211,12 @@ bool Load()
 	Suicide = LoadImage("Resources/Images/Suicide.png");
 	Gunman = LoadImage("Resources/Images/Gunman.png");
 	Shotgun = LoadImage("Resources/Images/Shotgun.png");
+	Ship = LoadImage("Resources/Images/Ship.png");
+	Invader = LoadImage("Resources/Images/Invader.png");
+	Health = LoadImage("Resources/Images/Health.png");
+	Worm = LoadImage("Resources/Images/Worm.png");
+	ShipProjectile = LoadImage("Resources/Images/EnemyProjectile.png");
+	MachineGun = LoadImage("Resources/Images/MachineGun.png");
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
 }

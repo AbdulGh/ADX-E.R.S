@@ -2,6 +2,7 @@
 #include"CalculateProjectileAngle.h"
 #include"GetXYRatio.h"
 #include"Declarations.h"
+#include"FloatText.h"
 #include<time.h>
 
 std::vector <Pickup> PickupVector;
@@ -32,21 +33,33 @@ void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
 
 void Enemy::Shoot(int TargetX, int TargetY, int Type, int XVel, int YVel)
 {
-	float XInc = 0;
-	float YInc = 0;
-	TargetX += XVel * Speed * 3;
-	TargetY += YVel * Speed * 3;
-	if (Type == 1) GetXYRatio(&XInc,&YInc,CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY),10);
-
 	EnemyProjectile PushThis;
-	PushThis.WorldX = WorldX;
-	PushThis.WorldY = WorldY;
-	PushThis.XVel = XInc;
-	PushThis.YVel = YInc;
 	PushThis.Type = Type;
-	PushThis.CollisionRect.w = 3;
-	PushThis.CollisionRect.h = 3;
 	PushThis.Active = true;
+	PushThis.Frame = 0;
+	PushThis.Frametime = 0;
+	if (Type == 1)
+	{
+		float XInc = 0;
+		float YInc = 0;
+		TargetX += XVel * Speed * 3;
+		TargetY += YVel * Speed * 3;
+		GetXYRatio(&XInc,&YInc,CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY),10);
+
+		PushThis.WorldX = WorldX;
+		PushThis.WorldY = WorldY;
+		PushThis.XVel = XInc;
+		PushThis.YVel = YInc;
+		PushThis.CollisionRect.w = 3;
+		PushThis.CollisionRect.h = 3;
+	}
+	else if (Type == 2)
+	{
+		PushThis.WorldX = WorldX;
+		PushThis.WorldY = WorldY;
+		PushThis.CollisionRect.w = 30;
+		PushThis.CollisionRect.h = 10;
+	}
 	EnemyProjectileVector.push_back(PushThis);
 }
 
@@ -65,17 +78,44 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			switch (CURRENTPICKUPTYPE)
 			{
 			case 1: //Shotgun
-				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Shotgun, Screen);
 				TempRect.x = CURRENTPICKUPX;
 				TempRect.y = CURRENTPICKUPY;
-				TempRect.w = 13;
-				TempRect.h = 13;
+				TempRect.w = Shotgun->w;
+				TempRect.h = Shotgun->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Shotgun, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					ShotgunAmmo += 10;
+					Ammo[1] += 10;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Shotgun +10", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
+			case 2: //MachineGun
+				TempRect.x = CURRENTPICKUPX;
+				TempRect.y = CURRENTPICKUPY;
+				TempRect.w = MachineGun->w;
+				TempRect.h = MachineGun->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, MachineGun, Screen);
+				if (IsIntersecting(TempRect,PlayerRect))
+				{
+					Ammo[2] += 50;
+					FloatSomeText(PlayerRect.x, PlayerRect.y, "Machinegun +50", White);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
+			case 3: //Health
+				TempRect.x = CURRENTPICKUPX;
+				TempRect.y = CURRENTPICKUPY;
+				TempRect.w = Health->w;
+				TempRect.h = Health->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Health, Screen);
+				if (IsIntersecting(TempRect,PlayerRect))
+				{
+					Damaged = true;
+					DamageDealt = -10;
+					FloatSomeText(PlayerRect.x, PlayerRect.y, "10", Green);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
 			}
 		}
 	}
@@ -127,7 +167,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		else //Teleport
 		{
 			CURRENTENEMY.Frametime++;
-			ApplySurface(CURRENTENEMY.WorldX - CameraX,CURRENTENEMY.WorldY - CameraY,TeleportSheet,Screen,&TeleportClips[Frame % 2]);
+			ApplySurface(CURRENTENEMY.WorldX - CameraX,CURRENTENEMY.WorldY - CameraY,TeleportSheet,Screen,&TeleportClips[CURRENTENEMY.Frame % 2]);
 			if (CURRENTENEMY.Frametime > 15)
 			{
 				CURRENTENEMY.Frame++;
@@ -142,7 +182,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Temp.Type = CURRENTENEMY.Health;
 					if (Temp.Type == 1) //suicide
 					{
-						Temp.Health = 140;
+						Temp.Health = 50;
 						Temp.Speed = rand() % 4 + 6;
 						Temp.CollisionRect.w = Suicide->w;
 						Temp.CollisionRect.h = Suicide->h;
@@ -158,9 +198,32 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					else if (Temp.Type == 3) //Beheaded Serious Sam guy
 					{
 						Temp.Health = 120;
-						Temp.Speed = rand() % 4 + 10;
+						Temp.Speed = rand() % 4 + 4;
 						Temp.CollisionRect.w = Serious->w;
 						Temp.CollisionRect.h = Serious->h;
+						Temp.ShotCounter = 60;
+					}
+					else if (Temp.Type == 4) //SIS Boss
+					{
+						Temp.Health = 1000;
+						Temp.Speed = 5;
+						Temp.CollisionRect.w = 50;
+						Temp.CollisionRect.h = 20;
+					}
+					else if (Temp.Type == 5) //SIS Invader
+					{
+						Temp.Health = 100;
+						Temp.Speed = 7;
+						Temp.CollisionRect.w = 50;
+						Temp.CollisionRect.h = 50;
+					}
+					else if (Temp.Type == 6) //SIS Worm
+					{
+						Temp.Health = 100;
+						Temp.Speed = 4;
+						Temp.CollisionRect.w = 50;
+						Temp.CollisionRect.h = 50;
+						Temp.ShotCounter = 0;
 					}
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -186,12 +249,16 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			float XDiff;
 			float YDiff;
 			float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + XVel * (CURRENTENEMY.Speed / 4), CURRENTENEMY.WorldY + YVel * (CURRENTENEMY.Speed / 4), PlayerX, PlayerY);
-			//if (CURRENTENEMY.Speed > 9) __debugbreak();
-			GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
-			CURRENTENEMY.XVel = XDiff;
-			CURRENTENEMY.YVel = YDiff;
-			CURRENTENEMY.WorldX += XDiff;
-			CURRENTENEMY.WorldY += YDiff;
+			GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed / 2);
+			CURRENTENEMY.XVel += XDiff / 2;
+			CURRENTENEMY.YVel += YDiff / 2;
+
+			if (CURRENTENEMY.XVel > CURRENTENEMY.Speed) CURRENTENEMY.XVel = CURRENTENEMY.Speed;
+			else if (CURRENTENEMY.XVel < CURRENTENEMY.Speed * -1) CURRENTENEMY.XVel = CURRENTENEMY.Speed * -1;
+			if (CURRENTENEMY.YVel > CURRENTENEMY.Speed) CURRENTENEMY.YVel = CURRENTENEMY.Speed;
+			else if (CURRENTENEMY.YVel < CURRENTENEMY.Speed * -1) CURRENTENEMY.YVel = CURRENTENEMY.Speed * -1;
+			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Suicide, Screen);
 		}
 		else if (CURRENTENEMY.Type == 2) //Gunman
@@ -201,15 +268,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			int TempX = 0;
 			int TempY = 0;
 			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
-			if (Distance > 400 || Distance < 300)
+			if (Distance > 500 || Distance < 250)
 			{
+				CURRENTENEMY.Angle = 0;
 				float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
 				GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
-				if (Distance < 300)
+				if (Distance < 200)
 				{
 					XDiff *= -2;
 					YDiff *= -2;
 				}
+			}
+			else
+			{
+				if (CURRENTENEMY.Angle == 0) CURRENTENEMY.Angle = rand () % 359 + 1;
+				GetXYRatio(&XDiff, &YDiff, CURRENTENEMY.Angle, CURRENTENEMY.Speed);
 			}
 			
 			TempX = CURRENTENEMY.WorldX + XDiff;
@@ -224,7 +297,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				SDL_Rect Fu = CURRENTENEMY.CollisionRect;
 				SDL_Rect ck = RectVector.at(x);
-				if (IsIntersecting(Fu,ck))
+				if (IsIntersecting(Fu,ck)) //lol
 				{
 					XDiff = 0;
 					YDiff = 0;
@@ -279,18 +352,176 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			}
 		}
 
+		else if (CURRENTENEMY.Type == 4) //SIS Boss
+		{
+			CURRENTENEMY.ShotCounter++;
+			if (CURRENTENEMY.ShotCounter == 90) {CURRENTENEMY.Shoot(0,0,2,0,0); CURRENTENEMY.ShotCounter = 60; }
+			if (CURRENTENEMY.YVel + CURRENTENEMY.WorldY < PlayerY) 
+			{
+				if (CURRENTENEMY.YVel + 5 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
+				else CURRENTENEMY.YVel += 5;
+			}
+
+			else if (CURRENTENEMY.YVel + CURRENTENEMY.WorldY> PlayerY)
+			{
+				if (CURRENTENEMY.YVel - 5 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
+				else CURRENTENEMY.YVel -= 5;
+			}
+
+			if (CURRENTENEMY.XVel + CURRENTENEMY.WorldX< (PlayerX - 300)) 
+			{
+				if (CURRENTENEMY.XVel + 10 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = CURRENTENEMY.WorldX - PlayerX - 300;
+				else CURRENTENEMY.XVel += 10;
+			}
+
+			if (CURRENTENEMY.XVel + CURRENTENEMY.WorldX > (PlayerX - 300)) 
+			{
+				if (CURRENTENEMY.XVel - 10 + CURRENTENEMY.WorldX < (PlayerX - 300)) CURRENTENEMY.XVel = PlayerX - 300 - CURRENTENEMY.WorldX;
+				else CURRENTENEMY.XVel -= 10;
+			}
+			
+			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+			CURRENTENEMY.Frametime++;
+			
+			if (CURRENTENEMY.Frametime > 10)
+			{
+				CURRENTENEMY.Frame++;
+				CURRENTENEMY.Frametime = 0;
+				if (CURRENTENEMY.Frame > 2) CURRENTENEMY.Frame = 0;
+			}
+			SDL_Surface *ApplyThis = NULL;
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Ship, ApplyThis, &ShipFrames[CURRENTENEMY.Frame]);
+			ApplyThis = rotozoomSurface(ApplyThis,CURRENTENEMY.YVel,1,0);
+
+			SDL_Rect BossHeight;
+			BossHeight.x = 200;
+			BossHeight.y = 10;
+			BossHeight.h = 20;
+			BossHeight.w = CURRENTENEMY.Health / 4;
+
+			SDL_FillRect(Screen, &BossHeight, 0x00FF00);
+
+			Message = TTF_RenderText_Solid(SysSmall,"SIS: ",Green);
+			ApplySurface(200 - (Message->w), 10, Message, Screen);
+		}
+
+		else if (CURRENTENEMY.Type == 5) //SIS Invader
+		{
+			CURRENTENEMY.WorldX -= CURRENTENEMY.Speed;
+			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX;
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect) && Invincible == false)
+			{
+				CURRENTENEMY.Health = 0;
+				Damaged = true;
+				DamageDealt = 40;
+			}
+
+			else if (CURRENTENEMY.WorldX < 0) CURRENTENEMY.Health = 0;
+
+			CURRENTENEMY.Frametime++;
+			
+			if (CURRENTENEMY.Frametime > 30)
+			{
+				CURRENTENEMY.Frame = 1 - CURRENTENEMY.Frame;
+				CURRENTENEMY.Frametime = 0;
+			}
+
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Invader, Screen, &InvaderFrames[CURRENTENEMY.Frame]);
+		}
+
+		else if (CURRENTENEMY.Type == 6) //SIS Worm
+		{
+			CURRENTENEMY.WorldX += CURRENTENEMY.Speed;
+			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX;
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect) && Invincible == false)
+			{
+				CURRENTENEMY.Health = 0;
+				Damaged = true;
+				DamageDealt = 30;
+			}
+
+			else if (CURRENTENEMY.WorldX > LevelWidth) CURRENTENEMY.Health = 0;
+
+			CURRENTENEMY.Frametime++;
+			
+			if (CURRENTENEMY.Frametime > 30)
+			{
+				CURRENTENEMY.Frame = 1 - CURRENTENEMY.Frame;
+				CURRENTENEMY.Frametime = 0;
+			}
+
+			CURRENTENEMY.ShotCounter++;
+			if (CURRENTENEMY.ShotCounter > 60)
+			{
+				CURRENTENEMY.ShotCounter = 0;
+				CURRENTENEMY.Shoot(0,0,2,0,0);
+			}
+
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Worm, Screen, &InvaderFrames[CURRENTENEMY.Frame]);
+		}
+
 		if (CURRENTENEMY.Health <= 0) 
 		{
-			int tni = rand() % 100 + 1;
-			if (tni < 20)
+			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
 			{
-				Pickup pukciP;
-				pukciP.WorldX = CURRENTENEMY.WorldX;
-				pukciP.WorldY = CURRENTENEMY.WorldY;
-				pukciP.Type = 1;
-				PickupVector.push_back(pukciP);
+
+				int tni = rand() % 100 + 1; //tni = int backwards
+
+				if (tni > 95)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 3;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni < 45 &&CURRENTENEMY.Type == 1)
+				{
+					Pickup pukciP; //pukciP = Pickup backwards
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 1;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni < 25 && CURRENTENEMY.Type == 2)
+				{
+					Pickup pukciP; //pukciP = Pickup backwards
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 2;
+					PickupVector.push_back(pukciP);
+				}
+				CreateDebris(5,6,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 4,CURRENTENEMY.YVel * 4,0xFFFFFF);
+
+				if (CURRENTENEMY.Type == 3) //Explosion
+				{
+					EnemyProjectile PushThis;
+					PushThis.WorldX = CURRENTENEMY.WorldX;
+					PushThis.WorldY = CURRENTENEMY.WorldY;
+					PushThis.Type = 1;
+					PushThis.CollisionRect.w = 3;
+					PushThis.CollisionRect.h = 3;
+					PushThis.Active = true;
+
+					for (int i = 0; i < 360; i += 45)
+					{
+						float ex = 0;
+						float why = 0;
+						GetXYRatio(&ex,&why,i,5);
+
+						PushThis.XVel = ex;
+						PushThis.YVel = why;
+						EnemyProjectileVector.push_back(PushThis);
+					}
+				}
 			}
-			CreateDebris(5,6,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 4,CURRENTENEMY.YVel * 4,0xFFFFFF);
+			else if (CURRENTENEMY.Type == 4) Boss = false;
+
 			EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 			Enemies--;
 		}
@@ -306,18 +537,8 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 	for (int wilk = 0; wilk < EnemyProjectileVector.size(); wilk++)
 	{
-		CURRENTENEMYPROJECTILE.WorldX += CURRENTENEMYPROJECTILE.XVel;
-		CURRENTENEMYPROJECTILE.WorldY += CURRENTENEMYPROJECTILE.YVel;
 		CURRENTENEMYPROJECTILE.CollisionRect.x = CURRENTENEMYPROJECTILE.WorldX;
 		CURRENTENEMYPROJECTILE.CollisionRect.y = CURRENTENEMYPROJECTILE.WorldY;
-
-		if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && Damaged == false)
-		{
-			Damaged = true;
-			DamageDealt = 10;
-			CURRENTENEMYPROJECTILE.Active = false;
-		}
-
 		for (int may = 0; may < LevelVector.size() && CURRENTENEMYPROJECTILE.Active == true; may++)
 		{
 			SDL_Rect TileRect;
@@ -331,14 +552,45 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				CURRENTENEMYPROJECTILE.Active = false;
 			}
 		}
-		if (CURRENTENEMYPROJECTILE.Active == false) EnemyProjectileVector.erase(EnemyProjectileVector.begin() + wilk, EnemyProjectileVector.begin() + wilk + 1);
-		else
+
+		if (CURRENTENEMYPROJECTILE.Active == true)
 		{
-			CURRENTENEMYPROJECTILE.CollisionRect.x -= CameraX;
-			CURRENTENEMYPROJECTILE.CollisionRect.y -= CameraY;
-			CURRENTENEMYPROJECTILE.CollisionRect.w = 3;
-			CURRENTENEMYPROJECTILE.CollisionRect.h = 3;
-			SDL_FillRect(Screen,&CURRENTENEMYPROJECTILE.CollisionRect,0xFF0000);
+			if (CURRENTENEMYPROJECTILE.Type == 1)
+			{
+				CURRENTENEMYPROJECTILE.WorldX += CURRENTENEMYPROJECTILE.XVel;
+				CURRENTENEMYPROJECTILE.WorldY += CURRENTENEMYPROJECTILE.YVel;
+
+				if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && Damaged == false)
+				{
+					Damaged = true;
+					DamageDealt = 10;
+					CURRENTENEMYPROJECTILE.Active = false;
+				}
+
+				if (CURRENTENEMYPROJECTILE.Active)
+				{
+					CURRENTENEMYPROJECTILE.CollisionRect.x -= CameraX;
+					CURRENTENEMYPROJECTILE.CollisionRect.y -= CameraY;
+					CURRENTENEMYPROJECTILE.CollisionRect.w = 3;
+					CURRENTENEMYPROJECTILE.CollisionRect.h = 3;
+					SDL_FillRect(Screen,&CURRENTENEMYPROJECTILE.CollisionRect,0xFFFFFF);
+				}
+			}
+			else if (CURRENTENEMYPROJECTILE.Type == 2)
+			{
+				if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && Damaged == false)
+				{
+					Damaged = true;
+					DamageDealt = 30;
+					CURRENTENEMYPROJECTILE.Active = false;
+				}
+
+				CURRENTENEMYPROJECTILE.WorldX += 15;
+				CURRENTENEMYPROJECTILE.Frametime++;
+
+				ApplySurface(CURRENTENEMYPROJECTILE.WorldX - CameraX, CURRENTENEMYPROJECTILE.WorldY - CameraY, ShipProjectile, Screen);
+			}
 		}
+		if (CURRENTENEMYPROJECTILE.Active == false) EnemyProjectileVector.erase(EnemyProjectileVector.begin() + wilk, EnemyProjectileVector.begin() + wilk + 1);
 	}
 }

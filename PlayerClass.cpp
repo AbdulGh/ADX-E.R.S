@@ -1,9 +1,10 @@
 #include"PlayerClass.h"
+#include"FloatText.h"
 #define CURRENTRECT RectVector.at(i)
 
 Player::Player()
 {
-	Health = 100;
+	Health = 100; 
 	Lives = 10;
 	Damage = 1.0f;
 	Speed = 0.5f;
@@ -37,20 +38,25 @@ void Player::Update()
 	if (InvunFrames != 0)
 	{
 		InvunFrames--;
-		if (InvunFrames == 0) Invincible = false;
-		if (InvunFrames % 10 == 0) Render = !Render;
+		if (InvunFrames == 0)
+		{
+			Invincible = false;
+			Render = true;
+		}
+		else if (InvunFrames % 5 == 0) Render = !Render;
 	}
 
-	if (Damaged == true)
+	if (Damaged == true && Invincible == false)
 	{
-		if (InvunFrames > 0) Damaged = false;
-		else
+		Damaged = false;
+		Health -= DamageDealt;
+		if (DamageDealt > 0 && InvunFrames == 0)
 		{
-			Health -= DamageDealt;
-			Damaged = false;
-			InvunFrames = 91;
+			InvunFrames = 111;
 			Invincible = true;
+			FloatSomeText(WorldX,WorldY - 20,std::to_string(static_cast<long double>(DamageDealt)),Red);
 		}
+		else if (Health > 100) Health = 100;
 	}
 
 	int TempX = 0;

@@ -13,11 +13,13 @@ public:
 	int Health;
 	int Type;
 	int Frame;
+	int Angle;
 	int Frametime;
 	int ShotCounter;
 	int Speed;
-	int XVel;
-	int YVel;
+	float XVel;
+	float YVel;
+	int MaxSpeed;
 
 	SDL_Rect CollisionRect;
 
@@ -35,6 +37,8 @@ public:
 	SDL_Rect CollisionRect;
 	int XVel;
 	int YVel;
+	int Frame;
+	int Frametime;
 	bool Active;
 };
 
