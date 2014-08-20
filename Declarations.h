@@ -6,6 +6,7 @@
 #include<iostream>
 #include<vector>
 #include<string>
+#include<string.h>
 #include<sstream>
 #include "SDL.h"
 #include "SDL_image.h"
@@ -56,6 +57,7 @@ extern SDL_Rect InvaderFrames[2];
 extern bool Damaged;
 extern bool Invincible;
 extern bool Boss;
+extern bool Shake;
 
 extern int XChange;
 extern int YChange;
@@ -65,6 +67,10 @@ extern int Frame;
 extern int Frametime;
 extern int DamageDealt;
 extern int Enemies;
+extern int Temp1;
+extern int Temp2;
+extern int Dur;
+extern int Mag;
 
 extern Uint8 MouseStates;
 
@@ -85,6 +91,16 @@ extern TTF_Font *StartBig;
 extern TTF_Font *Sys;
 extern TTF_Font *SysSmall;
 extern TTF_Font *Small;
+extern TTF_Font *SmallSmall;
+
+extern Mix_Music *SmashSong;
+
+extern Mix_Chunk *ShotgunFire;
+extern Mix_Chunk *ShotgunPump;
+extern Mix_Chunk *MachineGunFire;
+extern Mix_Chunk *Pistol;
+extern Mix_Chunk *Empty;
+extern Mix_Chunk *SmashDeath;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
 extern Gamestate State;
@@ -92,6 +108,7 @@ extern Gamestate State;
 SDL_Surface *LoadImage( std::string filename );
 bool IsIntersecting(SDL_Rect Rect1, SDL_Rect Rect2);
 bool Init();
+bool InBetween (int Min, int Value, int Max);
 void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip = NULL );
 bool Load();
 void ClearScreen();

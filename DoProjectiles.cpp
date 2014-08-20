@@ -40,8 +40,7 @@ void DoProjectiles(int CameraX, int CameraY)
 					TempRect.h = LevelVector.at(wilkins).Height;
 					if (IsIntersecting(TempRect, CURRENTPROJECTILE.ProjectileRect))
 					{
-						
-						if (CURRENTPROJECTILE.Type == 1)
+						if (CURRENTPROJECTILE.Type == 1 || CURRENTPROJECTILE.Type == 2)
 						{
 							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
 							Erase = true; 

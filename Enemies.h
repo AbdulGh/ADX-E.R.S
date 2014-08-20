@@ -12,6 +12,7 @@ public:
 	int WorldY;
 	int Health;
 	int Type;
+	int Timer;
 	int Frame;
 	int Angle;
 	int Frametime;
@@ -52,6 +53,7 @@ public:
 
 extern std::vector <Enemy> EnemyVector;
 extern std::vector <EnemyProjectile> EnemyProjectileVector;
+extern std::vector <Pickup> PickupVector;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);

@@ -46,17 +46,23 @@ void Player::Update()
 		else if (InvunFrames % 5 == 0) Render = !Render;
 	}
 
-	if (Damaged == true && Invincible == false)
+	if (Damaged == true)
 	{
 		Damaged = false;
-		Health -= DamageDealt;
-		if (DamageDealt > 0 && InvunFrames == 0)
+		if (Invincible == false)
 		{
-			InvunFrames = 111;
-			Invincible = true;
-			FloatSomeText(WorldX,WorldY - 20,std::to_string(static_cast<long double>(DamageDealt)),Red);
+			Health -= DamageDealt;
+			if (DamageDealt > 0 && InvunFrames == 0)
+			{
+				InvunFrames = 111;
+				Invincible = true;
+				FloatSomeText(WorldX,WorldY - 20,std::to_string(static_cast<long double>(DamageDealt)),Red);
+				Shake = true;
+				Mag = 30;
+				Dur = 10;
+			}
+			else if (Health > 100) Health = 100;
 		}
-		else if (Health > 100) Health = 100;
 	}
 
 	int TempX = 0;
@@ -109,23 +115,41 @@ void Player::Update()
 		PlayerRect.y = TempY - Camera.y;
 		PlayerRect.w = CurrentSprite->w;
 		PlayerRect.h = CurrentSprite->h;
+
 		for (int i = 0; i < RectVector.size(); i++)
 		{
 			if (IsIntersecting(CURRENTRECT,PlayerRect))
 			{
-				if (PlayerRect.y > CURRENTRECT.y && PlayerRect.y < CURRENTRECT.y +  CURRENTRECT.h) YVel = 0;
-				else if (PlayerRect.y + PlayerRect.h > CURRENTRECT.y && PlayerRect.y + PlayerRect.h < CURRENTRECT.y +  CURRENTRECT.h) YVel = 0;
-				TempY = WorldY + YVel;
-				PlayerRect.y = TempY - Camera.y;
+				if(InBetween(CURRENTRECT.x, PlayerRect.x, CURRENTRECT.x + CURRENTRECT.w) && !InBetween(CURRENTRECT.x, PlayerRect.x + PlayerRect.w, CURRENTRECT.x + CURRENTRECT.w))
+				{
+					PlayerRect.x += CURRENTRECT.x + CURRENTRECT.w - PlayerRect.x + 1;
+					XVel = 0;
+				}
 
-				if (PlayerRect.x > CURRENTRECT.x && PlayerRect.x < CURRENTRECT.x +  CURRENTRECT.w) XVel = 0;
-				else if (PlayerRect.x + PlayerRect.w > CURRENTRECT.x && PlayerRect.x + PlayerRect.w < CURRENTRECT.x +  CURRENTRECT.w) XVel = 0;
-				TempX = WorldX + XVel;
-				PlayerRect.x = TempX - Camera.x;
+				else if (!InBetween(CURRENTRECT.x, PlayerRect.x, CURRENTRECT.x + CURRENTRECT.w) && InBetween(CURRENTRECT.x, PlayerRect.x + PlayerRect.w, CURRENTRECT.x + CURRENTRECT.w))
+				{
+					PlayerRect.x -= PlayerRect.x + PlayerRect.w - (CURRENTRECT.x) + 1;
+					XVel = 0;
+				}
+
+				if(IsIntersecting(CURRENTRECT,PlayerRect))
+				{
+					if(InBetween(CURRENTRECT.y, PlayerRect.y, CURRENTRECT.y + CURRENTRECT.h) && !InBetween(CURRENTRECT.y, PlayerRect.y + PlayerRect.h, CURRENTRECT.y + CURRENTRECT.h))
+					{
+						PlayerRect.y += CURRENTRECT.y + CURRENTRECT.h - PlayerRect.y + 1;
+						YVel = 0;
+					}
+
+					else if (!InBetween(CURRENTRECT.y, PlayerRect.y, CURRENTRECT.y + CURRENTRECT.h) && InBetween(CURRENTRECT.y, PlayerRect.y + PlayerRect.h, CURRENTRECT.y + CURRENTRECT.h))
+					{
+						PlayerRect.y -= PlayerRect.y + PlayerRect.h - CURRENTRECT.y + 1;
+						YVel = 0;
+					}
+				}
 			}
 		}
-		WorldX += XVel;
-		WorldY += YVel;
+		WorldX = PlayerRect.x + Camera.x + 1;
+		WorldY = PlayerRect.y + Camera.y + 1;
 	}
 	if (Render == true) ApplySurface(WorldX - Camera.x, WorldY - Camera.y, CurrentSprite, Screen);
 }

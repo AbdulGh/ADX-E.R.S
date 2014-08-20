@@ -2,7 +2,7 @@
 #include"TileClass.h"
 #define CURRENTTILE LevelVector.at(i)
 #define CURRENTRECT RectVector.at(i)
-
+	
 void CreateTile(int ex, int y, int w, int h)
 {
 	Tile PushToVectorPls;

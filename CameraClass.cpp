@@ -30,9 +30,9 @@ void Viewport::Update()
 	float Distance = (XDiff * XDiff) + (YDiff * YDiff);
 	if (Distance > 5)
 	{
-		if (abs(XDiff) > 200) x += 50 * XDiff / abs(XDiff);
+		if (abs(XDiff) > 100) x += 30 * XDiff / abs(XDiff);
 		else x += XDiff / 4;
-		if (abs(YDiff) > 200) y += 50 * YDiff / abs(YDiff);
+		if (abs(YDiff) > 100) y += 30 * YDiff / abs(YDiff);
 		else y += YDiff / 4;
 	}
 }

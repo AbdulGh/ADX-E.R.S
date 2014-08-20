@@ -22,6 +22,7 @@ int YSpawn = 0;
 int LevelProgress = 0;
 int x = 0;
 int y = 0;
+int Number = 0;
 Timer SpareTimer;
 
 std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun"};
@@ -32,6 +33,17 @@ SDL_Rect CharacterRect;
 SDL_Rect HealthRect;
 
 std::vector <int> SpawnVector;
+
+void CheckShake()
+{
+	if (Shake == true)
+	{
+		Camera.x += (rand() % Mag) - Mag/2;
+		Camera.y += (rand() % Mag) - Mag/2;
+		Dur--;
+		if (Dur == 0) Shake = false;
+	}
+}
 
 void GetRandomDeathQuote()
 {
@@ -151,6 +163,7 @@ void DoThings()
 
 	Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
 	Camera.Update();
+	CheckShake();
 	DoTiles(Camera.x,Camera.y);
 	DoMouse(&x,&y);
 	DoDebris(Camera.x,Camera.y,Screen);
@@ -174,7 +187,7 @@ void DoThings()
 	ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
 
 	SpareStream.str("");
-	if (CurrentSelection == 1) SpareStream << "Pistol: Infinite";
+	if (CurrentSelection == 1) SpareStream << "Mining Laser: Infinite";
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
 	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 	ApplySurface(500,HealthRect.y - 6,Message,Screen);
@@ -209,6 +222,7 @@ void HandleEvents()
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && CurrentSelection == 1)
 		{
+			Mix_PlayChannel(-1,Pistol,0);
 			int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 			float XRatio, YRatio;
 			GetXYRatio(&XRatio,&YRatio,Angle,20);
@@ -220,6 +234,7 @@ void HandleEvents()
 	{
 		if (CurrentSelection == 1)
 		{
+			Mix_PlayChannel(-1,Pistol,0);
 			int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 			float XRatio, YRatio;
 			GetXYRatio(&XRatio,&YRatio,Angle,20);
@@ -227,27 +242,38 @@ void HandleEvents()
 			ShotTimer = 50;
 		}
 
-		else if (CurrentSelection == 2 && Ammo[1] != 0)
+		else if (CurrentSelection == 2)
 		{
-			Ammo[1]--;
-			int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
-			float XRatio, YRatio;
-			for (int i = 0; i <= 8; i++)
+			if (Ammo[1] == 0) Mix_PlayChannel(-1,Empty,0);
+			else
 			{
-				GetXYRatio(&XRatio,&YRatio,Angle + rand () % 4 - i, 19);
-				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
+				Ammo[1]--;
+				Mix_PlayChannel(-1,ShotgunFire,0);
+				Mix_PlayChannel(-1,ShotgunPump,0);
+				int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
+				float XRatio, YRatio;
+				for (int i = 0; i <= 8; i++)
+				{
+					GetXYRatio(&XRatio,&YRatio,Angle + rand () % 4 - i, 19);
+					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
+				}
+				ShotTimer = 70;
 			}
-			ShotTimer = 70;
 		}
 
 		else if (CurrentSelection == 3 && Ammo[2] != 0)
 		{
-			Ammo[2]--;
-			int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
-			float XRatio, YRatio;
-			GetXYRatio(&XRatio,&YRatio,Angle,20);
-			CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
-			ShotTimer = 10;
+			if (Ammo[2] == 0) Mix_PlayChannel(-1,Empty,0);
+			else
+			{
+				Ammo[2]--;
+				Mix_PlayChannel(-1,MachineGunFire,0);
+				int Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y) + (rand() % 8) - 4;
+				float XRatio, YRatio;
+				GetXYRatio(&XRatio,&YRatio,Angle,30);
+				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,2);
+				ShotTimer = 10;
+			}
 		}
 	}
 }
@@ -571,10 +597,6 @@ void Game()
 			SpawnVector.push_back(1950);
 			SpawnVector.push_back(3);
 
-			SpawnVector.push_back(1950);
-			SpawnVector.push_back(1950);
-			SpawnVector.push_back(3);
-
 			SpawnEnemies(SpawnVector);
 
 			SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
@@ -640,6 +662,18 @@ void Game()
 			FadeText("I've invited some old friends to the party.");
 			FadeText("I think you may have actually met them before!");
 
+			Pickup PushThis;
+			PushThis.Type = 1;
+			PushThis.WorldX = 500;
+			PushThis.WorldY = 500;
+
+			for (int i = 0; i <= 2; i++)
+			{
+				PushThis.Type = 1 + i;
+				PushThis.WorldX = 500 + 100 * i;
+				PickupVector.push_back(PushThis);
+			}
+
 			SpareTimer.start();
 		}
 
@@ -651,13 +685,14 @@ void Game()
 			SpawnVector.push_back(4);
 			Boss = true;
 			SpawnEnemies(SpawnVector);
+			Mix_PlayMusic(SmashSong,-1);
 		}
 
 		else if (LevelProgress == 6)
 		{
-			int Number = rand () % 99 + 1;
-
-			if (Number < 3)
+			Number++;
+			if (Number == 2147483646) Number = 0;
+			if (Number % 35 == 0)
 			{
 				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
 				SpawnVector.push_back(1950);
@@ -666,7 +701,7 @@ void Game()
 				SpawnEnemies(SpawnVector);
 			}
 
-			else if (Number > 97)
+			else if (Number % 30 == 0)
 			{
 				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
 				SpawnVector.push_back(50);
@@ -676,6 +711,87 @@ void Game()
 			}
 
 			if (Boss == false) LevelProgress = 7;
+		}
+
+		else if (LevelProgress == 7)
+		{
+			for (int i = 0; i < EnemyVector.size(); i++) EnemyVector.at(i).Health = 0;
+			LevelProgress = 8;
+		}
+		
+		else if (LevelProgress == 8)
+		{
+			float Vel = 0.01;
+			Shake = true;
+			Dur = 20;
+			Mag = 20;
+
+			Mix_HaltMusic();
+
+			while (Temp1 < LevelWidth - 70)
+			{
+				Camera.MoveViewport(Temp1 - ScreenWidth/2, Temp2 - ScreenHeight/2);
+				Camera.Update();
+				CheckShake();
+				DoDebris(Camera.x,Camera.y,Screen);
+				DoTiles(Camera.x,Camera.y);
+				DoMouse(&x,&y);
+				Character.XVel = 0;
+				Character.YVel = 0;
+				Character.Update();
+				DoPickups(Camera.x,Camera.y,CharacterRect);
+				DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
+				DoEnemies(Camera.x,Camera.y,0,0,CharacterRect, 0, 0);
+				DoFloat(Camera.x,Camera.y);
+				DoProjectiles(Camera.x,Camera.y);
+
+				ApplySurface(Temp1 - Camera.x, Temp2 - Camera.y, Ship, Screen);
+
+				Temp1 += Vel;
+				if (Vel < 10) Vel *= 1.1;
+
+				SDL_Flip(Screen);
+				SDL_Delay(10);
+			}
+
+			Shake = true;
+			Dur = 20;
+			Mag = 30;
+
+			CreateDebris(7,7,LevelWidth - 20,Temp2,-10,0,0xFFFFFF);
+
+			LevelVector.erase(LevelVector.begin() + 2);
+
+			Tile PushThis;
+			PushThis.Height = Temp2 - 50;
+			PushThis.Width = 20;
+			PushThis.WorldX = 1480;
+			PushThis.WorldY = 0;
+
+			LevelVector.push_back(PushThis);
+
+			PushThis.Height = LevelHeight - (Temp2 + 50);
+			PushThis.WorldY = Temp2 + 50;
+
+			LevelVector.push_back(PushThis);
+
+			SpareTimer.start();
+
+			LevelProgress = 9;
+
+			Mix_PlayChannel(0,SmashDeath,0);
+		}
+
+		else if (LevelProgress == 9)
+		{
+			Character.XVel = 0;
+			Character.YVel = 0;
+			Camera.MoveViewport(LevelWidth - ScreenWidth, Temp2 - ScreenHeight/2);
+			Camera.Update();
+			if (SpareTimer.get_ticks() > 1200) 
+			{
+				LevelProgress = 10;
+			}
 		}
 
 

@@ -10,6 +10,7 @@ const int ScreenHeight = 768;
 bool Damaged = false;
 bool Invincible = false;
 bool Boss = false;
+bool Shake = 0;
 
 int XChange = 0;
 int YChange = 0;
@@ -19,6 +20,10 @@ int Frame = 0;
 int Frametime = 0;
 int DamageDealt = 0;
 int Enemies = 0;
+int Temp1 = 0;
+int Temp2 = 0;
+int Dur = 0;
+int Mag = 0;
 
 Uint8 MouseStates;
 
@@ -60,6 +65,7 @@ TTF_Font *StartBig = NULL;
 TTF_Font *Sys = NULL;
 TTF_Font *SysSmall = NULL;
 TTF_Font *Small = NULL;
+TTF_Font *SmallSmall = NULL;
 
 SDL_Rect CursorClips[2];
 SDL_Rect TeleportClips[2];
@@ -67,6 +73,15 @@ SDL_Rect WormFrames[2];
 SDL_Rect AmmoFrames[2];
 SDL_Rect ShipFrames[3];
 SDL_Rect InvaderFrames[2];
+
+Mix_Chunk *ShotgunFire = NULL;
+Mix_Chunk *ShotgunPump = NULL;
+Mix_Chunk *MachineGunFire = NULL;
+Mix_Chunk *Pistol = NULL;
+Mix_Chunk *Empty = NULL;
+Mix_Chunk *SmashDeath = NULL;
+
+Mix_Music *SmashSong = NULL;
 
 void SetClips()
 {
@@ -179,6 +194,7 @@ bool Init()
 	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
+	Mix_AllocateChannels(16);
     SDL_WM_SetCaption("it worked", NULL);
     SDL_EnableUNICODE(SDL_ENABLE);
     return true;
@@ -199,10 +215,20 @@ bool Load()
 {
 	Start = TTF_OpenFont("Resources/Fonts/Start.ttf",40);
 	Small = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",14);
+	SmallSmall = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",12);
 	StartBig = TTF_OpenFont("Resources/Fonts/Start.ttf",128);
 	Sys = TTF_OpenFont("Resources/Fonts/Sys.ttf",160);
 	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf",32);
 	if (Start == NULL || Sys == NULL || Small == NULL) return false;
+
+	ShotgunPump = Mix_LoadWAV("Resources/Sounds/Pump.wav");
+	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Shotgun.wav");
+	MachineGunFire = Mix_LoadWAV("Resources/Sounds/MachineGun.wav");
+	Pistol = Mix_LoadWAV("Resources/Sounds/Pistol.wav");
+	Empty = Mix_LoadWAV("Resources/Sounds/Empty.ogg");
+	SmashDeath = Mix_LoadWAV("Resources/Sounds/SmashDeath.wav");
+
+	SmashSong = Mix_LoadMUS("Resources/Sounds/Smash.ogg");
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	Serious = LoadImage("Resources/Images/Serious.png");

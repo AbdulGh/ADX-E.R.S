@@ -5,6 +5,12 @@
 #include"FloatText.h"
 #include<time.h>
 
+//Number of sound effects
+#define NUMBEROFDEATHS 5
+#define NUMBEROFTAUNTS 10
+#define NUMBEROFDAMAGE 9
+
+
 std::vector <Pickup> PickupVector;
 std::vector <Enemy> EnemyVector;
 std::vector <EnemyProjectile> EnemyProjectileVector;
@@ -17,6 +23,7 @@ Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 	Frame = 0;
 	Frametime = 0;
 	ShotCounter = 0;
+	Timer = 0;
 	XVel = 0;
 	YVel = 0;
 }
@@ -142,6 +149,14 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 #define CURRENTENEMY EnemyVector.at(i)
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel)
 {
+	if (EnemyVector.size() != 0 && rand() % 400 == 42 && Boss == false)
+	{
+		SpareStream.str("");
+		SpareStream << "Resources/Sounds/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
+		Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
+		Mix_PlayChannel(-1,PlayThis,0);
+	}
+
 	for (int i = 0; i < EnemyVector.size(); i++)
 	{
 		CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - CameraX;
@@ -155,11 +170,31 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc);
-					CURRENTENEMY.Health -= 30;
-
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).XInc / 2;
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).YInc / 2;
+
+					if (rand() % 100 < 8)
+					{
+						SpareStream.str("");
+						SpareStream << "Resources/Sounds/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".wav";
+						
+						Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
+
+						Mix_PlayChannel(-1,PlayThis,0);
+					}
+
+					switch(ProjectileVector.at(x).Type)
+					{
+				case 1:
+					CURRENTENEMY.Health -= 30;
+					FloatSomeText(CURRENTENEMY.WorldX + 3, CURRENTENEMY.WorldY - 5, "30", Red, 2);
 					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
+					break;
+				case 2:
+					CURRENTENEMY.Health -= 40;
+					FloatSomeText(CURRENTENEMY.WorldX + 3, CURRENTENEMY.WorldY - 5, "40", Red, 2);
+					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
+					}
 				}
 			}
 		}
@@ -182,7 +217,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Temp.Type = CURRENTENEMY.Health;
 					if (Temp.Type == 1) //suicide
 					{
-						Temp.Health = 50;
+						Temp.Health = 80;
 						Temp.Speed = rand() % 4 + 6;
 						Temp.CollisionRect.w = Suicide->w;
 						Temp.CollisionRect.h = Suicide->h;
@@ -209,6 +244,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
+						Boss = true;
 					}
 					else if (Temp.Type == 5) //SIS Invader
 					{
@@ -231,6 +267,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 			}
 		}
+
 		if (CURRENTENEMY.Type == 1) //Suicide
 		{
 			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
@@ -263,12 +300,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		}
 		else if (CURRENTENEMY.Type == 2) //Gunman
 		{
+			if (CURRENTENEMY.Timer > 0) CURRENTENEMY.Timer--;
 			float XDiff = 0;
 			float YDiff = 0;
 			int TempX = 0;
 			int TempY = 0;
 			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
-			if (Distance > 500 || Distance < 250)
+			if ((Distance > 500 || Distance < 250) && CURRENTENEMY.Timer == 0)
 			{
 				CURRENTENEMY.Angle = 0;
 				float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
@@ -281,7 +319,11 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			}
 			else
 			{
-				if (CURRENTENEMY.Angle == 0) CURRENTENEMY.Angle = rand () % 359 + 1;
+				if (CURRENTENEMY.Angle == 0 && CURRENTENEMY.Timer == 0) 
+				{
+					CURRENTENEMY.Angle = rand () % 359 + 1;
+					CURRENTENEMY.Timer = 20;
+				}
 				GetXYRatio(&XDiff, &YDiff, CURRENTENEMY.Angle, CURRENTENEMY.Speed);
 			}
 			
@@ -356,31 +398,37 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			CURRENTENEMY.ShotCounter++;
 			if (CURRENTENEMY.ShotCounter == 90) {CURRENTENEMY.Shoot(0,0,2,0,0); CURRENTENEMY.ShotCounter = 60; }
-			if (CURRENTENEMY.YVel + CURRENTENEMY.WorldY < PlayerY) 
+			if (CURRENTENEMY.WorldY < PlayerY) 
 			{
-				if (CURRENTENEMY.YVel + 5 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
-				else CURRENTENEMY.YVel += 5;
+				if (CURRENTENEMY.YVel + 0.3 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
+				else CURRENTENEMY.YVel += 0.3;
 			}
 
-			else if (CURRENTENEMY.YVel + CURRENTENEMY.WorldY> PlayerY)
+			else if (CURRENTENEMY.WorldY> PlayerY)
 			{
-				if (CURRENTENEMY.YVel - 5 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
-				else CURRENTENEMY.YVel -= 5;
+				if (CURRENTENEMY.YVel - 0.3 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
+				else CURRENTENEMY.YVel -= 0.3;
 			}
 
-			if (CURRENTENEMY.XVel + CURRENTENEMY.WorldX< (PlayerX - 300)) 
+			if (CURRENTENEMY.WorldX < (PlayerX - 300)) 
 			{
-				if (CURRENTENEMY.XVel + 10 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = CURRENTENEMY.WorldX - PlayerX - 300;
-				else CURRENTENEMY.XVel += 10;
+				if (CURRENTENEMY.XVel + 1 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = 0;
+				else CURRENTENEMY.XVel += 1;
 			}
 
-			if (CURRENTENEMY.XVel + CURRENTENEMY.WorldX > (PlayerX - 300)) 
+			if (CURRENTENEMY.WorldX > (PlayerX - 300)) 
 			{
-				if (CURRENTENEMY.XVel - 10 + CURRENTENEMY.WorldX < (PlayerX - 300)) CURRENTENEMY.XVel = PlayerX - 300 - CURRENTENEMY.WorldX;
-				else CURRENTENEMY.XVel -= 10;
+				if (CURRENTENEMY.XVel - 1 + CURRENTENEMY.WorldX < (PlayerX - 300)) CURRENTENEMY.XVel = 0;
+				else CURRENTENEMY.XVel -= 1;
 			}
 			
+			if (CURRENTENEMY.XVel > 5) CURRENTENEMY.XVel = 5;
+			else if (CURRENTENEMY.XVel < -5) CURRENTENEMY.XVel = -5;
+			if (CURRENTENEMY.YVel > 5) CURRENTENEMY.YVel = 5;
+			else if (CURRENTENEMY.YVel < -5) CURRENTENEMY.YVel = -5;
+
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+			if (CURRENTENEMY.WorldX < 20) CURRENTENEMY.WorldX = 20;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 			CURRENTENEMY.Frametime++;
 			
@@ -390,10 +438,12 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Frametime = 0;
 				if (CURRENTENEMY.Frame > 2) CURRENTENEMY.Frame = 0;
 			}
-			SDL_Surface *ApplyThis = NULL;
-			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Ship, ApplyThis, &ShipFrames[CURRENTENEMY.Frame]);
-			ApplyThis = rotozoomSurface(ApplyThis,CURRENTENEMY.YVel,1,0);
-
+			SDL_Surface *ApplyThis = Ship;
+			ApplyThis->w = 50;
+			ApplyThis->h = 20;
+			ApplySurface(0, 0, Ship, ApplyThis, &ShipFrames[CURRENTENEMY.Frame]);
+			ApplyThis = rotozoomSurface(ApplyThis,CURRENTENEMY.YVel * 2,1,0);
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, ApplyThis, Screen);
 			SDL_Rect BossHeight;
 			BossHeight.x = 200;
 			BossHeight.y = 10;
@@ -479,6 +529,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					PickupVector.push_back(pukciP);
 				}
 
+				if (tni <= 20)
+				{
+					SpareStream.str("");
+					SpareStream << "Resources/Sounds/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
+					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
+					Mix_PlayChannel(-1,PlayThis,0);
+				}
+
 				else if (tni < 45 &&CURRENTENEMY.Type == 1)
 				{
 					Pickup pukciP; //pukciP = Pickup backwards
@@ -520,7 +578,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					}
 				}
 			}
-			else if (CURRENTENEMY.Type == 4) Boss = false;
+
+			if (CURRENTENEMY.Type == 4) 
+			{
+				Boss = false;
+				Temp1 = CURRENTENEMY.WorldX;
+				Temp2 = CURRENTENEMY.WorldY;
+			}
 
 			EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 			Enemies--;
@@ -585,7 +649,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 					CURRENTENEMYPROJECTILE.Active = false;
 				}
 
-				CURRENTENEMYPROJECTILE.WorldX += 15;
+				CURRENTENEMYPROJECTILE.WorldX += 10;
 				CURRENTENEMYPROJECTILE.Frametime++;
 
 				ApplySurface(CURRENTENEMYPROJECTILE.WorldX - CameraX, CURRENTENEMYPROJECTILE.WorldY - CameraY, ShipProjectile, Screen);
