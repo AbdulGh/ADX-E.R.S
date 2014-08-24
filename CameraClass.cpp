@@ -1,10 +1,10 @@
 #include"CameraClass.h"
+#include"GetResolution.h"
 #include<math.h>
 
 Viewport::Viewport()
 {
-	ScreenWidth = 1366;
-	ScreenHeight = 768;
+	GetDesktopResolution(ScreenWidth,ScreenHeight);
 	TargetX = 0;
 	TargetY = 0;
 	x = 0;

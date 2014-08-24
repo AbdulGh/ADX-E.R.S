@@ -23,8 +23,8 @@
 
 extern SDL_Event event;
 
-extern const int ScreenWidth;
-extern const int ScreenHeight;
+extern int ScreenWidth;
+extern int ScreenHeight;
 
 extern SDL_Surface *Screen;
 extern SDL_Surface *Gunman;
@@ -41,6 +41,8 @@ extern SDL_Surface *Worm;
 extern SDL_Surface *Invader;
 extern SDL_Surface *MachineGun;
 extern SDL_Surface *Health;
+extern SDL_Surface *Win;
+extern SDL_Surface *Fail;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

@@ -92,8 +92,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Shotgun, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[1] += 10;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Shotgun +10", White);
+					Ammo[1] += 5;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Shotgun +5", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -105,8 +105,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, MachineGun, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[2] += 50;
-					FloatSomeText(PlayerRect.x, PlayerRect.y, "Machinegun +50", White);
+					Ammo[2] += 30;
+					FloatSomeText(PlayerRect.x, PlayerRect.y, "Machinegun +30", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -149,7 +149,7 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 #define CURRENTENEMY EnemyVector.at(i)
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel)
 {
-	if (EnemyVector.size() != 0 && rand() % 400 == 42 && Boss == false)
+	if (EnemyVector.size() != 0 && rand() % 850 == 42 && Boss == false)
 	{
 		SpareStream.str("");
 		SpareStream << "Resources/Sounds/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
@@ -173,7 +173,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).XInc / 2;
 					CURRENTENEMY.WorldX += ProjectileVector.at(x).YInc / 2;
 
-					if (rand() % 100 < 8)
+					if (rand() % 140 < 7)
 					{
 						SpareStream.str("");
 						SpareStream << "Resources/Sounds/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".wav";
@@ -240,7 +240,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					}
 					else if (Temp.Type == 4) //SIS Boss
 					{
-						Temp.Health = 1000;
+						Temp.Health = 1500;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
@@ -396,34 +396,40 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 		else if (CURRENTENEMY.Type == 4) //SIS Boss
 		{
+			if (IsIntersecting(PlayerRect,CURRENTENEMY.CollisionRect))
+			{
+				Damaged = true;
+				DamageDealt = 50;
+			}
+			
 			CURRENTENEMY.ShotCounter++;
 			if (CURRENTENEMY.ShotCounter == 90) {CURRENTENEMY.Shoot(0,0,2,0,0); CURRENTENEMY.ShotCounter = 60; }
 			if (CURRENTENEMY.WorldY < PlayerY) 
 			{
-				if (CURRENTENEMY.YVel + 0.3 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
-				else CURRENTENEMY.YVel += 0.3;
+				if (CURRENTENEMY.YVel + 0.5 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
+				else CURRENTENEMY.YVel += 0.5;
 			}
 
 			else if (CURRENTENEMY.WorldY> PlayerY)
 			{
-				if (CURRENTENEMY.YVel - 0.3 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
-				else CURRENTENEMY.YVel -= 0.3;
+				if (CURRENTENEMY.YVel - 0.5 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
+				else CURRENTENEMY.YVel -= 0.5;
 			}
 
 			if (CURRENTENEMY.WorldX < (PlayerX - 300)) 
 			{
-				if (CURRENTENEMY.XVel + 1 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = 0;
-				else CURRENTENEMY.XVel += 1;
+				if (CURRENTENEMY.XVel + 2.5 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = 0;
+				else CURRENTENEMY.XVel += 2.5;
 			}
 
 			if (CURRENTENEMY.WorldX > (PlayerX - 300)) 
 			{
-				if (CURRENTENEMY.XVel - 1 + CURRENTENEMY.WorldX < (PlayerX - 300)) CURRENTENEMY.XVel = 0;
-				else CURRENTENEMY.XVel -= 1;
+				if (CURRENTENEMY.XVel - 10 + CURRENTENEMY.WorldX < (PlayerX - 300)) CURRENTENEMY.XVel = 0;
+				else CURRENTENEMY.XVel -= 10;
 			}
 			
 			if (CURRENTENEMY.XVel > 5) CURRENTENEMY.XVel = 5;
-			else if (CURRENTENEMY.XVel < -5) CURRENTENEMY.XVel = -5;
+			else if (CURRENTENEMY.XVel < -10) CURRENTENEMY.XVel = -10;
 			if (CURRENTENEMY.YVel > 5) CURRENTENEMY.YVel = 5;
 			else if (CURRENTENEMY.YVel < -5) CURRENTENEMY.YVel = -5;
 
@@ -459,7 +465,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		else if (CURRENTENEMY.Type == 5) //SIS Invader
 		{
 			CURRENTENEMY.WorldX -= CURRENTENEMY.Speed;
-			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX;
 
 			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect) && Invincible == false)
 			{
@@ -529,7 +534,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					PickupVector.push_back(pukciP);
 				}
 
-				if (tni <= 20)
+				if (tni <= 10)
 				{
 					SpareStream.str("");
 					SpareStream << "Resources/Sounds/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
@@ -537,7 +542,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Mix_PlayChannel(-1,PlayThis,0);
 				}
 
-				else if (tni < 45 &&CURRENTENEMY.Type == 1)
+				else if (tni < 75 &&CURRENTENEMY.Type == 1)
 				{
 					Pickup pukciP; //pukciP = Pickup backwards
 					pukciP.WorldX = CURRENTENEMY.WorldX;
@@ -546,7 +551,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					PickupVector.push_back(pukciP);
 				}
 
-				else if (tni < 25 && CURRENTENEMY.Type == 2)
+				else if (tni < 50 && CURRENTENEMY.Type == 2)
 				{
 					Pickup pukciP; //pukciP = Pickup backwards
 					pukciP.WorldX = CURRENTENEMY.WorldX;

@@ -3,6 +3,43 @@
 #include"LoadLevel.h"
 #include<fstream>
 
+int GetNumber(std::string String, int Min)
+{
+	bool Done = false;
+	int Increment = 1;
+	int ReturnThis = Min;
+	while (!Done)
+	{
+		ClearScreen();
+		SpareStream.str("");
+		SpareStream << String << ReturnThis;
+		Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
+		ApplySurface((ScreenWidth - Message->w) / 2, 300, Message, Screen);
+		SpareStream.str("");
+		SpareStream << "Increment: " << Increment;
+		Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
+		ApplySurface((ScreenWidth - Message->w) / 2, 600, Message, Screen);
+		while(SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_KEYDOWN)
+			{
+				if (event.key.keysym.sym == SDLK_UP && Increment != 1000) Increment *= 10;
+				else if (event.key.keysym.sym == SDLK_DOWN && Increment != 1) Increment /= 10;
+				else if (event.key.keysym.sym == SDLK_RIGHT) ReturnThis += Increment;
+				else if (event.key.keysym.sym == SDLK_LEFT)
+				{
+					if (ReturnThis - Increment < Min) ReturnThis = Min; 
+					else ReturnThis -= Increment;
+				}
+				else if (event.key.keysym.sym == SDLK_RETURN) Done = true;
+			}
+		}
+		SDL_Delay(20);
+		SDL_Flip(Screen);
+	}
+	return ReturnThis;
+}
+
 void MapCreator()
 {
 	bool Done = false;
@@ -11,67 +48,8 @@ void MapCreator()
 	SDL_ShowCursor(SDL_ENABLE);
 	if (!LoadLevel("Level"))
 	{
-		while (!Done)
-		{
-			ClearScreen();
-			SpareStream.str("");
-			SpareStream << "Width: " << LevelWidth;
-			Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
-			ApplySurface((ScreenWidth - Message->w) / 2, 300, Message, Screen);
-			SpareStream.str("");
-			SpareStream << "Increment: " << Increment;
-			Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
-			ApplySurface((ScreenWidth - Message->w) / 2, 600, Message, Screen);
-			while(SDL_PollEvent(&event))
-			{
-				if (event.type == SDL_KEYDOWN)
-				{
-					if (event.key.keysym.sym == SDLK_UP && Increment != 1000) Increment *= 10;
-					else if (event.key.keysym.sym == SDLK_DOWN && Increment != 1) Increment /= 10;
-					else if (event.key.keysym.sym == SDLK_RIGHT) LevelWidth += Increment;
-					else if (event.key.keysym.sym == SDLK_LEFT)
-					{
-						if (LevelWidth - Increment < ScreenWidth) LevelWidth = ScreenWidth; 
-						else LevelWidth -= Increment;
-					}
-					else if (event.key.keysym.sym == SDLK_RETURN) Done = true;
-				}
-			}
-			SDL_Delay(20);
-			SDL_Flip(Screen);
-		}
-		Done = false;
-		LevelHeight = 2000;
-		Increment = 1;
-		while (!Done)
-		{
-			ClearScreen();
-			SpareStream.str("");
-			SpareStream << "Height: " << LevelHeight;
-			Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
-			ApplySurface((ScreenWidth - Message->w) / 2, 300, Message, Screen);
-			SpareStream.str("");
-			SpareStream << "Increment: " << Increment;
-			Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
-			ApplySurface((ScreenWidth - Message->w) / 2, 600, Message, Screen);
-			while(SDL_PollEvent(&event))
-			{
-				if (event.type == SDL_KEYDOWN)
-				{
-					if (event.key.keysym.sym == SDLK_UP && Increment != 1000) Increment *= 10;
-					else if (event.key.keysym.sym == SDLK_DOWN && Increment != 1) Increment /= 10;
-					else if (event.key.keysym.sym == SDLK_RIGHT) LevelHeight += Increment;
-					else if (event.key.keysym.sym == SDLK_LEFT)
-					{
-						if (LevelHeight - Increment < ScreenHeight) LevelHeight = ScreenHeight;
-						else LevelHeight -= Increment;
-					}
-					else if (event.key.keysym.sym == SDLK_RETURN) Done = true;
-				}
-			}
-			SDL_Flip(Screen);
-			SDL_Delay(20);
-		}
+		LevelWidth = GetNumber("Width: ", 1000);
+		LevelHeight = GetNumber("Height: ", 1000);
 		CreateTile(0,0,20,LevelHeight);
 		CreateTile(0,0,LevelWidth,20);
 		CreateTile(LevelWidth - 20,0,20,LevelHeight);
@@ -165,7 +143,15 @@ void MapCreator()
 					for (int i = 0; i < LevelVector.size(); i++) Output << LevelVector.at(i).WorldX << std::endl <<  LevelVector.at(i).WorldY << std::endl << LevelVector.at(i).Width << std::endl << LevelVector.at(i).Height << std::endl;
 					Done = true;
 				}
-				else if (event.key.keysym.sym == SDLK_n) __debugbreak();
+				else if (event.key.keysym.sym == SDLK_n)
+				{
+					SDL_Rect AddThis;
+					AddThis.x = GetNumber("x: ", 0);
+					AddThis.y = GetNumber("y: ", 0);
+					AddThis.w = GetNumber("w: ", 1);
+					AddThis.h = GetNumber("h: ", 1);
+					CreateTile(AddThis);
+				}
 			}
 		}
 		DoTiles(EditorCamera.x,EditorCamera.y);

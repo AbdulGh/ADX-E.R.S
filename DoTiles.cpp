@@ -13,6 +13,16 @@ void CreateTile(int ex, int y, int w, int h)
 	LevelVector.push_back(PushToVectorPls);
 }
 
+void CreateTile(SDL_Rect Rect)
+{
+	Tile PushToVectorPls;
+	PushToVectorPls.WorldX = Rect.x;
+	PushToVectorPls.WorldY = Rect.y;
+	PushToVectorPls.Width = Rect.w;
+	PushToVectorPls.Height = Rect.h;
+	LevelVector.push_back(PushToVectorPls);
+}
+
 void DoTiles(int XCamera, int YCamera)
 {
 	RectVector.erase(RectVector.begin(), RectVector.end());

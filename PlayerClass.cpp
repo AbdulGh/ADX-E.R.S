@@ -5,7 +5,7 @@
 Player::Player()
 {
 	Health = 100; 
-	Lives = 10;
+	Lives = 3;
 	Damage = 1.0f;
 	Speed = 0.5f;
 	InvunFrames = 0;

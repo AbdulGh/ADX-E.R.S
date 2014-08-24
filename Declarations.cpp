@@ -1,11 +1,12 @@
 #include"Declarations.h"
 #include"OpenDebugWindow.h"
 #include"DoProjectiles.h"
+#include"GetResolution.h"
 
 SDL_Event event;
 
-const int ScreenWidth = 1366;
-const int ScreenHeight = 768;
+int ScreenWidth = 1366;
+int ScreenHeight = 768;
 
 bool Damaged = false;
 bool Invincible = false;
@@ -54,6 +55,8 @@ SDL_Surface *Worm = NULL;
 SDL_Surface *Invader = NULL;
 SDL_Surface *MachineGun = NULL;
 SDL_Surface *Health = NULL;
+SDL_Surface *Win = NULL;
+SDL_Surface *Fail = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -191,6 +194,9 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
+
+	GetDesktopResolution(ScreenWidth,ScreenHeight);
+
 	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
@@ -238,6 +244,8 @@ bool Load()
 	Gunman = LoadImage("Resources/Images/Gunman.png");
 	Shotgun = LoadImage("Resources/Images/Shotgun.png");
 	Ship = LoadImage("Resources/Images/Ship.png");
+	Win = LoadImage("Resources/Images/Win.png");
+	Fail = LoadImage("Resources/Images/Fail.png");
 	Invader = LoadImage("Resources/Images/Invader.png");
 	Health = LoadImage("Resources/Images/Health.png");
 	Worm = LoadImage("Resources/Images/Worm.png");
@@ -251,9 +259,7 @@ bool InBetween (int Min, int Value, int Max) {return Value >= Min && Value <= Ma
 
 bool IsIntersecting(SDL_Rect Small, SDL_Rect Big)
 {
-	bool XOverLapping = InBetween (Big.x, Small.x, Big.x + Big.w) || InBetween (Small.x, Big.x, Small.x + Small.w);
-	bool YOverLapping = InBetween (Big.y, Small.y, Big.y + Big.h) || InBetween (Small.y, Big.y, Small.y + Small.h);
-	return XOverLapping && YOverLapping;
+	return !(Small.x > Big.x + Big.w || Small.x + Small.w < Big.x || Small.y > Big.y + Big.h || Small.y + Small.h < Big.y);
 }
 
 void ClearScreen()

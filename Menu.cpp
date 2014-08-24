@@ -12,21 +12,24 @@ Gamestate Menu()
 	SDL_Surface *QuitMouseover = TTF_RenderText_Solid(Start,"Exit",Green);
 
 	ClearButtons();
-	CreateButton(100,550,1,NewGame,NewGameMouseover,0);
-	CreateButton((ScreenWidth - Options->w)/2,550,2,Options,OptionsMouseover,0);
-	CreateButton(ScreenWidth - Quit->w - 150,550,3,Quit,QuitMouseover,0);
+	CreateButton(100,ScreenHeight - 200,1,NewGame,NewGameMouseover,0);
+	CreateButton((ScreenWidth - Options->w)/2,ScreenHeight - 200,2,Options,OptionsMouseover,0);
+	CreateButton(ScreenWidth - Quit->w - 150,ScreenHeight - 200,3,Quit,QuitMouseover,0);
 
 	Message = TTF_RenderText_Solid(Sys,"ADX E.R.S_",White);
 	int x = (ScreenWidth - Message->w)/2;
 
 	bool EpicFlag = false;
-	for (int i = 1; i < 5000; i++)
+	int Inc = 0;
+	while(true)
 	{
+		Inc++;
+		if (Inc > 60000) Inc = 0;
 		ClearScreen();
-		if ( i % 90 == 0 ) EpicFlag = !EpicFlag;
+		if ( Inc % 60 == 0 ) EpicFlag = !EpicFlag;
 		if (EpicFlag) Message = TTF_RenderText_Solid(Sys,"ADX E.R.S",White);
 		else Message = TTF_RenderText_Solid(Sys,"ADX E.R.S_",White);
-		ApplySurface(399,200,Message,Screen);
+		ApplySurface(x,200,Message,Screen);
 		int x,y;
 		DoMouse(&x,&y);
 		int Clicked = DoButtons();
@@ -44,8 +47,4 @@ Gamestate Menu()
 		}
 		SDL_Delay(10);
 	}
-	ClearScreen();
-	Message = TTF_RenderText_Solid(Start,"DEMO GOES HERE",White);
-	SDL_Delay(2000);
-	Menu();
 }
