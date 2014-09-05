@@ -10,6 +10,7 @@
 #include"DoTiles.h"
 #include"Debris.h"
 #include"Enemies.h"
+#include"DoEnemyProjectiles.h"
 #include"FloatText.h"
 #include<string>
 #include<string.h>
@@ -23,9 +24,7 @@ int LevelProgress = 0;
 int x = 0;
 int y = 0;
 int Number = 0;
-float LaserY = 0;
 
-bool Laser = false;
 bool Update = true;
 
 Timer SpareTimer;
@@ -111,8 +110,8 @@ void SwapWeapons(bool Right)
 void DeathScreen()
 {
 	SDL_Rect CharacterRect;
-	CharacterRect.w = 10;
-	CharacterRect.h = 10;
+	CharacterRect.w = Character.CurrentSprite->w;
+	CharacterRect.h = Character.CurrentSprite->h;
 	CharacterRect.x = Character.WorldX;
 	CharacterRect.y = Character.WorldY;
 	Timer remiT;
@@ -161,7 +160,7 @@ void DoThings()
 	CharacterRect.x = Character.WorldX - Camera.x;
 	CharacterRect.y = Character.WorldY - Camera.y;
 	DoPickups(Camera.x,Camera.y,CharacterRect);
-	DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
+	DoEnemyProjectiles(Camera.x, Camera.y,CharacterRect);
 	DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
@@ -358,6 +357,8 @@ void Game()
 		}
 	}
 	if (Skip == false) SDL_Delay(5000);
+	
+
 	bool LevelFinished = false;
 	int Weapons = 0;
 	Timer FPSTimer;
@@ -376,7 +377,9 @@ void Game()
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
+
 	FadeText("Stay RIGHT there. Don't move an inch.");
+
 	while (!LevelFinished && State == GAME) //Level 1
 	{
 		FPSTimer.start();
@@ -416,6 +419,8 @@ void Game()
 			SpawnVector.push_back (750);
 			SpawnVector.push_back (Character.WorldY + 356);
 			SpawnVector.push_back (1);
+
+
 
 			SpawnEnemies(SpawnVector);
 			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
@@ -849,7 +854,6 @@ void Game()
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
-
 	LevelFinished = false;
 	if (!LoadLevel("Resources/Levels/3")) {State = QUIT; Menu();}
 
@@ -870,7 +874,6 @@ void Game()
 	Camera.LevelWidth = LevelWidth;
 
 	LaserY = 5000;
-	SpareTimer.start();
 
 	while(LevelFinished == false && State == GAME)
 	{
@@ -886,6 +889,7 @@ void Game()
 			LaserY = 5000;
 			FadeText("You thought that wasn't part of my plan?");
 			LevelProgress = 1;
+			SpareTimer.start();
 			break;
 		case 1:
 			Character.WorldX = XSpawn;
@@ -912,7 +916,7 @@ void Game()
 			if (static_cast<int>(LaserY) % 230 == 2)
 			{
 				SpawnVector.push_back((rand() % LevelWidth) + 1);
-				SpawnVector.push_back(2250);
+				SpawnVector.push_back(300);
 				SpawnVector.push_back(1);
 				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
@@ -930,6 +934,102 @@ void Game()
 		};
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
+
+	LevelFinished = false;
+	if (!LoadLevel("Resources/Levels/4")) {State = QUIT; Menu();}
+
+	EnemyVector.erase(EnemyVector.begin(),EnemyVector.end());
+	SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+	ProjectileVector.erase(ProjectileVector.begin(),ProjectileVector.end());
+	PickupVector.erase(PickupVector.begin(),PickupVector.end());
+	EnemyProjectileVector.erase(EnemyProjectileVector.begin(),EnemyProjectileVector.end());
+
+	Character.Lives += 3;
+	XSpawn = 1800;
+	YSpawn = 5850;
+	Character.WorldX = 1800;
+	Character.WorldY = 5850;
+	LevelProgress = 0;
+	LevelColour = 0x000000;
+	Camera.LevelHeight = LevelHeight;
+	Camera.LevelWidth = LevelWidth;
+
+	LaserY = 6000;
+
+	int Numero = 0;
+
+	while(LevelFinished == false && State == GAME)
+	{
+		FPSTimer.start();
+		DoThings();
+		HandleEvents();
+		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
+
+		switch (LevelProgress)
+		{
+		case 0:
+			SpareTimer.start();
+			Laser = false;
+			Camera.y = 4000;
+			LevelProgress = 1;
+			Numero = 0;
+			break;
+		case 1:
+			Character.WorldX = XSpawn;
+			Character.WorldY = YSpawn;
+			if (SpareTimer.get_ticks() > 2000) LevelProgress = 2;
+		case 2:
+			if (Character.WorldY < 5800)
+			{
+				Laser = true;
+				LaserY = 6000;
+				LevelProgress = 3;
+
+				SpawnVector.push_back(950);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(7);
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+			}
+			break;
+		case 3:
+			Numero++;
+			if (Numero % 300 == 0)
+			{
+				SpawnVector.push_back(rand() % 1999 + 1);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(1);
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+			}
+			else if (Numero % 400 == 0)
+			{
+				SpawnVector.push_back(rand() % 1999 + 1);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(3);
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+			}
+
+			else if (Numero % 650 == 0)
+			{
+				SpawnVector.push_back(rand() % 1999 + 1);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(3);
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+			}
+
+			if (Character.WorldY < 0)
+				LevelFinished = true;
+			break;
+		};
+	}
+
 	ClearScreen();
 	ApplySurface(20,20,Win,Screen);
 	SDL_Flip(Screen);

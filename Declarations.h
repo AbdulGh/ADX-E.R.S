@@ -43,6 +43,7 @@ extern SDL_Surface *MachineGun;
 extern SDL_Surface *Health;
 extern SDL_Surface *Win;
 extern SDL_Surface *Fail;
+extern SDL_Surface *DoorGuard;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -60,6 +61,9 @@ extern bool Damaged;
 extern bool Invincible;
 extern bool Boss;
 extern bool Shake;
+extern bool Laser;
+
+extern float LaserY;
 
 extern int XChange;
 extern int YChange;

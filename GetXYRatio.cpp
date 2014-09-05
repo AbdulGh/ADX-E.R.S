@@ -1,5 +1,5 @@
 #include"GetXYRatio.h"
-#define LECONVERSION 3.1418 / 180
+#define LECONVERSION (3.1418 / 180)
 
 void GetXYRatio(float * x, float * y, float Angle, int SPEED)
 {

@@ -22,25 +22,14 @@ public:
 	float YVel;
 	int MaxSpeed;
 
+	bool Moving;
+
 	SDL_Rect CollisionRect;
 
 	Enemy(int,int,int);
 	void Bleed(int ProjectileXVel, int ProjectileYVel);
-	void Shoot (int TargetX, int TargetY, int Type, int XVel, int YVel);
-};
-
-class EnemyProjectile
-{
-public:
-	float WorldX;
-	float WorldY;
-	int Type;
-	SDL_Rect CollisionRect;
-	int XVel;
-	int YVel;
-	int Frame;
-	int Frametime;
-	bool Active;
+	void Shoot (int Type, int TargetX, int TargetY);
+	void Shoot (int Type, int Bearing);
 };
 
 class Pickup
@@ -52,11 +41,9 @@ public:
 };
 
 extern std::vector <Enemy> EnemyVector;
-extern std::vector <EnemyProjectile> EnemyProjectileVector;
 extern std::vector <Pickup> PickupVector;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);
-void DoEnemyProjectiles(int CameraX, int CameraY,SDL_Rect CharacterRect);
 void DoPickups(int CameraX, int CamerY, SDL_Rect PlayerRect);
 #endif

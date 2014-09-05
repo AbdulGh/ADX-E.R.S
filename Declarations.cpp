@@ -12,6 +12,9 @@ bool Damaged = false;
 bool Invincible = false;
 bool Boss = false;
 bool Shake = 0;
+bool Laser = false;
+
+float LaserY = 0;
 
 int XChange = 0;
 int YChange = 0;
@@ -57,6 +60,7 @@ SDL_Surface *MachineGun = NULL;
 SDL_Surface *Health = NULL;
 SDL_Surface *Win = NULL;
 SDL_Surface *Fail = NULL;
+SDL_Surface *DoorGuard = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -251,6 +255,8 @@ bool Load()
 	Worm = LoadImage("Resources/Images/Worm.png");
 	ShipProjectile = LoadImage("Resources/Images/EnemyProjectile.png");
 	MachineGun = LoadImage("Resources/Images/MachineGun.png");
+	DoorGuard = LoadImage("Resources/Images/DoorGuard.png");
+
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
 }
