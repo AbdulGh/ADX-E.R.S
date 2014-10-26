@@ -457,8 +457,6 @@ void Game()
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
-	goto nig;
-
 	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
@@ -1092,7 +1090,6 @@ void Game()
 			break;
 		};
 	}
-nig:
 
 	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 
