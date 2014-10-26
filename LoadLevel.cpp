@@ -13,6 +13,7 @@ bool LoadLevel(std::string Filename)
 	Input >> LevelWidth;
 	Input >> LevelHeight;
 	Input >> LevelColour;
+	LevelColour = 0x000000;
 
 	int TempX;
 	int TempY;

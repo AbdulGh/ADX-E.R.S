@@ -11,6 +11,8 @@ public:
 	float XInc;
 	float YInc;
 	int Type;
+	int Time;
+	int Damage;
 
 	SDL_Rect ProjectileRect;
 	SDL_Surface ProjectileSurface;

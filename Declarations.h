@@ -1,7 +1,7 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
-#define WEAPONS 3
+#define WEAPONS 5
 
 #include<iostream>
 #include<vector>
@@ -29,6 +29,8 @@ extern int ScreenHeight;
 extern SDL_Surface *Screen;
 extern SDL_Surface *Gunman;
 extern SDL_Surface *Message;
+extern SDL_Surface *Message2;
+extern SDL_Surface *Message3;
 extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
 extern SDL_Surface *TeleportSheet;
@@ -44,6 +46,9 @@ extern SDL_Surface *Health;
 extern SDL_Surface *Win;
 extern SDL_Surface *Fail;
 extern SDL_Surface *DoorGuard;
+extern SDL_Surface *Spawner;
+extern SDL_Surface *Flamethrower;
+extern SDL_Surface *Frog;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -87,6 +92,7 @@ extern Uint32 LevelColour;
 extern std::vector<Tile> LevelVector;
 extern std::vector<SDL_Rect> RectVector;
 extern std::vector<Projectile> ProjectileVector;
+extern std::vector <int> SpawnVector;
 
 extern std::stringstream SpareStream;
 

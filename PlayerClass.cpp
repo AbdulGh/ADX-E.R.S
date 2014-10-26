@@ -26,8 +26,7 @@ Player::Player()
 }
 
 void Player::Update()
-{
-
+{	
 	if (Health <= 0 && NormalDeath == true)
 	{
 		Health = 0;
@@ -52,7 +51,7 @@ void Player::Update()
 		if (Invincible == false)
 		{
 			Health -= DamageDealt;
-			if (DamageDealt > 0 && InvunFrames == 0)
+			if (DamageDealt > 0)
 			{
 				InvunFrames = 111;
 				Invincible = true;
@@ -72,45 +71,56 @@ void Player::Update()
 	{
 		SDL_PumpEvents();
 		Uint8 *Memestates = SDL_GetKeyState(NULL);
+
 		if ((Memestates[SDLK_RIGHT] || Memestates[SDLK_d]) && XVel <= TopSpeed) 
 		{
 			if (XVel + Speed > TopSpeed) XVel = TopSpeed;
+			else if (XVel < 0) XVel = 0;
 			else XVel += Speed;
 		}
+
 		else if ((Memestates[SDLK_LEFT] || Memestates[SDLK_a])&& XVel >= -1 * TopSpeed) 
 		{
 			if (XVel - Speed < TopSpeed * -1) XVel = TopSpeed * -1;
+			else if (XVel > 0) XVel = 0;
 			else XVel -= Speed;
 		}
+
 		else 
 		{
-			if (XVel > 0) XVel /= 2;
-			else XVel /= 2;
+			 XVel /= 2;
 		}
+
 		if ((Memestates[SDLK_DOWN] || Memestates[SDLK_s]) && YVel <= TopSpeed) 
 		{
 			if (YVel + Speed > TopSpeed) YVel = TopSpeed;
+			else if (YVel < 0) YVel = 0;
 			else YVel += Speed;
 		}
+
 		else if ((Memestates[SDLK_UP] || Memestates[SDLK_w]) && YVel >= -1 * TopSpeed) 
 		{
 			if (YVel - Speed < TopSpeed * -1) YVel = TopSpeed * -1;
+			else if (YVel > 0) YVel = 0;
 			else YVel -= Speed;
 		}
+
 		else 
 		{
-			if (YVel > 0) YVel /= 2;
-			else YVel /= 2;
+			YVel /= 2;
 		}
+
 		if (abs(XVel) < 0.5) XVel = 0;
 		if (abs(YVel) < 0.5) YVel = 0;
 		TempX = WorldX + XVel;
 		TempY = WorldY + YVel;
 	}
 
-	if (NormalCollision == true)
+	PlayerRect.x = TempX - Camera.x;
+	PlayerRect.y = TempY - Camera.y;
+
+	if (NormalCollision == true && XVel != 0 || YVel != 0)
 	{
-		SDL_Rect PlayerRect;
 		PlayerRect.x = TempX - Camera.x;
 		PlayerRect.y = TempY - Camera.y;
 		PlayerRect.w = CurrentSprite->w;
@@ -151,6 +161,6 @@ void Player::Update()
 		WorldX = PlayerRect.x + Camera.x + 1;
 		WorldY = PlayerRect.y + Camera.y + 1;
 	}
-	if (Render == true) ApplySurface(WorldX - Camera.x, WorldY - Camera.y, CurrentSprite, Screen);
+	if (Render == true) ApplySurface(PlayerRect.x, PlayerRect.y, CurrentSprite, Screen);
 }
 

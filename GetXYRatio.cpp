@@ -3,6 +3,8 @@
 
 void GetXYRatio(float * x, float * y, float Angle, int SPEED)
 {
+	if (Angle > 360) Angle -= 360;
+
 	if (Angle > 270)
 	{
 		Angle -= 270;

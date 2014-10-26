@@ -31,13 +31,14 @@ int Mag = 0;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,0,0};
+int Ammo[WEAPONS] = {1,0,0,0};
 
 Uint32 LevelColour = 0xFF0000;
 
 std::vector<Tile> LevelVector;
 std::vector<Projectile> ProjectileVector;
 std::vector<SDL_Rect> RectVector;
+std::vector <int> SpawnVector;
 
 std::stringstream SpareStream;
 
@@ -47,6 +48,8 @@ SDL_Surface *Screen = NULL;
 SDL_Surface *Serious = NULL;
 SDL_Surface *Gunman = NULL;
 SDL_Surface *Message = NULL;
+SDL_Surface *Message2 = NULL;
+SDL_Surface *Message3 = NULL;
 SDL_Surface *PlayerNormal = NULL;
 SDL_Surface *CursorSheet = NULL;
 SDL_Surface *TeleportSheet = NULL;
@@ -61,6 +64,9 @@ SDL_Surface *Health = NULL;
 SDL_Surface *Win = NULL;
 SDL_Surface *Fail = NULL;
 SDL_Surface *DoorGuard = NULL;
+SDL_Surface *Spawner = NULL;
+SDL_Surface *Flamethrower = NULL;
+SDL_Surface *Frog = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -241,6 +247,7 @@ bool Load()
 	SmashSong = Mix_LoadMUS("Resources/Sounds/Smash.ogg");
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
+	Spawner = LoadImage("Resources/Images/Spawner.png");
 	Serious = LoadImage("Resources/Images/Serious.png");
 	CursorSheet = LoadImage("Resources/Images/Cursor.png");
 	TeleportSheet = LoadImage("Resources/Images/Teleport.png");
@@ -256,6 +263,8 @@ bool Load()
 	ShipProjectile = LoadImage("Resources/Images/EnemyProjectile.png");
 	MachineGun = LoadImage("Resources/Images/MachineGun.png");
 	DoorGuard = LoadImage("Resources/Images/DoorGuard.png");
+	Flamethrower = LoadImage("Resources/Images/Flamethrower.png");
+	Frog = LoadImage("Resources/Images/Frog.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

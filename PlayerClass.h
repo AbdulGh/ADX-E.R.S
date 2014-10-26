@@ -23,6 +23,7 @@ public:
 	bool Render;
 
 	SDL_Surface *CurrentSprite;
+	SDL_Rect PlayerRect;
 	
 	Player();
 	void Update();

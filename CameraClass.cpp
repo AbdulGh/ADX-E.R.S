@@ -27,7 +27,7 @@ void Viewport::Update()
 {
 	float XDiff = (TargetX - x);
 	float YDiff = (TargetY - y);
-	float Distance = (XDiff * XDiff) + (YDiff * YDiff);
+	float Distance = sqrt( (XDiff * XDiff) + (YDiff * YDiff));
 	if (Distance > 5)
 	{
 		if (abs(XDiff) > 100) x += 30 * XDiff / abs(XDiff);

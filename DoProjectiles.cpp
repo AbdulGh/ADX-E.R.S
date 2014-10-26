@@ -12,8 +12,33 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 	elitcejorP.YInc = YRatio;
 	elitcejorP.ProjectileRect.x = x;
 	elitcejorP.ProjectileRect.y = y;
-	elitcejorP.ProjectileRect.w = 2;
-	elitcejorP.ProjectileRect.h = 2;
+
+	switch (Type)
+	{
+	case 1:
+		elitcejorP.ProjectileRect.w = 2;
+		elitcejorP.ProjectileRect.h = 2;
+		elitcejorP.Damage = 10;
+		break;
+	case 2:
+		elitcejorP.ProjectileRect.w = 2;
+		elitcejorP.ProjectileRect.h = 2;
+		elitcejorP.Damage = 35;
+		break;
+
+	case 3:
+		elitcejorP.ProjectileRect.w = 4;
+		elitcejorP.ProjectileRect.h = 4;
+		elitcejorP.Damage = 3;
+		break;
+
+	case 4:
+		elitcejorP.ProjectileRect.w = 3;
+		elitcejorP.ProjectileRect.h = 3;
+		elitcejorP.Damage = 4;
+	}
+
+	elitcejorP.Time = -1;
 	ProjectileVector.push_back(elitcejorP);
 }
 
@@ -27,6 +52,17 @@ void DoProjectiles(int CameraX, int CameraY)
 			bool Erase = false;
 			CURRENTPROJECTILE.WorldX += CURRENTPROJECTILE.XInc;
 			CURRENTPROJECTILE.WorldY += CURRENTPROJECTILE.YInc;
+
+			if (CURRENTPROJECTILE.Type == 3 && CURRENTPROJECTILE.Time == -1)
+			{
+				CURRENTPROJECTILE.XInc /= 1.1;
+				CURRENTPROJECTILE.YInc /= 1.1;
+
+				if (abs(CURRENTPROJECTILE.XInc) < 2.5 && abs(CURRENTPROJECTILE.YInc) < 2.5) CURRENTPROJECTILE.Time = rand() % 25 + 5;
+			}
+
+			if (CURRENTPROJECTILE.Time > 0) CURRENTPROJECTILE.Time--; 
+
 			CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX;
 			CURRENTPROJECTILE.ProjectileRect.y = CURRENTPROJECTILE.WorldY;
 			if (LevelVector.size() > 0)
@@ -40,25 +76,33 @@ void DoProjectiles(int CameraX, int CameraY)
 					TempRect.h = LevelVector.at(wilkins).Height;
 					if (IsIntersecting(TempRect, CURRENTPROJECTILE.ProjectileRect))
 					{
-						if (CURRENTPROJECTILE.Type == 1 || CURRENTPROJECTILE.Type == 2)
+						if (CURRENTPROJECTILE.Type == 1 || CURRENTPROJECTILE.Type == 2 || CURRENTPROJECTILE.Type == 4)
 						{
 							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
 							Erase = true; 
-							break;
+						}
+
+						else if (CURRENTPROJECTILE.Type == 3)
+						{
+							CURRENTPROJECTILE.XInc = 0;
+							CURRENTPROJECTILE.YInc = 0;
 						}
 					}
 					if (Erase == true) break;
 				}
 			}
+			if (CURRENTPROJECTILE.Time == 0) Erase = true;
 
 			if (Erase == false)
 			{
 				CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX - CameraX;
 				CURRENTPROJECTILE.ProjectileRect.y = CURRENTPROJECTILE.WorldY - CameraY;
-				SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFFFF00);
+				if (CURRENTPROJECTILE.Type == 3) SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFF6A00);
+				else if (CURRENTPROJECTILE.Type == 4) SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFF0000);
+				else SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFFFF00);
 			}
 
-			else ProjectileVector.erase(ProjectileVector.begin() + i, ProjectileVector.begin() + i + 1);
+			else ProjectileVector.erase(ProjectileVector.begin() + i);
 		}
 	}
 }
