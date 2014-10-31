@@ -24,7 +24,7 @@ int Frame = 0;
 int Frametime = 0;
 int DamageDealt = 0;
 int Enemies = 0;
-int Temp1 = 0;
+int Temp1 = 200;
 int Temp2 = 0;
 int Dur = 0;
 int Mag = 0;
@@ -66,6 +66,7 @@ SDL_Surface *Fail = NULL;
 SDL_Surface *DoorGuard = NULL;
 SDL_Surface *Spawner = NULL;
 SDL_Surface *Flamethrower = NULL;
+SDL_Surface *LaserPickup = NULL;
 SDL_Surface *Frog = NULL;
 
 SDL_Colour White = {255,255,255};
@@ -265,6 +266,7 @@ bool Load()
 	DoorGuard = LoadImage("Resources/Images/DoorGuard.png");
 	Flamethrower = LoadImage("Resources/Images/Flamethrower.png");
 	Frog = LoadImage("Resources/Images/Frog.png");
+	LaserPickup = LoadImage("Resources/Images/Laser.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

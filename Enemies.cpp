@@ -121,6 +121,19 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
+			case 5: //Laser SMG
+				TempRect.x = CURRENTPICKUPX;
+				TempRect.y = CURRENTPICKUPY;
+				TempRect.w = LaserPickup->w;
+				TempRect.h = LaserPickup->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, LaserPickup, Screen);
+				if (IsIntersecting(TempRect,PlayerRect))
+				{
+					Ammo[4] += 50;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Laser SMG +50", White);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
 			}
 		}
 	}
@@ -171,8 +184,9 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					
 					if (CURRENTENEMY.Moving)
 					{
-					CURRENTENEMY.WorldX += ProjectileVector.at(x).Damage * (ProjectileVector.at(x).XInc / abs(ProjectileVector.at(x).XInc));
-					CURRENTENEMY.WorldX += ProjectileVector.at(x).Damage * (ProjectileVector.at(x).YInc / abs(ProjectileVector.at(x).YInc)); //TODO fix this
+						CURRENTENEMY.WorldX += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).XInc / 3;
+						CURRENTENEMY.WorldY += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).YInc / 3;
+
 					}
 
 					if (rand() % 140 < 5)
@@ -190,24 +204,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					SpareStream << ProjectileVector.at(x).Damage;
 					FloatSomeText(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY, SpareStream.str().c_str(), Red, 2);
 					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
-
-					/*switch(ProjectileVector.at(x).Type)
-					{
-				case 1:
-					CURRENTENEMY.Health -= 30;
-					FloatSomeText(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY, "30", Red, 2);
-					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
-					break;
-				case 2:
-					CURRENTENEMY.Health -= 40;
-					FloatSomeText(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY, "40", Red, 2);
-					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
-					break;
-				case 3:
-					CURRENTENEMY.Health -= 3;
-					FloatSomeText(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY, "3", Red, 2);
-					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
-					}*/
 				}
 			}
 		}
@@ -288,14 +284,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 8: //Spawner
-						Temp.Health = 150;
+						Temp.Health = 110;
 						Temp.Speed = 2;
 						Temp.CollisionRect.w = 25;
 						Temp.CollisionRect.h = 25;
 						break;
 
 					case 9: //MARS
-						Temp.Health = 7000;
+						Temp.Health = /*7*/000;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 40;
 						Temp.CollisionRect.h = 100;
@@ -320,7 +316,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		if (Laser && CURRENTENEMY.Type != 0 && CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h > LaserY) 
 		{
 			CURRENTENEMY.Health = 0;
-			//__debugbreak();
 		}
 
 		if (CURRENTENEMY.Type == 1) //Suicide
@@ -392,9 +387,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (CURRENTENEMY.CollisionRect.x < 0) continue;
 				if (CURRENTENEMY.CollisionRect.y < 0) continue;
 
-				SDL_Rect Fu = CURRENTENEMY.CollisionRect;
-				SDL_Rect ck = RectVector.at(x);
-				if (IsIntersecting(Fu,ck)) //lol
+				if (IsIntersecting(CURRENTENEMY.CollisionRect,RectVector.at(x)))
 				{
 					XDiff = 0;
 					YDiff = 0;
@@ -406,9 +399,18 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Gunman, Screen);
 
 			CURRENTENEMY.ShotCounter++;
-			if (CURRENTENEMY.ShotCounter == 60)
+			if (CURRENTENEMY.ShotCounter % 60 == 0)
 			{
 				CURRENTENEMY.Shoot(1,PlayerX,PlayerY);
+			}
+
+			if (CURRENTENEMY.ShotCounter == 400)
+			{
+				for (int a = 0; a <= 270; a += 90)
+				{
+					CURRENTENEMY.Shoot(3,a);
+				}
+
 				CURRENTENEMY.ShotCounter = 0;
 			}
 		}
@@ -670,7 +672,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.ShotCounter++;
 				BosNum1 += Direction;
 
-				if (CURRENTENEMY.ShotCounter == 6)
+				if (CURRENTENEMY.ShotCounter == 7)
 				{
 					CURRENTENEMY.ShotCounter = 0;
 					CURRENTENEMY.CollisionRect.h = 0;
@@ -1223,7 +1225,16 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				int tni = rand() % 100 + 1; //tni = int backwards
 
-				if (tni > 95)
+				if (CURRENTENEMY.Type == 8)
+				{
+					Pickup pukciP; //pukciP = Pickup backwards
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 4;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni > 95)
 				{
 					Pickup pukciP;
 					pukciP.WorldX = CURRENTENEMY.WorldX;
@@ -1251,19 +1262,19 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				else if (tni < 50 && CURRENTENEMY.Type == 2)
 				{
-					Pickup pukciP; //pukciP = Pickup backwards
+					Pickup pukciP;
 					pukciP.WorldX = CURRENTENEMY.WorldX;
 					pukciP.WorldY = CURRENTENEMY.WorldY;
 					pukciP.Type = 2;
 					PickupVector.push_back(pukciP);
 				}
 
-				else if (tni < 100 && CURRENTENEMY.Type == 8)
+				else if (tni < 40 && CURRENTENEMY.Type == 10)
 				{
-					Pickup pukciP; //pukciP = Pickup backwards
+					Pickup pukciP;
 					pukciP.WorldX = CURRENTENEMY.WorldX;
 					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 4;
+					pukciP.Type = 5;
 					PickupVector.push_back(pukciP);
 				}
 

@@ -49,6 +49,7 @@ extern SDL_Surface *DoorGuard;
 extern SDL_Surface *Spawner;
 extern SDL_Surface *Flamethrower;
 extern SDL_Surface *Frog;
+extern SDL_Surface *LaserPickup;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
