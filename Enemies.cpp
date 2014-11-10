@@ -76,8 +76,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Shotgun, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[1] += 5;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Shotgun +5", White);
+					Ammo[1] += 8;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Shotgun +8", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -89,8 +89,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, MachineGun, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[2] += 30;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Machinegun +30", White);
+					Ammo[2] += 40;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Machinegun +40", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -116,8 +116,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Flamethrower, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[3] += 150;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Flamethrower +150", White);
+					Ammo[3] += 220;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Flamethrower +220", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -129,8 +129,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, LaserPickup, Screen);
 				if (IsIntersecting(TempRect,PlayerRect))
 				{
-					Ammo[4] += 50;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Laser SMG +50", White);
+					Ammo[4] += 80;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Laser SMG +80", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -165,7 +165,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		SpareStream.str("");
 		SpareStream << "Resources/Sounds/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
 		Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-		Mix_PlayChannel(-1,PlayThis,0);
+		//Mix_PlayChannel(-1,PlayThis,0);
 	}
 
 	for (int i = 0; i < EnemyVector.size(); i++)
@@ -196,7 +196,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						
 						Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
 
-						Mix_PlayChannel(-1,PlayThis,0);
+						//Mix_PlayChannel(-1,PlayThis,0);
 					}
 
 					CURRENTENEMY.Health -= ProjectileVector.at(x).Damage;
@@ -239,7 +239,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					case 2: //Gunman
 						Temp.Health = 100;
-						Temp.ShotCounter = rand() % 60;
+						Temp.ShotCounter = rand() % 340;
 						Temp.Speed = rand() % 2 + 4;
 						Temp.CollisionRect.w = Gunman->w;
 						Temp.CollisionRect.h = Gunman->h;
@@ -254,7 +254,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					break;
 
 					case 4: //SIS Boss
-						Temp.Health = 1850;
+						Temp.Health = 1900;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
@@ -277,7 +277,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 7: //DoorGuard
-						Temp.Health = 2100;
+						Temp.Health = 1900;
 						Temp.CollisionRect.w = 200;
 						Temp.CollisionRect.h = 50;
 						Temp.Moving = false;
@@ -291,7 +291,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 9: //MARS
-						Temp.Health = /*7*/000;
+						Temp.Health = 7000;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 40;
 						Temp.CollisionRect.h = 100;
@@ -305,6 +305,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.ShotCounter = rand() % 60 - 30;
 						Temp.CollisionRect.w = 25;
 						Temp.CollisionRect.h = 25;
+						break;
+
+					case 11: //Vertical laser
+						Temp.Health = 200;
+						Temp.Moving = false;
+						Temp.CollisionRect.w = 50;
+						Temp.CollisionRect.h = 20;
+						Temp.ShotCounter = 0;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -404,7 +412,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Shoot(1,PlayerX,PlayerY);
 			}
 
-			if (CURRENTENEMY.ShotCounter == 400)
+			if (CURRENTENEMY.ShotCounter == 360)
 			{
 				for (int a = 0; a <= 270; a += 90)
 				{
@@ -1218,6 +1226,23 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Frog, Screen);
 		}
 
+		else if (CURRENTENEMY.Type == 11) //Lasers
+		{
+			CURRENTENEMY.ShotCounter++;
+			if (CURRENTENEMY.ShotCounter == 52)
+			{
+				CURRENTENEMY.Shoot(7,0,0);
+				CURRENTENEMY.ShotCounter = 0;
+			}
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect))
+			{
+				CURRENTENEMY.Health = 0;
+				Damaged = true;
+				DamageDealt = 40;
+			}
+		}
+
 		if (CURRENTENEMY.Health <= 0) 
 		{
 			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
@@ -1225,6 +1250,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				int tni = rand() % 100 + 1; //tni = int backwards
 
+				if (tni <= 7)
+				{
+					SpareStream.str("");
+					SpareStream << "Resources/Sounds/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
+					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
+					//Mix_PlayChannel(-1,PlayThis,0);
+				}
+				
 				if (CURRENTENEMY.Type == 8)
 				{
 					Pickup pukciP; //pukciP = Pickup backwards
@@ -1241,14 +1274,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					pukciP.WorldY = CURRENTENEMY.WorldY;
 					pukciP.Type = 3;
 					PickupVector.push_back(pukciP);
-				}
-
-				if (tni <= 7)
-				{
-					SpareStream.str("");
-					SpareStream << "Resources/Sounds/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
-					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-					Mix_PlayChannel(-1,PlayThis,0);
 				}
 
 				else if (tni < 75 &&CURRENTENEMY.Type == 1)
@@ -1275,6 +1300,15 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					pukciP.WorldX = CURRENTENEMY.WorldX;
 					pukciP.WorldY = CURRENTENEMY.WorldY;
 					pukciP.Type = 5;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni > 60 && CURRENTENEMY.Type == 10)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 4;
 					PickupVector.push_back(pukciP);
 				}
 

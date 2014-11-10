@@ -124,7 +124,7 @@ void DeathScreen()
 
 		if (SpareTimer.get_ticks() > 1000)
 		{
-			MessageX -= sin(static_cast<double>(Degree * (3.14/180))) * (ScreenWidth / 108);
+			MessageX -= sin(static_cast<double>(Degree * (3.14/180))) * (ScreenWidth / 110);
 			if (Degree != 180) Degree++;
 		}
 		Message = TTF_RenderText_Solid(SysSmall,"Lives",Green);
@@ -140,6 +140,9 @@ void DeathScreen()
 
 void DoThings()
 {
+	ClearScreen();
+	SDL_FillRect(Screen,NULL,LevelColour);
+
 	if (ShotTimer != 0) ShotTimer--;
 	
 	if (Update)
@@ -148,7 +151,6 @@ void DoThings()
 		Camera.Update();
 	}
 	CheckShake();
-	DoTiles(Camera.x,Camera.y);
 	DoMouse(&x,&y);
 	DoDebris(Camera.x,Camera.y,Screen);
 	Character.Update();
@@ -157,6 +159,7 @@ void DoThings()
 	DoPickups(Camera.x,Camera.y,CharacterRect);
 	DoEnemyProjectiles(Camera.x, Camera.y,CharacterRect);
 	DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
+	DoTiles(Camera.x,Camera.y);
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
 	DoProjectiles(Camera.x,Camera.y);
@@ -176,10 +179,6 @@ void DoThings()
 	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 	ApplySurface(550,HealthRect.y - 6,Message,Screen);
 
-	SpareStream.str("");
-	SpareStream << "Lives: " << Character.Lives;
-	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-	ApplySurface(ScreenWidth - (Message->w + 10),HealthRect.y - 6,Message,Screen);
 
 	if (Laser)
 	{
@@ -207,7 +206,9 @@ void DoThings()
 	{
 		Seconds = StartTime - (SpecialTimer.get_ticks() / 1000);
 		SpareStream.str("");
-		SpareStream << Seconds / 60 << ":" << Seconds % 60;
+		SpareStream << Seconds / 60 << ":";
+		if (Seconds % 60 < 10) SpareStream << 0;
+		SpareStream << Seconds % 60;
 		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 		ApplySurface((ScreenWidth - Message->w) / 2, 20, Message, Screen);
 
@@ -225,6 +226,7 @@ void DoThings()
 	if (Character.Reset == true)
 	{
 		Character.Render = false;
+		Mix_HaltMusic();
 		Laser = false;
 		DamageDealt = 0;
 		Mix_HaltMusic();
@@ -238,6 +240,7 @@ void DoThings()
 			SDL_Flip(Screen);
 			SDL_Delay(2000);
 			State = QUIT;
+			LevelFinished = true;
 			main(NULL,NULL);
 		}
 		Character.Health = 100;
@@ -264,10 +267,10 @@ void HandleEvents()
 	{
 		if (event.type == SDL_KEYDOWN)
 		{
-			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; main(NULL,NULL);}
+			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true; main(NULL,NULL);}
 			else if (event.key.keysym.sym == SDLK_e) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q) SwapWeapons(false);
-			else if (event.key.keysym.sym == SDLK_k) Character.Health = 0;
+			else if (event.key.keysym.sym == SDLK_k) Character.Health = 100;
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && CurrentSelection == 1)
@@ -357,7 +360,7 @@ void HandleEvents()
 				GetXYRatio(&XRatio,&YRatio,Angle,20);
 				for (int i = 0; i <= 10; i++)
 				{
-					CreateProjectile(Character.WorldX + i * (-XRatio / 20), Character.WorldY + i * (-YRatio / 20), XRatio, YRatio, 4);
+					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2) + i * (-XRatio / 20), Character.WorldY + (Character.CurrentSprite->h / 2) + i * (-YRatio / 20), XRatio, YRatio, 4);
 				}
 				ShotTimer = 10;
 			}
@@ -391,11 +394,6 @@ void NextLevel(int SpawnX, int SpawnY)
 void Game()
 {
 	ClearScreen();
-
-	Ammo[4] = 1337;
-	Ammo[3] = 1337;
-	Ammo[2] = 1337;
-	Ammo[1] = 1337;
 
 	Character.CurrentSprite = PlayerNormal;
 	std::string Asimov[11] = {"ADMax Emergent Response System booting...","Directives:","1: You may not injure a human being or, through inaction, allow a human being to","   come to harm.","2: You must obey orders given to you by human beings, except where such orders ", "   would conflict with the First Law.","3: You must protect your own existence as long as such does not conflict with the","   First or Second Law.",". . .", "error C2146: Unable to mount root on block 'NULL'", "Rebooting..."};
@@ -444,12 +442,12 @@ void Game()
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
+	goto Here;
+
 	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
-
-	goto Here;
 
 	FadeText("Stay RIGHT there. Don't move an inch.");
 
@@ -774,8 +772,10 @@ void Game()
 
 			Pickup PushThis;
 			PushThis.Type = 1;
-			PushThis.WorldX = 500;
+			PushThis.WorldX = 400;
 			PushThis.WorldY = 500;
+			PushThis.Type = 1;
+			PickupVector.push_back(PushThis);
 
 			for (int i = 0; i <= 2; i++)
 			{
@@ -1079,7 +1079,6 @@ void Game()
 			break;
 		};
 	}
-	Here:
 
 	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 
@@ -1386,10 +1385,10 @@ void Game()
 
 	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 	NextLevel(Temp1,20);
-	FadeText("Not so fast!");
-	SpecialTimer.start();
-	SpareTimer.start();
-	StartTime = 285;
+	
+	Mix_Music *Heliosphan = NULL;
+	Heliosphan = Mix_LoadMUS("Resources/Sounds/Heliosphan.ogg");
+
 	while (!LevelFinished)
 	{
 		FPSTimer.start();
@@ -1397,170 +1396,234 @@ void Game()
 		DoThings();
 		HandleEvents();
 
-		if (SpareTimer.get_ticks() >= 1000)
+		switch (LevelProgress)
 		{
-			int CurrentSeconds = 285 - Seconds;
+		case 0:
+			FadeText("Not so fast!");
+			SpecialTimer.start();
 			SpareTimer.start();
-			if (CurrentSeconds < 50)
+			StartTime = 285;
+			Mix_PlayMusic(Heliosphan,1);
+			LevelProgress = 1;
+
+		case 1:
+			if (SpareTimer.get_ticks() >= 1000)
 			{
-				if (CurrentSeconds % 2 == 0)
+				int CurrentSeconds = 285 - Seconds;
+				SpareTimer.start();
+				if (CurrentSeconds < 50)
+				{
+					if (CurrentSeconds % 2 == 0)
+					{
+						SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+						SpawnEnemies(SpawnVector);
+					}
+				}
+
+				else if (CurrentSeconds < 79)
 				{
 					SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(10);
+
+					if (CurrentSeconds % 3 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+					}
+
+					if (CurrentSeconds % 4 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(1);
+					}
+
 					SpawnEnemies(SpawnVector);
 				}
-			}
 
-			else if (CurrentSeconds < 79)
-			{
-				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-
-				if (CurrentSeconds % 3 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(10);
-				}
-
-				if (CurrentSeconds % 4 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(1);
-				}
-
-				SpawnEnemies(SpawnVector);
-			}
-
-			else if (CurrentSeconds < 101)
-			{
-				if (CurrentSeconds % 4 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(10);
-				}
-
-				if (CurrentSeconds % 5 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(1);
-				}
-
-				if (CurrentSeconds % 3 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 100 - 200));
-					SpawnVector.push_back(Character.WorldY + (rand() % 100 - 200));
-					SpawnVector.push_back(2);
-				}
-
-				SpawnEnemies(SpawnVector);
-			}
-
-			else if (CurrentSeconds < 129);
-
-			else if (CurrentSeconds < 160)
-			{
-				if (CurrentSeconds % 4 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(10);
-				}
-
-				if (CurrentSeconds % 6 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(1);
-				}
-
-				if (CurrentSeconds % 5 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(2);
-				}
-
-				if (CurrentSeconds % 4 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(3);
-				}
-
-				if (CurrentSeconds == 195)
-				{
-					SpawnVector.push_back(950);
-					SpawnVector.push_back(20);
-					SpawnVector.push_back(7);
-				}
-
-				SpawnEnemies(SpawnVector);
-			}
-
-			else if (CurrentSeconds < 218)
-			{
-				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-
-				if (CurrentSeconds % 2 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(10);
-				}
-
-				if (CurrentSeconds % 4 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(1);
-				}
-
-				SpawnEnemies(SpawnVector);
-			}
-
-			else if (CurrentSeconds < 258)
-			{
-				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-
-				if (CurrentSeconds % 3 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(10);
-				}
-
-				if (CurrentSeconds % 5 == 0)
-				{
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(1);
-				}
-
-				SpawnEnemies(SpawnVector);
-			}
-
-			else if (CurrentSeconds < 285)
-			{
-				if (CurrentSeconds % 3 == 0)
+				else if (CurrentSeconds < 101)
 				{
 					SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-					SpawnVector.push_back(Character.WorldX + (rand() % 500 - 1000));
-					SpawnVector.push_back(Character.WorldY + (rand() % 500 - 1000));
-					SpawnVector.push_back(10);
+
+					if (CurrentSeconds % 3 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+					}
+
+					if (CurrentSeconds % 5 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(1);
+					}
+
+					else if (CurrentSeconds % 6 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(2);
+					}
+
 					SpawnEnemies(SpawnVector);
 				}
-			}
 
-			else 
-				LevelFinished = true;
+				else if (CurrentSeconds < 129);
+
+				else if (CurrentSeconds < 160)
+				{
+					SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+
+					if (CurrentSeconds % 3 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+					}
+
+					else if (CurrentSeconds % 5 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(1);
+					}
+
+					if (CurrentSeconds % 7 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(2);
+					}
+
+					else if (CurrentSeconds % 6 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(3);
+					}
+
+					if (CurrentSeconds == 195)
+					{
+						SpawnVector.push_back(950);
+						SpawnVector.push_back(20);
+						SpawnVector.push_back(7);
+					}
+
+					SpawnEnemies(SpawnVector);
+				}
+
+				else if (CurrentSeconds < 218)
+				{
+					SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+
+					if (CurrentSeconds % 3 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+					}
+
+					if (CurrentSeconds % 4 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(1);
+					}
+
+					SpawnEnemies(SpawnVector);
+				}
+
+				else if (CurrentSeconds < 258)
+				{
+					SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+
+					if (CurrentSeconds % 4 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+					}
+
+					if (CurrentSeconds % 6 == 0)
+					{
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(1);
+					}
+
+					SpawnEnemies(SpawnVector);
+				}
+
+				else if (CurrentSeconds < 285)
+				{
+					if (CurrentSeconds % 3 == 0)
+					{
+						SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+						SpawnVector.push_back(Character.WorldX + (rand() % 200 - 200));
+						SpawnVector.push_back(Character.WorldY + (rand() % 200 - 200));
+						SpawnVector.push_back(10);
+						SpawnEnemies(SpawnVector);
+					}
+				}
+
+				else 
+					LevelFinished = true;
+			}
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
+
+	Here:
+
+	if (!LoadLevel("Resources/Levels/5")) {State = QUIT; Menu();}
+	NextLevel(30,5860);
+
+	while(!LevelFinished)
+	{
+		FPSTimer.start();
+		DoThings();
+		HandleEvents();
+
+		switch(LevelProgress)
+		{
+		case 0:
+			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+
+			SpawnVector.push_back(400);
+			SpawnVector.push_back(200);
+			SpawnVector.push_back(11);
+
+			SpawnVector.push_back(800);
+			SpawnVector.push_back(200);
+			SpawnVector.push_back(11);
+
+			SpawnVector.push_back(1000);
+			SpawnVector.push_back(200);
+			SpawnVector.push_back(11);
+			
+			SpawnVector.push_back(1200);
+			SpawnVector.push_back(200);
+			SpawnVector.push_back(11);
+
+			SpawnVector.push_back(1600);
+			SpawnVector.push_back(200);
+			SpawnVector.push_back(11);
+
+			SpawnEnemies(SpawnVector);
+
+			LevelProgress = 1;
+			
+		case 1:
+			break;
+		}
+
+		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
+	}
+
 	ClearScreen();
 	ApplySurface(20,20,Win,Screen);
 	SDL_Flip(Screen);

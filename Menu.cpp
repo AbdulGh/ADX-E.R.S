@@ -35,8 +35,8 @@ Gamestate Menu()
 		int Clicked = DoButtons();
 		switch(Clicked)
 		{
-		case 1: return GAME; break;
-		case 2: return OPTIONS; break;
+		case 1: return GAME;
+		case 2: return OPTIONS;
 		case 3: return QUIT;
 		}
 		SDL_Flip(Screen);

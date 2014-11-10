@@ -18,7 +18,7 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 	case 1:
 		elitcejorP.ProjectileRect.w = 2;
 		elitcejorP.ProjectileRect.h = 2;
-		elitcejorP.Damage = 13;
+		elitcejorP.Damage = 20;
 		break;
 	case 2:
 		elitcejorP.ProjectileRect.w = 2;

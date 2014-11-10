@@ -26,8 +26,6 @@ void CreateTile(SDL_Rect Rect)
 void DoTiles(int XCamera, int YCamera)
 {
 	RectVector.erase(RectVector.begin(), RectVector.end());
-	ClearScreen();
-	SDL_FillRect(Screen,NULL,LevelColour);
 	if (LevelVector.size() != 0)
 	{
 		for (int i = 0; i < LevelVector.size(); i++)

@@ -61,6 +61,5 @@ int main(int argc, char *argv[])
 	else if (State == GAME) Game();
 	else if (State == OPTIONS) Options();
 
-
 	return 0;
 }
