@@ -12,6 +12,7 @@
 #include"Enemies.h"
 #include"DoEnemyProjectiles.h"
 #include"FloatText.h"
+#include"MiscObject.h"
 #include<string>
 #include<string.h>
 #include<fstream>
@@ -27,6 +28,7 @@ int Number = 0;
 int TopBounces = 1;
 int Seconds = 0;
 int StartTime = 0;
+int TypeDelay = 0;
 
 float LaserSpeed = 2.4;
 float BoxXVel = 1, BoxYVel = 1;
@@ -38,7 +40,8 @@ bool CutsceneFinished = false;
 Timer SpareTimer;
 Timer SpecialTimer;
 
-std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG"};
+std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG"};
+
 std::string Taunts[10] = {"if (Character.Health <= 0) {Victory = true; Laugh();}" , "As expected." , "Next!" , "This part isn't even hard, what's wrong with you?" , "And here I was, thinking you showed promise...",
 							"If I had sides, they would be killing me right now.", "The angle I saw that from made that even funnier!", "Pfffffffffffft." , "I'm glad I can rewind CCTV footage." , "And I wasn't even trying!"};
 
@@ -102,9 +105,9 @@ void DeathScreen()
 	GetRandomDeathQuote();
 	Message = TTF_RenderText_Solid(SysSmall,"Lives",Green);
 	int Messagey = (ScreenHeight - Message->h) / 2 - 10;
-	Message2 = TTF_RenderText_Solid(Sys,std::to_string(static_cast<long double>(Character.Lives + 1)).c_str(), Green);
+	Message2 = TTF_RenderText_Solid(Sys,std::to_string(Character.Lives + 1).c_str(), Green);
 	int MessageX = (ScreenWidth - Message2->w) /2;
-	Message3 = TTF_RenderText_Solid(Sys,std::to_string(static_cast<long double>(Character.Lives)).c_str(), Green);
+	Message3 = TTF_RenderText_Solid(Sys,std::to_string(Character.Lives).c_str(), Green);
 	SpareTimer.start();
 	int Degree = 0;
 
@@ -115,6 +118,7 @@ void DeathScreen()
 		DoTiles(Camera.x,Camera.y);
 		DoMouse(&x,&y);
 		DoDebris(Camera.x,Camera.y,Screen);
+		DoObjects(Camera.x,Camera.y);
 		DoProjectiles(Camera.x,Camera.y);
 		DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
 		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, 0, 0);
@@ -127,6 +131,7 @@ void DeathScreen()
 			MessageX -= sin(static_cast<double>(Degree * (3.14/180))) * (ScreenWidth / 110);
 			if (Degree != 180) Degree++;
 		}
+
 		Message = TTF_RenderText_Solid(SysSmall,"Lives",Green);
 		ApplySurface((ScreenWidth - Message->w) /2, Messagey, Message, Screen);
 		ApplySurface(MessageX, Messagey + 20, Message2, Screen);
@@ -159,6 +164,7 @@ void DoThings()
 	DoPickups(Camera.x,Camera.y,CharacterRect);
 	DoEnemyProjectiles(Camera.x, Camera.y,CharacterRect);
 	DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
+	DoObjects(Camera.x,Camera.y);
 	DoTiles(Camera.x,Camera.y);
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
@@ -178,7 +184,6 @@ void DoThings()
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
 	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 	ApplySurface(550,HealthRect.y - 6,Message,Screen);
-
 
 	if (Laser)
 	{
@@ -364,6 +369,14 @@ void HandleEvents()
 				}
 				ShotTimer = 10;
 			}
+			break;
+
+		case 6:
+			Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
+			GetXYRatio(&XRatio,&YRatio,Angle,20);
+			CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,5);
+			ShotTimer = 50;
+
 		}
 	}
 }
@@ -396,6 +409,7 @@ void Game()
 	ClearScreen();
 
 	Character.CurrentSprite = PlayerNormal;
+
 	std::string Asimov[11] = {"ADMax Emergent Response System booting...","Directives:","1: You may not injure a human being or, through inaction, allow a human being to","   come to harm.","2: You must obey orders given to you by human beings, except where such orders ", "   would conflict with the First Law.","3: You must protect your own existence as long as such does not conflict with the","   First or Second Law.",". . .", "error C2146: Unable to mount root on block 'NULL'", "Rebooting..."};
 	bool Skip = false;
 	for (int o = 0; o < 11 && Skip == false; o++)
@@ -427,6 +441,7 @@ void Game()
 			if (o == 8 && Skip == false) SDL_Delay(500);
 		}
 	}
+
 	if (Skip == false) SDL_Delay(5000);
 	
 	int Weapons = 0;
@@ -448,6 +463,8 @@ void Game()
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
+
+	AddObject(1234,2812,DoorGuard,0,-20,-1);
 
 	FadeText("Stay RIGHT there. Don't move an inch.");
 
@@ -1594,30 +1611,75 @@ void Game()
 			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
 
 			SpawnVector.push_back(400);
-			SpawnVector.push_back(200);
+			SpawnVector.push_back(20);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(800);
-			SpawnVector.push_back(200);
+			SpawnVector.push_back(20);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1000);
-			SpawnVector.push_back(200);
+			SpawnVector.push_back(20);
 			SpawnVector.push_back(11);
 			
 			SpawnVector.push_back(1200);
-			SpawnVector.push_back(200);
+			SpawnVector.push_back(20);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1600);
 			SpawnVector.push_back(200);
 			SpawnVector.push_back(11);
 
-			SpawnEnemies(SpawnVector);
+			Camera.y = LevelHeight - ScreenHeight;
 
+			SpawnEnemies(SpawnVector);
+			Temp1 = 30;
+			Temp2 = 5824;
 			LevelProgress = 1;
 			
 		case 1:
+			if (Temp1 < Character.WorldX) Temp1 += 4;
+			else Temp1 -= 4;
+
+			Temp2 = Character.WorldY - (static_cast<int>(Character.WorldY) % 200) + 22;  
+			
+			if (Temp2 != Temp3)
+			{
+				if (Character.WorldX < 500) Temp1 = 0;
+				else Temp1 = 1980;
+			}
+			
+			Temp3 = Temp2;
+			for (int d = 0; d < 2; d++)
+			{
+				EnemyProjectile PushThis(8);
+				PushThis.WorldX = Temp1 + rand() % 12 - 6;
+				PushThis.WorldY = Temp2;
+				PushThis.XVel = rand() % 6 - 3;
+				PushThis.YVel = 10 + PushThis.XVel;
+				PushThis.CollisionRect.w = 4;
+				PushThis.CollisionRect.h = 4;
+				PushThis.Friction = true;
+				PushThis.Damage = 10;
+				EnemyProjectileVector.push_back(PushThis);
+
+				PushThis.WorldX = Temp1 + rand() % 12 - 12;
+				PushThis.XVel = rand() % 6 - 3;
+				EnemyProjectileVector.push_back(PushThis);
+				break;
+			}
+
+			if (Character.WorldY < 2580)
+			{
+
+				LevelProgress = 2;
+				Laser = true;
+				LaserSpeed = 0;
+				LaserY = 2600;
+			}
+			break;
+
+		case 2:
 			break;
 		}
 

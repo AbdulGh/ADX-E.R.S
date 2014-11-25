@@ -1,6 +1,7 @@
 #include"DoProjectiles.h"
 #include"Debris.h"
 #include"Declarations.h"
+#include"GetXYRatio.h"
 
 void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 {
@@ -36,6 +37,11 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 		elitcejorP.ProjectileRect.w = 3;
 		elitcejorP.ProjectileRect.h = 3;
 		elitcejorP.Damage = 5;
+
+	case 5:
+		elitcejorP.ProjectileRect.w = 5;
+		elitcejorP.ProjectileRect.h = 5;
+		elitcejorP.Damage = 250;
 	}
 
 	elitcejorP.Time = -1;
@@ -61,6 +67,8 @@ void DoProjectiles(int CameraX, int CameraY)
 				if (abs(CURRENTPROJECTILE.XInc) < 2.5 && abs(CURRENTPROJECTILE.YInc) < 2.5) CURRENTPROJECTILE.Time = rand() % 25 + 5;
 			}
 
+			else if (CURRENTPROJECTILE.Type == 5) CreateProjectile(CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,CURRENTPROJECTILE.XInc * -1 + rand() % 6 - 3, CURRENTPROJECTILE.YInc * -1 + rand() % 6 - 3, 3);
+
 			if (CURRENTPROJECTILE.Time > 0) CURRENTPROJECTILE.Time--; 
 
 			CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX;
@@ -76,16 +84,35 @@ void DoProjectiles(int CameraX, int CameraY)
 					TempRect.h = LevelVector.at(wilkins).Height;
 					if (IsIntersecting(TempRect, CURRENTPROJECTILE.ProjectileRect))
 					{
-						if (CURRENTPROJECTILE.Type == 1 || CURRENTPROJECTILE.Type == 2 || CURRENTPROJECTILE.Type == 4)
+						
+						if (CURRENTPROJECTILE.Type != 3)
 						{
 							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
 							Erase = true; 
 						}
 
-						else if (CURRENTPROJECTILE.Type == 3)
+						else
 						{
 							CURRENTPROJECTILE.XInc = 0;
 							CURRENTPROJECTILE.YInc = 0;
+						}
+
+						if (CURRENTPROJECTILE.Type == 5)
+						{
+							int RocketX = CURRENTPROJECTILE.WorldX;
+							int RocketY = CURRENTPROJECTILE.WorldY;
+
+							Shake = true;
+							Mag = 20;
+							Dur = 50;
+
+							for (int i = 0; i <= 360; i++)
+							{
+								float XR = 0;
+								float YR = 0;
+								GetXYRatio(&XR,&YR,i,rand() % 20);
+								CreateProjectile(RocketX,RocketY,XR,YR,3);
+							}
 						}
 					}
 					if (Erase == true) break;

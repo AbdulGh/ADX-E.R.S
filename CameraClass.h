@@ -5,7 +5,7 @@ class Viewport
 {
 public:
 	float x;
-	float y;
+	float y; 
 	float TargetX;
 	float TargetY;
 	int LevelWidth; //guitar intel

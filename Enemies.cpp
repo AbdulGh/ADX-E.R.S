@@ -4,6 +4,7 @@
 #include"Declarations.h"
 #include"FloatText.h"
 #include"DoEnemyProjectiles.h"
+#include"MiscObject.h"
 #include<time.h>
 
 //Number of sound effects
@@ -43,6 +44,53 @@ Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 	YVel = 0;
 	Moving = true;
 }
+
+void Enemy::Gib()
+{
+	SDL_Surface *Sprite = Suicide;
+	switch(Type)
+	{
+	case 1:
+		Sprite = Suicide;
+		break;
+	case 2:
+		Sprite = Gunman;
+		break;
+	case 3:
+		Sprite = Serious;
+		break;
+	case 7:
+		Sprite = DoorGuard;
+		break;
+	case 8:
+		Sprite = Spawner;
+		break;
+	case 9:
+		Sprite = Frog;
+		break;
+	}
+
+	SDL_Rect Clip;
+	SDL_Surface *Part = Sprite;
+	int Limit = rand() % 3 + 3;
+
+	for (int i = 0; i <= Limit; i++)
+	{
+		Clip.x = rand() % Sprite->w / 2;
+		Clip.y = rand() % Sprite->h / 2;
+
+		Clip.w = rand() % (Sprite->w / 2 - 1);
+		Clip.h = rand() % (Sprite->h / 2 - 1);
+
+		Part->w = Clip.w;
+		Part->h = Clip.h;
+
+		ApplySurface(0,0,Sprite,Part,&Clip);
+		//__debugbreak();
+		AddObject(WorldX,WorldY,Part,rand() % 12 - 6, rand() % 12 - 6, rand() % 90);
+	}
+}
+
 void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
 {
 	srand(time(NULL));
@@ -178,15 +226,36 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			{
 				ProjectileVector.at(x).ProjectileRect.x = ProjectileVector.at(x).WorldX - CameraX;
 				ProjectileVector.at(x).ProjectileRect.y = ProjectileVector.at(x).WorldY - CameraY;
+
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc);
+
+					if (ProjectileVector.at(x).Type == 5)
+						{
+							if (ProjectileVector.at(x).Type == 5)
+							{
+								int RocketX = ProjectileVector.at(x).WorldX;
+								int RocketY = ProjectileVector.at(x).WorldY;
+
+								Shake = true;
+								Mag = 20;
+								Dur = 50;
+
+								for (int i = 0; i <= 360; i++)
+								{
+									float XR = 0;
+									float YR = 0;
+									GetXYRatio(&XR,&YR,i,rand() % 20);
+									CreateProjectile(RocketX,RocketY,XR,YR,3);
+								}
+							}
+						}
 					
-					if (CURRENTENEMY.Moving)
+					if (CURRENTENEMY.Moving & ProjectileVector.at(x).Damage <= 100)
 					{
 						CURRENTENEMY.WorldX += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).XInc / 3;
 						CURRENTENEMY.WorldY += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).YInc / 3;
-
 					}
 
 					if (rand() % 140 < 5)
@@ -307,12 +376,12 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.h = 25;
 						break;
 
-					case 11: //Vertical laser
+					case 11: //Vertical laser //TODO Add image for this
 						Temp.Health = 200;
 						Temp.Moving = false;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
-						Temp.ShotCounter = 0;
+						Temp.ShotCounter = rand() % 50;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -1232,7 +1301,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			if (CURRENTENEMY.ShotCounter == 52)
 			{
 				CURRENTENEMY.Shoot(7,0,0);
-				CURRENTENEMY.ShotCounter = 0;
+				CURRENTENEMY.ShotCounter = -rand() % 20;
 			}
 
 			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect))
@@ -1241,10 +1310,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				Damaged = true;
 				DamageDealt = 40;
 			}
+
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, 
 		}
 
 		if (CURRENTENEMY.Health <= 0) 
 		{
+			if (CURRENTENEMY.Health <= -100) CURRENTENEMY.Gib();
+			
 			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
 			{
 

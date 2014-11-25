@@ -1,8 +1,7 @@
 #include "TileClass.h"
-#include "GetResolution.h"
 
-int SWidth = XWidth;
-int SHeight = YWidth;
+int SWidth = 1920;
+int SHeight = 1080;
 
 bool Between (int Min, int Value, int Max) {return Value >= Min && Value <= Max;}
 

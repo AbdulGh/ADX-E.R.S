@@ -1,12 +1,11 @@
 #include"Declarations.h"
 #include"OpenDebugWindow.h"
 #include"DoProjectiles.h"
-#include"GetResolution.h"
 
 SDL_Event event;
 
-int ScreenWidth = 1366;
-int ScreenHeight = 768;
+int ScreenWidth = 1920;
+int ScreenHeight = 1080;
 
 bool Damaged = false;
 bool Invincible = false;
@@ -26,12 +25,13 @@ int DamageDealt = 0;
 int Enemies = 0;
 int Temp1 = 200;
 int Temp2 = 0;
+int Temp3 = 0;
 int Dur = 0;
 int Mag = 0;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,0,0,0};
+int Ammo[WEAPONS] = {1,0,0,0,0,1};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -68,6 +68,7 @@ SDL_Surface *Spawner = NULL;
 SDL_Surface *Flamethrower = NULL;
 SDL_Surface *LaserPickup = NULL;
 SDL_Surface *Frog = NULL;
+SDL_Surface *Silo = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -205,9 +206,6 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
-
-	GetDesktopResolution(ScreenWidth,ScreenHeight);
-
 	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
@@ -267,6 +265,7 @@ bool Load()
 	Flamethrower = LoadImage("Resources/Images/Flamethrower.png");
 	Frog = LoadImage("Resources/Images/Frog.png");
 	LaserPickup = LoadImage("Resources/Images/Laser.png");
+	Silo = LoadImage("Resources/Images/Missiles.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

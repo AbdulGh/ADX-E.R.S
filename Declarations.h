@@ -1,7 +1,7 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
-#define WEAPONS 5
+#define WEAPONS 6
 
 #include<iostream>
 #include<vector>
@@ -50,6 +50,7 @@ extern SDL_Surface *Spawner;
 extern SDL_Surface *Flamethrower;
 extern SDL_Surface *Frog;
 extern SDL_Surface *LaserPickup;
+extern SDL_Surface *Silo;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -81,6 +82,7 @@ extern int DamageDealt;
 extern int Enemies;
 extern int Temp1;
 extern int Temp2;
+extern int Temp3;
 extern int Dur;
 extern int Mag;
 

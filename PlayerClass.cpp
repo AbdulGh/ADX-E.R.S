@@ -55,7 +55,7 @@ void Player::Update()
 			{
 				InvunFrames = 111;
 				Invincible = true;
-				FloatSomeText(WorldX,WorldY - 20,std::to_string(static_cast<long double>(DamageDealt)),Red);
+				FloatSomeText(WorldX,WorldY - 20,std::to_string(DamageDealt),Red);
 				Shake = true;
 				Mag = 30;
 				Dur = 10;

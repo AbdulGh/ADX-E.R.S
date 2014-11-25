@@ -30,6 +30,7 @@ public:
 	void Bleed(int ProjectileXVel, int ProjectileYVel);
 	void Shoot (int Type, int TargetX, int TargetY);
 	void Shoot (int Type, int Bearing);
+	void Gib();
 };
 
 class Pickup
