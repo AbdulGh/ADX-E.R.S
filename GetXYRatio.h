@@ -3,6 +3,6 @@
 
 #include<math.h>
 
-void GetXYRatio(float * x, float * y, float Angle, int SPEED);
+void GetXYRatio(float * x, float * y, float Angle, float SPEED);
 
 #endif

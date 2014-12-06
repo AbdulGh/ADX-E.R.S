@@ -104,7 +104,7 @@ void DoProjectiles(int CameraX, int CameraY)
 
 							Shake = true;
 							Mag = 20;
-							Dur = 50;
+							Dur = 25;
 
 							for (int i = 0; i <= 360; i++)
 							{

@@ -51,6 +51,8 @@ extern SDL_Surface *Flamethrower;
 extern SDL_Surface *Frog;
 extern SDL_Surface *LaserPickup;
 extern SDL_Surface *Silo;
+extern SDL_Surface *VertLaser;
+extern SDL_Surface *Biggie;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

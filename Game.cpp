@@ -169,6 +169,7 @@ void DoThings()
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
 	DoProjectiles(Camera.x,Camera.y);
+	PrintDebugWindow(SysSmall, Green, Screen);
 
 	HealthRect.w = 3 * Character.Health;
 	Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
@@ -1627,7 +1628,7 @@ void Game()
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1600);
-			SpawnVector.push_back(200);
+			SpawnVector.push_back(20);
 			SpawnVector.push_back(11);
 
 			Camera.y = LevelHeight - ScreenHeight;
@@ -1638,8 +1639,8 @@ void Game()
 			LevelProgress = 1;
 			
 		case 1:
-			if (Temp1 < Character.WorldX) Temp1 += 4;
-			else Temp1 -= 4;
+			if (Temp1 < Character.WorldX) Temp1 += 5;
+			else Temp1 -= 5;
 
 			Temp2 = Character.WorldY - (static_cast<int>(Character.WorldY) % 200) + 22;  
 			
@@ -1669,13 +1670,19 @@ void Game()
 				break;
 			}
 
-			if (Character.WorldY < 2580)
+			if (Character.WorldY < 3180)
 			{
-
 				LevelProgress = 2;
 				Laser = true;
 				LaserSpeed = 0;
-				LaserY = 2600;
+				LaserY = 3200;
+				EnemyVector.erase(EnemyVector.begin(), EnemyVector.end());
+
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+				SpawnVector.push_back(900);
+				SpawnVector.push_back(2600);
+				SpawnVector.push_back(12);
+				SpawnEnemies(SpawnVector);
 			}
 			break;
 

@@ -102,6 +102,50 @@ void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
 	}
 }
 
+void Enemy::BulletPattern(int Type)
+{
+	EnemyProjectile Shot(3);
+	switch (Type)
+	{
+	case 1: //Spiral
+		Shot.Type = 3;
+		Shot.WorldX = WorldX;
+		Shot.WorldY = WorldY;
+		Shot.Damage = 50;
+		Shot.CollisionRect.w = 30;
+		Shot.CollisionRect.h = 30;
+		
+		for (int i = 10; i <= 360; i += 20)
+		{
+			GetXYRatio(&Shot.XVel, &Shot.YVel, i, 3 + i / 26);
+			EnemyProjectileVector.push_back(Shot);
+		}
+		break;
+
+	case 2: //8 shots diagonal
+		for (int i = 45; i < 360; i += 90) Shoot(3, i);
+		for (int i = 0; i < 360; i += 90) Shoot(4, i);
+		break;
+
+	case 3: //8 shot + fire
+		for (int i = 0; i < 360; i += 45) Shoot(3, i);
+		for (int i = 0; i < 360; i += 2)
+		{
+			for (int u = 0; u <= 4; u++) Shoot(8, i + rand() % 10 - 5);
+		}
+		break;
+
+	case 4: //Gunmen and missiles
+		for (int i = 0; i < 360; i += 180) Shoot(5, i);
+		for (int i = 0; i < 360; i += 90) Shoot(6, i);
+		break;
+
+	case 5: //Plain 4 directional shot
+		for (int a = 0; a <= 270; a += 90) Shoot(3,a);
+		break;
+	}
+}
+
 #define CURRENTPICKUPTYPE PickupVector.at(i).Type
 #define CURRENTPICKUPX PickupVector.at(i).WorldX
 #define CURRENTPICKUPY PickupVector.at(i).WorldY
@@ -240,7 +284,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 								Shake = true;
 								Mag = 20;
-								Dur = 50;
+								Dur = 25;
 
 								for (int i = 0; i <= 360; i++)
 								{
@@ -376,12 +420,23 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.h = 25;
 						break;
 
-					case 11: //Vertical laser //TODO Add image for this
+					case 11: //Vertical laser 
 						Temp.Health = 200;
 						Temp.Moving = false;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
 						Temp.ShotCounter = rand() % 50;
+						break;
+
+					case 12: //Biggie;
+						Temp.Health = 1900;
+						Temp.CollisionRect.w = 100;
+						Temp.CollisionRect.h = 130;
+
+						Temp.Frame = Temp.WorldX;
+						Temp.Frametime = Temp.WorldY;
+
+						Temp.Moving = false;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -483,10 +538,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 			if (CURRENTENEMY.ShotCounter == 360)
 			{
-				for (int a = 0; a <= 270; a += 90)
-				{
-					CURRENTENEMY.Shoot(3,a);
-				}
+				CURRENTENEMY.BulletPattern(5);
 
 				CURRENTENEMY.ShotCounter = 0;
 			}
@@ -1311,12 +1363,44 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				DamageDealt = 40;
 			}
 
-			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, 
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, VertLaser, Screen);
+		}
+
+		else if (CURRENTENEMY.Type == 12) //Biggie;
+		{
+			CURRENTENEMY.ShotCounter++;
+			if (CURRENTENEMY.ShotCounter > 210)
+			{
+				CURRENTENEMY.ShotCounter = 0;
+				CURRENTENEMY.BulletPattern(rand() % 4 + 1);
+			}
+
+			if (CURRENTENEMY.Health < 500 && CURRENTENEMY.ShotCounter % 4 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
+
+			if (abs(CURRENTENEMY.WorldX - CURRENTENEMY.Frame) > 300) CURRENTENEMY.XVel *= -1;
+			if (abs(CURRENTENEMY.WorldY - CURRENTENEMY.Frametime) > 300) CURRENTENEMY.YVel *= -1;
+
+			if (CURRENTENEMY.Timer > 0)
+			{
+				CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+				CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+				if (CURRENTENEMY.Timer > 90) CURRENTENEMY.Timer = -90;
+			}
+
+			else if (CURRENTENEMY.Timer == 0)
+			{
+				CURRENTENEMY.XVel = rand() % 6 - 3;
+				CURRENTENEMY.YVel = rand() % 6 - 3;
+			}
+
+			CURRENTENEMY.Timer++;
+
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Biggie, Screen);
 		}
 
 		if (CURRENTENEMY.Health <= 0) 
 		{
-			if (CURRENTENEMY.Health <= -100) CURRENTENEMY.Gib();
+			//if (CURRENTENEMY.Health <= -100) CURRENTENEMY.Gib();
 			
 			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
 			{

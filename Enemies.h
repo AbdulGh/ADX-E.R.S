@@ -31,6 +31,7 @@ public:
 	void Shoot (int Type, int TargetX, int TargetY);
 	void Shoot (int Type, int Bearing);
 	void Gib();
+	void BulletPattern(int Type);
 };
 
 class Pickup

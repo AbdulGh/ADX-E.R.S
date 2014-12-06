@@ -35,7 +35,7 @@
 2 - Better bullet
 3 - Flame
 4 - Laser
-5 - RPG;
+5 - RPG
 
 
  /$$$$$$$$                                   /$$                    
@@ -55,11 +55,11 @@
 5  -  SIS Invader
 6  -  SIS Worm
 7  -  Door guard
-8  -  Suicide spawner
+8  -  Gunman spawner
 9  -  MARS
 10 -  Frog
 11 -  Vertical laser
-12 -  Silo
+12 -  Biggie
 
 
  /$$$$$$$$                                            

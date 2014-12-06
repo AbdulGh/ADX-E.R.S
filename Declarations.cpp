@@ -31,7 +31,7 @@ int Mag = 0;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,0,0,0,0,1};
+int Ammo[WEAPONS] = {1,432,123,876,654,1};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -69,6 +69,8 @@ SDL_Surface *Flamethrower = NULL;
 SDL_Surface *LaserPickup = NULL;
 SDL_Surface *Frog = NULL;
 SDL_Surface *Silo = NULL;
+SDL_Surface *VertLaser = NULL;
+SDL_Surface *Biggie = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -266,6 +268,8 @@ bool Load()
 	Frog = LoadImage("Resources/Images/Frog.png");
 	LaserPickup = LoadImage("Resources/Images/Laser.png");
 	Silo = LoadImage("Resources/Images/Missiles.png");
+	VertLaser = LoadImage("Resources/Images/VertLaser.png");
+	Biggie = LoadImage("Resources/Images/Biggie.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
