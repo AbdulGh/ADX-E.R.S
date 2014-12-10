@@ -11,6 +11,11 @@ void CreateTile(int ex, int y, int w, int h)
 	PushToVectorPls.Width = w;
 	PushToVectorPls.Height = h;
 	LevelVector.push_back(PushToVectorPls);
+
+	OpenDebugWindow("New tile created:");
+	SpareStream.str("");
+	SpareStream << "Y: " << ex << " Y: " << y << " W: " << w << " H: " << h;
+	OpenDebugWindow(SpareStream.str().c_str());
 }
 
 void CreateTile(SDL_Rect Rect)

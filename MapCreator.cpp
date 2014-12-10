@@ -44,6 +44,7 @@ void MapCreator()
 {
 	bool Done = false;
 	bool Grid = false;
+	bool Delete = false;
 	int Increment = 1;
 	LevelColour = 0x0F0FFF;
 	SDL_ShowCursor(SDL_ENABLE);
@@ -83,70 +84,88 @@ void MapCreator()
 		CameraX = EditorCamera.TargetX;
 		CameraY = EditorCamera.TargetY;
 
+
 		while(SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_MOUSEBUTTONDOWN)
 			{
-				bool Done2 = false;
-				SDL_GetMouseState(&TempX,&TempY);
-
-				if (Grid)
+				SDL_GetMouseState(&TempX, &TempY);
+				if (Delete)
 				{
-					TempX = TempX - TempX % 20;
-					TempY = TempY - TempY % 20;
+					for (int m = 0; m < LevelVector.size(); m++)
+					{
+						if (InBetween(LevelVector.at(m).WorldX, TempX + EditorCamera.x, LevelVector.at(m).WorldX + LevelVector.at(m).Width)
+							&& InBetween(LevelVector.at(m).WorldY, TempY + EditorCamera.y, LevelVector.at(m).WorldY + LevelVector.at(m).Height))
+						{
+							LevelVector.erase(LevelVector.begin() + m);
+							break;
+						}
+					}
 				}
 
-				while(!Done2)
+				else
 				{
-					int CurrentX = 0;
-					int CurrentY = 0;
-					SDL_GetMouseState(&CurrentX, &CurrentY);
+
+					bool Done2 = false;
 
 					if (Grid)
 					{
-						CurrentX = CurrentX - CurrentX % 20;
-						CurrentY = CurrentY - CurrentY % 20;
+						TempX = TempX - TempX % 20;
+						TempY = TempY - TempY % 20;
 					}
 
-					SDL_Rect TempRect;
-					TempRect.x = TempX;
-					TempRect.y = TempY;
-					TempRect.w = TempW;
-					TempRect.h = TempH;
-
-					TempW = CurrentX - TempX;
-					if (TempW < 0) 
+					while (!Done2)
 					{
-						TempW *= -1;
-						TempRect.x = CurrentX;
-					}
+						int CurrentX = 0;
+						int CurrentY = 0;
+						SDL_GetMouseState(&CurrentX, &CurrentY);
 
-					TempH = CurrentY - TempY;
-					if (TempH < 0)
-					{
-						TempH *= -1;
-						TempRect.y = CurrentY;
-					}
-
-					DoTiles(EditorCamera.x,EditorCamera.y);
-					SpareStream.str("");
-					SpareStream << "X: " << EditorCamera.x + TempRect.x << " Y: " << EditorCamera.y + TempRect.y << " W: " << TempRect.w << " H: " << TempRect.h;
-					Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-					SDL_FillRect(Screen,&TempRect,0xFFFFFF);
-					ApplySurface(0,0,Message,Screen);
-					SDL_Flip(Screen);
-					ClearScreen();
-					SDL_PumpEvents();
-					while(SDL_PollEvent(&event))
-					{
-						if(event.type == SDL_MOUSEBUTTONDOWN)
+						if (Grid)
 						{
-							Done2 = true;
-							CreateTile(EditorCamera.x + TempRect.x,EditorCamera.y + TempRect.y,TempRect.w,TempRect.h);
+							CurrentX = CurrentX - CurrentX % 20;
+							CurrentY = CurrentY - CurrentY % 20;
 						}
-						else if (event.type == SDL_KEYDOWN)
+
+						SDL_Rect TempRect;
+						TempRect.x = TempX;
+						TempRect.y = TempY;
+						TempRect.w = TempW;
+						TempRect.h = TempH;
+
+						TempW = CurrentX - TempX;
+						if (TempW < 0)
 						{
-							if (event.key.keysym.sym == SDLK_ESCAPE) Done2 = true;
+							TempW *= -1;
+							TempRect.x = CurrentX;
+						}
+
+						TempH = CurrentY - TempY;
+						if (TempH < 0)
+						{
+							TempH *= -1;
+							TempRect.y = CurrentY;
+						}
+
+						DoTiles(EditorCamera.x, EditorCamera.y);
+						SpareStream.str("");
+						SpareStream << "X: " << EditorCamera.x + TempRect.x << " Y: " << EditorCamera.y + TempRect.y << " W: " << TempRect.w << " H: " << TempRect.h;
+						Message = TTF_RenderText_Solid(SysSmall, SpareStream.str().c_str(), Green);
+						SDL_FillRect(Screen, &TempRect, 0xFFFFFF);
+						ApplySurface(0, 0, Message, Screen);
+						SDL_Flip(Screen);
+						ClearScreen();
+						SDL_PumpEvents();
+						while (SDL_PollEvent(&event))
+						{
+							if (event.type == SDL_MOUSEBUTTONDOWN)
+							{
+								Done2 = true;
+								CreateTile(EditorCamera.x + TempRect.x, EditorCamera.y + TempRect.y, TempRect.w, TempRect.h);
+							}
+							else if (event.type == SDL_KEYDOWN)
+							{
+								if (event.key.keysym.sym == SDLK_ESCAPE) Done2 = true;
+							}
 						}
 					}
 				}
@@ -163,6 +182,13 @@ void MapCreator()
 					OpenDebugWindow(SpareStream.str().c_str());
 				}
 
+				else if (event.key.keysym.sym == SDLK_d)
+				{
+					Delete = !Delete;
+					SpareStream.str("");
+					SpareStream << "Delete mode: " << Delete;
+					OpenDebugWindow(SpareStream.str().c_str());
+				}
 				else if (event.key.keysym.sym == SDLK_RETURN)
 				{
 					std::ofstream Output;

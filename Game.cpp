@@ -36,6 +36,7 @@ float BoxXVel = 1, BoxYVel = 1;
 bool Update = true;
 bool LevelFinished = false;
 bool CutsceneFinished = false;
+bool DebugBool = false;
 
 Timer SpareTimer;
 Timer SpecialTimer;
@@ -169,7 +170,11 @@ void DoThings()
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
 	DoProjectiles(Camera.x,Camera.y);
-	PrintDebugWindow(SysSmall, Green, Screen);
+	if (DebugBool)
+	{
+		PrintDebugWindow(SysSmall, Green, Screen);
+		Character.Health = 100;
+	}
 
 	HealthRect.w = 3 * Character.Health;
 	Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
@@ -276,6 +281,7 @@ void HandleEvents()
 			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true; main(NULL,NULL);}
 			else if (event.key.keysym.sym == SDLK_e) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q) SwapWeapons(false);
+			else if (event.key.keysym.sym == SDLK_TAB) DebugBool = !DebugBool;
 			else if (event.key.keysym.sym == SDLK_k) Character.Health = 100;
 		}
 
@@ -458,14 +464,12 @@ void Game()
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
-	goto Here;
+	//goto Here;
 
 	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
-
-	AddObject(1234,2812,DoorGuard,0,-20,-1);
 
 	FadeText("Stay RIGHT there. Don't move an inch.");
 
@@ -880,6 +884,7 @@ void Game()
 				if (Vel < 10) Vel *= 1.1;
 
 				SDL_Flip(Screen);
+				ClearScreen();
 				SDL_Delay(10);
 			}
 
@@ -1292,6 +1297,7 @@ void Game()
 						break;
 					}
 					SDL_Flip(Screen);
+					ClearScreen();
 					if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 				}
 				LevelProgress = 5;
@@ -1385,6 +1391,7 @@ void Game()
 				}
 
 				SDL_Flip(Screen);
+				ClearScreen();
 				if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 			}
 			Update = true;
@@ -1407,7 +1414,7 @@ void Game()
 	Mix_Music *Heliosphan = NULL;
 	Heliosphan = Mix_LoadMUS("Resources/Sounds/Heliosphan.ogg");
 
-	while (!LevelFinished)
+	while (!LevelFinished && State == GAME)
 	{
 		FPSTimer.start();
 
@@ -1600,7 +1607,7 @@ void Game()
 	if (!LoadLevel("Resources/Levels/5")) {State = QUIT; Menu();}
 	NextLevel(30,5860);
 
-	while(!LevelFinished)
+	while(!LevelFinished && State == GAME)
 	{
 		FPSTimer.start();
 		DoThings();
@@ -1612,23 +1619,23 @@ void Game()
 			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
 
 			SpawnVector.push_back(400);
-			SpawnVector.push_back(20);
+			SpawnVector.push_back(1020);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(800);
-			SpawnVector.push_back(20);
+			SpawnVector.push_back(1020);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1000);
-			SpawnVector.push_back(20);
+			SpawnVector.push_back(1020);
 			SpawnVector.push_back(11);
 			
 			SpawnVector.push_back(1200);
-			SpawnVector.push_back(20);
+			SpawnVector.push_back(1020);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1600);
-			SpawnVector.push_back(20);
+			SpawnVector.push_back(1020);
 			SpawnVector.push_back(11);
 
 			Camera.y = LevelHeight - ScreenHeight;

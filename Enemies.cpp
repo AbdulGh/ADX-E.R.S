@@ -156,8 +156,22 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 		SDL_Rect TempRect;
 		PlayerRect.x += CameraX;
 		PlayerRect.y += CameraY;
+		int Distance, XDiff, YDiff;
 		for (int i = 0; i < PickupVector.size(); i++)
 		{
+			XDiff = CURRENTPICKUPX - PlayerRect.x;
+			YDiff = CURRENTPICKUPY - PlayerRect.y;
+			Distance = sqrt(XDiff * XDiff + YDiff * YDiff);
+
+			if (Distance < 400)
+			{
+				if (XDiff > 0) CURRENTPICKUPX -= 100 / Distance;
+				else CURRENTPICKUPX += 100 / Distance;
+
+				if (YDiff > 0) CURRENTPICKUPY -= 100 / Distance;
+				else CURRENTPICKUPY += 100 / Distance;
+			}
+
 			switch (CURRENTPICKUPTYPE)
 			{
 			case 1: //Shotgun
@@ -429,7 +443,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 12: //Biggie;
-						Temp.Health = 1900;
+						Temp.Health = 2000;
 						Temp.CollisionRect.w = 100;
 						Temp.CollisionRect.h = 130;
 
@@ -526,8 +540,46 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					break;
 				}
 			}
+			/*
 			CURRENTENEMY.WorldX += XDiff;
 			CURRENTENEMY.WorldY += YDiff;
+			*/
+			
+			float Acceleration = 0.01;
+
+			if (XDiff > 0)
+			{
+				if (CURRENTENEMY.XVel += Acceleration > XDiff) CURRENTENEMY.XVel = XDiff;
+				else CURRENTENEMY.XVel += Acceleration;
+			}
+
+			else
+			{
+				if (CURRENTENEMY.XVel -= Acceleration < XDiff) CURRENTENEMY.XVel = XDiff;
+				else CURRENTENEMY.XVel -= Acceleration;
+			}
+
+			if (YDiff > 0)
+			{
+				if (CURRENTENEMY.YVel += Acceleration > YDiff) CURRENTENEMY.YVel = YDiff;
+				else CURRENTENEMY.YVel += Acceleration;
+			}
+
+			else
+			{
+				if (CURRENTENEMY.YVel -= Acceleration < YDiff) CURRENTENEMY.YVel = YDiff;
+				else CURRENTENEMY.YVel -= Acceleration;
+			}
+			
+			if (CURRENTENEMY.XVel > CURRENTENEMY.Speed) CURRENTENEMY.XVel = CURRENTENEMY.Speed;
+			else if (CURRENTENEMY.XVel < -CURRENTENEMY.Speed) CURRENTENEMY.XVel = -CURRENTENEMY.Speed;
+
+			if (CURRENTENEMY.YVel > CURRENTENEMY.Speed) CURRENTENEMY.YVel = CURRENTENEMY.Speed;
+			else if (CURRENTENEMY.YVel < -CURRENTENEMY.Speed) CURRENTENEMY.YVel = -CURRENTENEMY.Speed;
+
+			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Gunman, Screen);
 
 			CURRENTENEMY.ShotCounter++;
@@ -1369,10 +1421,19 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		else if (CURRENTENEMY.Type == 12) //Biggie;
 		{
 			CURRENTENEMY.ShotCounter++;
+
 			if (CURRENTENEMY.ShotCounter > 210)
 			{
 				CURRENTENEMY.ShotCounter = 0;
 				CURRENTENEMY.BulletPattern(rand() % 4 + 1);
+			}
+
+			else if (CURRENTENEMY.ShotCounter % 23 == 0)
+			{
+				int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
+				CURRENTENEMY.Shoot(3, Angle - 25);
+				CURRENTENEMY.Shoot(3, Angle);
+				CURRENTENEMY.Shoot(3, Angle + 25);
 			}
 
 			if (CURRENTENEMY.Health < 500 && CURRENTENEMY.ShotCounter % 4 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
