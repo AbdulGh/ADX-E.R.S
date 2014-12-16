@@ -29,6 +29,7 @@ int TopBounces = 1;
 int Seconds = 0;
 int StartTime = 0;
 int TypeDelay = 0;
+int BlockHeight = 0;
 
 float LaserSpeed = 2.4;
 float BoxXVel = 1, BoxYVel = 1;
@@ -156,6 +157,7 @@ void DoThings()
 		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
 		Camera.Update();
 	}
+
 	CheckShake();
 	DoMouse(&x,&y);
 	DoDebris(Camera.x,Camera.y,Screen);
@@ -170,6 +172,7 @@ void DoThings()
 	CheckText();
 	DoFloat(Camera.x,Camera.y);
 	DoProjectiles(Camera.x,Camera.y);
+
 	if (DebugBool)
 	{
 		PrintDebugWindow(SysSmall, Green, Screen);
@@ -190,6 +193,22 @@ void DoThings()
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
 	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 	ApplySurface(550,HealthRect.y - 6,Message,Screen);
+
+	if (BlockHeight != 0)
+	{
+		SDL_Rect LaserBlock;
+		LaserBlock.x = 0;
+		LaserBlock.y = BlockHeight - Camera.y;
+		LaserBlock.w = ScreenWidth;
+		LaserBlock.h = 4;
+		SDL_FillRect(Screen, &LaserBlock, 0xFF0000);
+
+		if (Character.WorldY < BlockHeight)
+		{
+			Damaged = true;
+			DamageDealt = 1000;
+		}
+	}
 
 	if (Laser)
 	{
@@ -281,7 +300,11 @@ void HandleEvents()
 			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true; main(NULL,NULL);}
 			else if (event.key.keysym.sym == SDLK_e) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q) SwapWeapons(false);
-			else if (event.key.keysym.sym == SDLK_TAB) DebugBool = !DebugBool;
+			else if (event.key.keysym.sym == SDLK_TAB)
+			{
+				DebugBool = !DebugBool;
+				for (int i = 0; i < WEAPONS; i++) Ammo[i] = 9999;
+			}
 			else if (event.key.keysym.sym == SDLK_k) Character.Health = 100;
 		}
 
@@ -379,11 +402,15 @@ void HandleEvents()
 			break;
 
 		case 6:
-			Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
-			GetXYRatio(&XRatio,&YRatio,Angle,20);
-			CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,5);
-			ShotTimer = 50;
-
+			if (Ammo[5] == 0) Mix_PlayChannel(-1, Empty, 0);
+			else
+			{
+				Ammo[5]--;
+				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y);
+				GetXYRatio(&XRatio, &YRatio, Angle, 20);
+				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 5);
+				ShotTimer = 50;
+			}
 		}
 	}
 }
@@ -1605,7 +1632,7 @@ void Game()
 	Here:
 
 	if (!LoadLevel("Resources/Levels/5")) {State = QUIT; Menu();}
-	NextLevel(30,5860);
+	NextLevel(500,5860);
 
 	while(!LevelFinished && State == GAME)
 	{
@@ -1613,29 +1640,35 @@ void Game()
 		DoThings();
 		HandleEvents();
 
-		switch(LevelProgress)
+		EnemyProjectile BetterRun(8);
+		BetterRun.CollisionRect.w = 4;
+		BetterRun.CollisionRect.h = 4;
+		BetterRun.Friction = true;
+		BetterRun.Damage = 10;
+
+		switch (LevelProgress)
 		{
 		case 0:
-			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+			SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 
 			SpawnVector.push_back(400);
-			SpawnVector.push_back(1020);
+			SpawnVector.push_back(4420);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(800);
-			SpawnVector.push_back(1020);
+			SpawnVector.push_back(4420);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1000);
-			SpawnVector.push_back(1020);
+			SpawnVector.push_back(4420);
 			SpawnVector.push_back(11);
-			
+
 			SpawnVector.push_back(1200);
-			SpawnVector.push_back(1020);
+			SpawnVector.push_back(4420);
 			SpawnVector.push_back(11);
 
 			SpawnVector.push_back(1600);
-			SpawnVector.push_back(1020);
+			SpawnVector.push_back(4420);
 			SpawnVector.push_back(11);
 
 			Camera.y = LevelHeight - ScreenHeight;
@@ -1643,60 +1676,146 @@ void Game()
 			SpawnEnemies(SpawnVector);
 			Temp1 = 30;
 			Temp2 = 5824;
+
+			Pickup PushThis;
+			PushThis.Type = 1;
+			PushThis.WorldX = 200;
+			PushThis.WorldY = 4500;
+			PickupVector.push_back(PushThis);
+
+			for (int i = 1; PushThis.Type != 6; i++)
+			{
+				PushThis.WorldX += 70;
+				PickupVector.push_back(PushThis);
+				if (i % 3 == 0) PushThis.Type++;
+			}
+
 			LevelProgress = 1;
-			
+
 		case 1:
 			if (Temp1 < Character.WorldX) Temp1 += 5;
 			else Temp1 -= 5;
 
-			Temp2 = Character.WorldY - (static_cast<int>(Character.WorldY) % 200) + 22;  
-			
+			Temp2 = Character.WorldY - (static_cast<int>(Character.WorldY) % 200) + 22;
+
 			if (Temp2 != Temp3)
 			{
-				if (Character.WorldX < 500) Temp1 = 0;
+				if (Character.WorldX < 1000) Temp1 = 0;
 				else Temp1 = 1980;
 			}
-			
+
 			Temp3 = Temp2;
-			for (int d = 0; d < 2; d++)
-			{
-				EnemyProjectile PushThis(8);
-				PushThis.WorldX = Temp1 + rand() % 12 - 6;
-				PushThis.WorldY = Temp2;
-				PushThis.XVel = rand() % 6 - 3;
-				PushThis.YVel = 10 + PushThis.XVel;
-				PushThis.CollisionRect.w = 4;
-				PushThis.CollisionRect.h = 4;
-				PushThis.Friction = true;
-				PushThis.Damage = 10;
-				EnemyProjectileVector.push_back(PushThis);
 
-				PushThis.WorldX = Temp1 + rand() % 12 - 12;
-				PushThis.XVel = rand() % 6 - 3;
-				EnemyProjectileVector.push_back(PushThis);
-				break;
-			}
+			BetterRun.WorldX = Temp1 + rand() % 12 - 6;
+			BetterRun.WorldY = Temp2;
+			BetterRun.XVel = rand() % 6 - 3;
+			BetterRun.YVel = 10 + BetterRun.XVel;
+			EnemyProjectileVector.push_back(BetterRun);
 
-			if (Character.WorldY < 3180)
+			if (Character.WorldY < 4600) LevelProgress = 2;
+			break;
+
+		case 2:
+			if (Character.WorldY < 4376)
 			{
-				LevelProgress = 2;
 				Laser = true;
 				LaserSpeed = 0;
-				LaserY = 3200;
+				LaserY = 4400;
 				EnemyVector.erase(EnemyVector.begin(), EnemyVector.end());
 
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 				SpawnVector.push_back(900);
-				SpawnVector.push_back(2600);
+				SpawnVector.push_back(3800);
 				SpawnVector.push_back(12);
 				SpawnEnemies(SpawnVector);
+				BlockHeight = 3000;
+				LevelProgress = 3;
 			}
 			break;
 
-		case 2:
+		case 3:
+			if (Enemies == 0)
+			{
+				LaserSpeed = 1.9;
+				LevelProgress = 4;
+
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+
+				SpawnVector.push_back(400);
+				SpawnVector.push_back(2020);
+				SpawnVector.push_back(11);
+
+				SpawnVector.push_back(800);
+				SpawnVector.push_back(2020);
+				SpawnVector.push_back(11);
+
+				SpawnVector.push_back(1200);
+				SpawnVector.push_back(2020);
+				SpawnVector.push_back(11);
+
+				SpawnVector.push_back(1600);
+				SpawnVector.push_back(2020);
+				SpawnVector.push_back(11);
+
+				SpawnEnemies(SpawnVector);
+				Pickup PushThis;
+				PushThis.WorldY = 2050;
+
+				for (int v = 0; v < 3; v++)
+				{
+					PushThis.WorldX = 1200;
+					PushThis.Type = 1;
+					for (int c = 0; c <= 5; c++)
+					{
+						PickupVector.push_back(PushThis);
+						PushThis.WorldX += 70;
+						PushThis.Type += 1;
+					}
+					PushThis.WorldY += 70;
+				}
+				BlockHeight = 0;
+			}
+			break;
+
+		case 4:
+			if (Character.WorldY < 2000)
+			{
+				LaserY = 2020;
+				LaserSpeed = 0;
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+				SpawnVector.push_back(500);
+				SpawnVector.push_back(1100);
+				SpawnVector.push_back(12);
+				SpawnVector.push_back(1500);
+				SpawnVector.push_back(1100);
+				SpawnVector.push_back(12);
+				SpawnEnemies(SpawnVector);
+
+				LevelProgress = 5;
+			}
+			break;
+
+		case 5:
+			BlockHeight = 800;
+
+			if (Character.WorldY < 800)
+			{
+				Damaged = true;
+				DamageDealt = 1000;
+			}
+
+			if (Enemies == 0)
+			{
+				LevelProgress = 6;
+				LaserSpeed = 1.5;
+				BlockHeight = 0;
+			}
+			break;
+
+		case 6:
+			if (Character.WorldX > 2000) LevelFinished = true;
 			break;
 		}
-
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 

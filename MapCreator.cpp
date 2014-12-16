@@ -114,10 +114,11 @@ void MapCreator()
 						TempY = TempY - TempY % 20;
 					}
 
+					int CurrentX = 0;
+					int CurrentY = 0;
+
 					while (!Done2)
 					{
-						int CurrentX = 0;
-						int CurrentY = 0;
 						SDL_GetMouseState(&CurrentX, &CurrentY);
 
 						if (Grid)

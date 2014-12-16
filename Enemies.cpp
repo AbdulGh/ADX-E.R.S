@@ -127,12 +127,8 @@ void Enemy::BulletPattern(int Type)
 		for (int i = 0; i < 360; i += 90) Shoot(4, i);
 		break;
 
-	case 3: //8 shot + fire
+	case 3: //8 shot
 		for (int i = 0; i < 360; i += 45) Shoot(3, i);
-		for (int i = 0; i < 360; i += 2)
-		{
-			for (int u = 0; u <= 4; u++) Shoot(8, i + rand() % 10 - 5);
-		}
 		break;
 
 	case 4: //Gunmen and missiles
@@ -163,13 +159,13 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			YDiff = CURRENTPICKUPY - PlayerRect.y;
 			Distance = sqrt(XDiff * XDiff + YDiff * YDiff);
 
-			if (Distance < 400)
+			if (Distance < 110)
 			{
-				if (XDiff > 0) CURRENTPICKUPX -= 100 / Distance;
-				else CURRENTPICKUPX += 100 / Distance;
+				if (XDiff > 0) CURRENTPICKUPX -= 210 / Distance;
+				else CURRENTPICKUPX += 210 / Distance;
 
-				if (YDiff > 0) CURRENTPICKUPY -= 100 / Distance;
-				else CURRENTPICKUPY += 100 / Distance;
+				if (YDiff > 0) CURRENTPICKUPY -= 210 / Distance;
+				else CURRENTPICKUPY += 210 / Distance;
 			}
 
 			switch (CURRENTPICKUPTYPE)
@@ -237,6 +233,20 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				{
 					Ammo[4] += 80;
 					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Laser SMG +80", White);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
+
+			case 6: //RPG
+				TempRect.x = CURRENTPICKUPX;
+				TempRect.y = CURRENTPICKUPY;
+				TempRect.w = Rocket->w;
+				TempRect.h = Rocket->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Rocket, Screen);
+				if (IsIntersecting(TempRect, PlayerRect))
+				{
+					Ammo[5] += 2;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "RPG +2", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -435,7 +445,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 11: //Vertical laser 
-						Temp.Health = 200;
+						Temp.Health = 30;
 						Temp.Moving = false;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
@@ -585,7 +595,15 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.ShotCounter++;
 			if (CURRENTENEMY.ShotCounter % 60 == 0)
 			{
-				CURRENTENEMY.Shoot(1,PlayerX,PlayerY);
+				//CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
+				CURRENTENEMY.Shoot(9, 0);
+				CURRENTENEMY.Shoot(9, 90);
+				CURRENTENEMY.Shoot(9, 180);
+				CURRENTENEMY.Shoot(9, 270);
+				CURRENTENEMY.Shoot(9, 45);
+				CURRENTENEMY.Shoot(9, 135);
+				CURRENTENEMY.Shoot(9, 225);
+				CURRENTENEMY.Shoot(9, 315);
 			}
 
 			if (CURRENTENEMY.ShotCounter == 360)
@@ -808,7 +826,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.WorldY += YDiff;
 
 			CURRENTENEMY.ShotCounter++;
-			if (CURRENTENEMY.ShotCounter > 140)
+			if (CURRENTENEMY.ShotCounter > 200)
 			{
 				CURRENTENEMY.Shoot(5,PlayerX,PlayerY);
 				CURRENTENEMY.ShotCounter = 0;

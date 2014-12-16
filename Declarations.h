@@ -29,6 +29,7 @@ extern int ScreenHeight;
 extern SDL_Surface *Screen;
 extern SDL_Surface *Gunman;
 extern SDL_Surface *Message;
+extern SDL_Surface *Rocket;
 extern SDL_Surface *Message2;
 extern SDL_Surface *Message3;
 extern SDL_Surface *PlayerNormal;

@@ -31,7 +31,7 @@ int Mag = 0;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,432,123,876,654,1};
+int Ammo[WEAPONS] = {1,0,0,0,0,0};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -59,6 +59,7 @@ SDL_Surface *Ship = NULL;
 SDL_Surface *ShipProjectile = NULL;
 SDL_Surface *Worm = NULL;
 SDL_Surface *Invader = NULL;
+SDL_Surface *Rocket = NULL;
 SDL_Surface *MachineGun = NULL;
 SDL_Surface *Health = NULL;
 SDL_Surface *Win = NULL;
@@ -222,10 +223,13 @@ bool Init()
 
 void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip)
 {
-    SDL_Rect offset;
-	offset.x = x + XChange;
-    offset.y = y + YChange;
-    SDL_BlitSurface( Source, Clip, Destination, &offset );
+	if (Source != NULL)
+	{
+		SDL_Rect offset;
+		offset.x = x + XChange;
+		offset.y = y + YChange;
+		SDL_BlitSurface(Source, Clip, Destination, &offset);
+	}
 }
 
 bool Load()
@@ -269,6 +273,7 @@ bool Load()
 	LaserPickup = LoadImage("Resources/Images/Laser.png");
 	Silo = LoadImage("Resources/Images/Missiles.png");
 	VertLaser = LoadImage("Resources/Images/VertLaser.png");
+	Rocket = LoadImage("Resources/Images/Rocket.png");
 	Biggie = LoadImage("Resources/Images/Biggie.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;

@@ -40,8 +40,8 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 		break;
 
 	case 5:
-		elitcejorP.ProjectileRect.w = 5;
-		elitcejorP.ProjectileRect.h = 5;
+		elitcejorP.ProjectileRect.w = 7;
+		elitcejorP.ProjectileRect.h = 7;
 		elitcejorP.Damage = 250;
 	}
 
