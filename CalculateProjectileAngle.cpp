@@ -4,7 +4,7 @@
 
 double ArcTan(double Number)
 {
-	return atan(Number) * (180 / 3.14159265);
+	return atan(Number) * (180 / 3.1415);
 }
 
 double CalculateProjectileAngle( double x1, double y1, double x2, double y2)

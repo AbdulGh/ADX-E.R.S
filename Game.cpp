@@ -482,24 +482,28 @@ void Game()
 	Timer FPSTimer;
 	CharacterRect.w = Character.CurrentSprite->w;
 	CharacterRect.h = Character.CurrentSprite->h;
-	XSpawn = 1834;
-	YSpawn = 2812;
-	Character.WorldX = 1834;
-	Character.WorldY = 2812;
+	XSpawn = 1000;
+	YSpawn = 1000;
+	Character.WorldX = 1000;
+	Character.WorldY = 2000;
 	HealthRect.x = 115;
 	HealthRect.h = 20;
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
-	//goto Here;
+	goto Here;
 
-	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
+	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
 
-	FadeText("Stay RIGHT there. Don't move an inch.");
+	FadeText("how did this get here i am not good with comput");
 
+	SpawnVector.push_back(900);
+	SpawnVector.push_back(900);
+	SpawnVector.push_back(2);
+	SpawnEnemies(SpawnVector);
 
 	while (!LevelFinished && State == GAME) //Level 1
 	{
@@ -509,182 +513,7 @@ void Game()
 
 		HandleEvents();
 
-		if (Character.WorldX < 1400 && LevelProgress < 1)
-		{
-			LevelProgress = 1;
-			SpawnVector.push_back (1300);
-			SpawnVector.push_back (Character.WorldY);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (1250);
-			SpawnVector.push_back (Character.WorldY + 100);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (1550);
-			SpawnVector.push_back (Character.WorldY - 135);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (1150);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (900);
-			SpawnVector.push_back (Character.WorldY);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (850);
-			SpawnVector.push_back (Character.WorldY + 100);
-			SpawnVector.push_back (1);
-
-
-			SpawnVector.push_back (750);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (1);
-
-
-
-			SpawnEnemies(SpawnVector);
-			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-
-			FadeText("Why do they never listen?");
-		}
-
-		else if (Enemies == 0 && LevelProgress == 1)
-		{
-			LevelProgress = 2;
-			FadeText("My favourite grunts!");
-		}
-
-		else if (LevelProgress == 2 && Character.WorldY < 1600)
-		{
-			LevelProgress = 3;
-			SpawnVector.push_back (Character.WorldX - 100);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX + 100);
-			SpawnVector.push_back (Character.WorldY);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 145);
-			SpawnVector.push_back (Character.WorldY + 120);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 300);
-			SpawnVector.push_back (Character.WorldY - 135);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX + 200);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 445);
-			SpawnVector.push_back (Character.WorldY + 420);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 600);
-			SpawnVector.push_back (Character.WorldY - 435);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX + 500);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 345);
-			SpawnVector.push_back (Character.WorldY + 720);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX + 300);
-			SpawnVector.push_back (Character.WorldY + 256);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 445);
-			SpawnVector.push_back (Character.WorldY + 620);
-			SpawnVector.push_back (2);
-
-			SpawnEnemies(SpawnVector);
-			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-		}
-
-		else if (LevelProgress == 3 && Enemies == 0)
-		{
-			LevelProgress = 4;
-			FadeText("Alright, you've passed the test. You can go free.");
-			SpareTimer.start();
-		}
-
-		else if (LevelProgress == 4 && SpareTimer.get_ticks() > 8000)
-		{
-			LevelProgress = 5;
-			SpareTimer.stop();
-			FadeText("I lied, I'm sorry.");
-
-			SpawnVector.push_back (Character.WorldX + 400);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 145);
-			SpawnVector.push_back (Character.WorldY + 520);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX + 300);
-			SpawnVector.push_back (Character.WorldY + 256);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 445);
-			SpawnVector.push_back (Character.WorldY + 620);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX + 500);
-			SpawnVector.push_back (Character.WorldY + 356);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 345);
-			SpawnVector.push_back (Character.WorldY + 720);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX + 300);
-			SpawnVector.push_back (Character.WorldY + 256);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 445);
-			SpawnVector.push_back (Character.WorldY + 620);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 445);
-			SpawnVector.push_back (Character.WorldY + 620);
-			SpawnVector.push_back (2);
-
-			SpawnVector.push_back (Character.WorldX - 145);
-			SpawnVector.push_back (Character.WorldY + 120);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 300);
-			SpawnVector.push_back (Character.WorldY - 135);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 145);
-			SpawnVector.push_back (Character.WorldY + 120);
-			SpawnVector.push_back (1);
-
-			SpawnVector.push_back (Character.WorldX - 300);
-			SpawnVector.push_back (Character.WorldY - 135);
-			SpawnVector.push_back (1);
-
-			SpawnEnemies(SpawnVector);
-			SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-		}
-
-		else if (LevelProgress == 5 && Enemies == 0)
-		{
-			LevelProgress = 6;
-			FadeText("You really do have a lot of potential.");
-			FadeText("No one has actually ever made it this far before.");
-			FadeText("Into the cage you go.");
-			SpareTimer.start();
-		}
-
-		else if (LevelProgress == 6 && SpareTimer.get_ticks() > 10000) LevelFinished = true;
+		
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
@@ -1711,7 +1540,10 @@ void Game()
 			BetterRun.XVel = rand() % 6 - 3;
 			BetterRun.YVel = 10 + BetterRun.XVel;
 			EnemyProjectileVector.push_back(BetterRun);
-
+			BetterRun.WorldX += rand() % 4 - 2;
+			BetterRun.XVel = rand() % 6 - 3;
+			BetterRun.YVel = 10 + BetterRun.XVel;
+			EnemyProjectileVector.push_back(BetterRun);
 			if (Character.WorldY < 4600) LevelProgress = 2;
 			break;
 
@@ -1778,9 +1610,9 @@ void Game()
 			break;
 
 		case 4:
-			if (Character.WorldY < 2000)
+			if (Character.WorldY < 1900)
 			{
-				LaserY = 2020;
+				LaserY = 1950;
 				LaserSpeed = 0;
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 				SpawnVector.push_back(500);
@@ -1796,13 +1628,7 @@ void Game()
 			break;
 
 		case 5:
-			BlockHeight = 800;
-
-			if (Character.WorldY < 800)
-			{
-				Damaged = true;
-				DamageDealt = 1000;
-			}
+			BlockHeight = 200;
 
 			if (Enemies == 0)
 			{

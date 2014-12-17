@@ -131,13 +131,17 @@ void Enemy::BulletPattern(int Type)
 		for (int i = 0; i < 360; i += 45) Shoot(3, i);
 		break;
 
-	case 4: //Gunmen and missiles
-		for (int i = 0; i < 360; i += 180) Shoot(5, i);
-		for (int i = 0; i < 360; i += 90) Shoot(6, i);
+	case 4: //Plain 4 directional shot
+		for (int a = 0; a <= 270; a += 90) Shoot(3,a);
 		break;
 
-	case 5: //Plain 4 directional shot
-		for (int a = 0; a <= 270; a += 90) Shoot(3,a);
+	case 5: //Cool sine wave rotating thing
+		for (int i = 0; i < 360; i += 30) Shoot(9, i);
+		break;
+
+	case 6: //Gunmen and missiles
+		for (int i = 0; i < 360; i += 180) Shoot(5, i);
+		for (int i = 0; i < 360; i += 90) Shoot(6, i);
 		break;
 	}
 }
@@ -509,8 +513,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			if (CURRENTENEMY.Timer > 0) CURRENTENEMY.Timer--;
 			float XDiff = 0;
 			float YDiff = 0;
-			int TempX = 0;
-			int TempY = 0;
 			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
 			if ((Distance > 500 || Distance < 250) && CURRENTENEMY.Timer == 0)
 			{
@@ -532,28 +534,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 				GetXYRatio(&XDiff, &YDiff, CURRENTENEMY.Angle, CURRENTENEMY.Speed);
 			}
-			
-			TempX = CURRENTENEMY.WorldX + XDiff;
-			TempY = CURRENTENEMY.WorldY + YDiff;
-
-			CURRENTENEMY.CollisionRect.x = TempX - CameraX;
-			CURRENTENEMY.CollisionRect.y = TempY - CameraY;
-			for (int x = 0; x < RectVector.size(); x++)
-			{
-				if (CURRENTENEMY.CollisionRect.x < 0) continue;
-				if (CURRENTENEMY.CollisionRect.y < 0) continue;
-
-				if (IsIntersecting(CURRENTENEMY.CollisionRect,RectVector.at(x)))
-				{
-					XDiff = 0;
-					YDiff = 0;
-					break;
-				}
-			}
-			/*
-			CURRENTENEMY.WorldX += XDiff;
-			CURRENTENEMY.WorldY += YDiff;
-			*/
 			
 			float Acceleration = 0.01;
 
@@ -595,15 +575,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.ShotCounter++;
 			if (CURRENTENEMY.ShotCounter % 60 == 0)
 			{
-				//CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
-				CURRENTENEMY.Shoot(9, 0);
-				CURRENTENEMY.Shoot(9, 90);
-				CURRENTENEMY.Shoot(9, 180);
-				CURRENTENEMY.Shoot(9, 270);
-				CURRENTENEMY.Shoot(9, 45);
-				CURRENTENEMY.Shoot(9, 135);
-				CURRENTENEMY.Shoot(9, 225);
-				CURRENTENEMY.Shoot(9, 315);
+				CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
+				
 			}
 
 			if (CURRENTENEMY.ShotCounter == 360)
