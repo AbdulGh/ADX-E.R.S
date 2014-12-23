@@ -76,8 +76,8 @@ void Enemy::Gib()
 
 	for (int i = 0; i <= Limit; i++)
 	{
-		Clip.x = rand() % Sprite->w / 2;
-		Clip.y = rand() % Sprite->h / 2;
+		Clip.x = rand() % (Sprite->w / 2);
+		Clip.y = rand() % (Sprite->h / 2);
 
 		Clip.w = rand() % (Sprite->w / 2 - 1);
 		Clip.h = rand() % (Sprite->h / 2 - 1);
@@ -91,14 +91,13 @@ void Enemy::Gib()
 	}
 }
 
-void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel)
+void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why)
 {
-	srand(time(NULL));
 	for(int i = 0; i < 4; i++)
 	{
-		int Rand1 = rand() % 8 - 16;
-		int Rand2 = rand() % 8 - 16;
-		CreateDebris(3,1,WorldX + 15,WorldY + 15,ProjectileXVel + Rand1,ProjectileYVel + Rand2,0x808080);
+		int Rand1 = rand() % 16 - 8;
+		int Rand2 = rand() % 16 - 8;
+		CreateDebris(3,1,ex + 15,why + 15,ProjectileXVel + Rand1,ProjectileYVel + Rand2,0x808080);
 	}
 }
 
@@ -301,7 +300,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
 				{
-					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc);
+					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc, ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
 
 					if (ProjectileVector.at(x).Type == 5)
 						{
@@ -463,6 +462,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 						Temp.Frame = Temp.WorldX;
 						Temp.Frametime = Temp.WorldY;
+
+						Temp.Moving = false;
+						break;
+
+					case 13: //Warden;
+						Temp.Health = 3000;
+						Temp.CollisionRect.w = 300;
+						Temp.CollisionRect.h = 300;
+
+						Temp.Frame = 0;
+						Temp.Frametime = 1;
+
+						BossStage = 0;
+
+						Boss = true;
 
 						Temp.Moving = false;
 					};
@@ -1448,6 +1462,51 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.Timer++;
 
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Biggie, Screen);
+		}
+
+		else if (CURRENTENEMY.Type == 13) //WARDEN
+		{
+			CURRENTENEMY.ShotCounter++;
+
+			SDL_Rect BossHeight;
+			BossHeight.x = 200;
+			BossHeight.y = 10;
+			BossHeight.h = 20;
+			BossHeight.w = CURRENTENEMY.Health / 2;
+
+			SDL_FillRect(Screen, &BossHeight, 0x00FF00);
+
+			Message = TTF_RenderText_Solid(SysSmall, "W.A.R. DEN: ", Green);
+			ApplySurface(200 - (Message->w), 10, Message, Screen);
+
+			if (CURRENTENEMY.ShotCounter % 2 == 0)
+			{
+				if (rand() % 110 <= 1) CURRENTENEMY.Frametime *= -1;
+				CURRENTENEMY.Frame += CURRENTENEMY.Frametime;
+
+				if (CURRENTENEMY.Health < 2400 && CURRENTENEMY.ShotCounter % 30 == 0) CURRENTENEMY.Shoot(10, 1);
+				if (CURRENTENEMY.Health < 1800 && CURRENTENEMY.ShotCounter % 45 == 0)
+				{
+					for (int s = 0; s < 3; s++) CURRENTENEMY.Shoot(9, rand() % 360);
+				}
+				if (CURRENTENEMY.Health < 1200 && CURRENTENEMY.ShotCounter % 20 == 0) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
+				if (CURRENTENEMY.Health < 600 && CURRENTENEMY.ShotCounter % 3 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
+
+				EnemyProjectile Shot(3);
+				Shot.WorldX = CURRENTENEMY.WorldX + 140;
+				Shot.WorldY = CURRENTENEMY.WorldY + 140;
+				Shot.Damage = 50;
+				Shot.CollisionRect.w = 30;
+				Shot.CollisionRect.h = 30;
+
+				for (int f = 0; f < 360; f += 72)
+				{
+					GetXYRatio(&Shot.XVel, &Shot.YVel, f + CURRENTENEMY.Frame, 30);
+					EnemyProjectileVector.push_back(Shot);
+				}
+			}
+
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Warden, Screen);
 		}
 
 		if (CURRENTENEMY.Health <= 0) 

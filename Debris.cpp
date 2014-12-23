@@ -15,19 +15,12 @@ void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Ui
 		PushThis.Rect.h = Size;
 
 		PushThis.Colour = Colour;
-		int VelX = 0;
-		if (XVel < 0) VelX = XVel + (rand() % XVel) + XVel;
-		else if (XVel != 0) VelX = XVel + (rand() % XVel) - XVel;
 
-		int VelY = 0;
-		if (YVel < 0) VelY = YVel + (rand() % YVel) + YVel;
-		if (YVel != 0) VelY = YVel + (rand() % YVel) - YVel;
+		XVel += rand() % 20 - 10;
+		YVel += rand() % 20 - 10;
 
-		if (VelX == 0) VelX = rand () % 20 - 10;
-		if (VelY == 0) VelY = rand () % 20 - 10;
-
-		PushThis.XVel = VelX;
-		PushThis.YVel = VelY;
+		PushThis.XVel = XVel;
+		PushThis.YVel = YVel;
 		PushThis.Time = 0;
 
 		DebrisVector.push_back(PushThis);

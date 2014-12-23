@@ -54,6 +54,8 @@ extern SDL_Surface *LaserPickup;
 extern SDL_Surface *Silo;
 extern SDL_Surface *VertLaser;
 extern SDL_Surface *Biggie;
+extern SDL_Surface *Warden;
+extern SDL_Surface *RIP;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

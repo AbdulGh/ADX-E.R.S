@@ -27,7 +27,7 @@ public:
 	SDL_Rect CollisionRect;
 
 	Enemy(int,int,int);
-	void Bleed(int ProjectileXVel, int ProjectileYVel);
+	void Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why);
 	void Shoot (int Type, int TargetX, int TargetY);
 	void Shoot (int Type, int Bearing);
 	void Gib();

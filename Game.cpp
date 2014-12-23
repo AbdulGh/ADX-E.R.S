@@ -98,6 +98,8 @@ void DeathScreen()
 	CharacterRect.y = Character.WorldY;
 	Timer remiT;
 
+	ObjectVector.erase(ObjectVector.begin(),ObjectVector.end());
+
 	int x = 0;
 	int y = 0;
 
@@ -155,8 +157,9 @@ void DoThings()
 	if (Update)
 	{
 		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
-		Camera.Update();
 	}
+
+	Camera.Update();
 
 	CheckShake();
 	DoMouse(&x,&y);
@@ -230,19 +233,6 @@ void DoThings()
 			Damaged = true;
 			DamageDealt = 1000;
 		}
-	}
-
-	if (StartTime > 0)
-	{
-		Seconds = StartTime - (SpecialTimer.get_ticks() / 1000);
-		SpareStream.str("");
-		SpareStream << Seconds / 60 << ":";
-		if (Seconds % 60 < 10) SpareStream << 0;
-		SpareStream << Seconds % 60;
-		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-		ApplySurface((ScreenWidth - Message->w) / 2, 20, Message, Screen);
-
-		if (Seconds == 0) StartTime = 0;
 	}
 
 	else if (Enemies != 0 && Boss == false)
@@ -482,28 +472,25 @@ void Game()
 	Timer FPSTimer;
 	CharacterRect.w = Character.CurrentSprite->w;
 	CharacterRect.h = Character.CurrentSprite->h;
-	XSpawn = 1000;
-	YSpawn = 1000;
-	Character.WorldX = 1000;
-	Character.WorldY = 2000;
+	XSpawn = 1850;
+	YSpawn = 3400;
+	Character.WorldX = 1850;
+	Character.WorldY = 3400;
 	HealthRect.x = 115;
 	HealthRect.h = 20;
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
-	goto Here;
+	//goto Here;
 
-	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
+	int FrameCount = 0;
 
-	FadeText("how did this get here i am not good with comput");
-
-	SpawnVector.push_back(900);
-	SpawnVector.push_back(900);
-	SpawnVector.push_back(2);
-	SpawnEnemies(SpawnVector);
+	Camera.x = 0;
+	Camera.y = 2000;
 
 	while (!LevelFinished && State == GAME) //Level 1
 	{
@@ -513,7 +500,77 @@ void Game()
 
 		HandleEvents();
 
-		
+		switch (LevelProgress)
+		{
+		case 0:
+			AddObject(850, 1100, Warden, 0, 0, -1);
+			AddObject(1750, 3400, PlayerNormal, 0, 0, -1);
+			AddObject(1250, 3350, PlayerNormal, 0, 0, -1);
+			AddObject(60, 3410, PlayerNormal, 0, 0, -1);
+			AddObject(1090, 2530, RIP, 0, 0, -1);
+			AddObject(250, 2550, PlayerNormal, 0, 0, -1);
+			LevelProgress = 1;
+			FrameCount = 0;
+			break;
+
+		case 1:
+			if (Character.WorldY < 1990)
+			{
+				LevelProgress = 2;
+				Laser = true;
+				LaserSpeed = 0;
+				LaserY = 2020;
+
+				Camera.TargetX = 0;
+				Camera.TargetY = 800;
+
+
+				Update = false;
+			}
+			break;
+
+		case 2:
+			FrameCount++;
+			if (InBetween(850, Character.WorldX, 1150) && InBetween(1100, Character.WorldY, 1400))
+			{
+				Damaged = true;
+				DamageDealt = 20;
+			}
+			
+			if (FrameCount % 70 == 0)
+			{
+				CreateDebris(6, 6, 850 + (rand() % 2) * 300, 1100 + (rand() % 2) * 300, rand() % 20 - 10, rand() % 20 - 10, 0xFFFFFF);
+				Shake = true;
+				Mag = 10;
+				Dur = 20;
+			}
+
+			if (FrameCount == 250)
+			{
+				Update = true;
+				LevelProgress = 3;
+
+				Enemy Temp(850,1100,13);
+
+				Temp.Health = 3000;
+				Temp.CollisionRect.w = 300;
+				Temp.CollisionRect.h = 300;
+
+				Temp.Frame = 0;
+				Temp.Frametime = 1;
+
+				Boss = true;
+
+				Temp.Moving = false;
+
+				EnemyVector.push_back(Temp);
+				ObjectVector.erase(ObjectVector.begin());
+			}
+			break;
+
+		case 3:
+			break;
+		}
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}

@@ -72,6 +72,8 @@ SDL_Surface *Frog = NULL;
 SDL_Surface *Silo = NULL;
 SDL_Surface *VertLaser = NULL;
 SDL_Surface *Biggie = NULL;
+SDL_Surface *Warden = NULL;
+SDL_Surface *RIP = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -275,6 +277,8 @@ bool Load()
 	VertLaser = LoadImage("Resources/Images/VertLaser.png");
 	Rocket = LoadImage("Resources/Images/Rocket.png");
 	Biggie = LoadImage("Resources/Images/Biggie.png");
+	Warden = LoadImage("Resources/Images/Warden.png");
+	RIP = LoadImage("Resources/Images/RIP.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;
