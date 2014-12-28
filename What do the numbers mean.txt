@@ -60,6 +60,7 @@
 10 -  Frog
 11 -  Vertical laser
 12 -  Biggie
+13 -  W.A.R DEN
 
 
  /$$$$$$$$                                            
@@ -93,6 +94,8 @@
 6  -  Homing missiles
 7  -  Vertical laser
 8  -  Fire
+9  -  Sine wave
+10 -  Circle
 
 
  /$$$$$$$  /$$           /$$                                    
@@ -107,8 +110,9 @@
                                             | $$                
                                             |__/                
 (Pickup.Type)
-1 - Shotgun
-2 - Machine gun
-3 - Health
-4 - Flamethrower
-5 - Laser SMG
+1  -  Shotgun
+2  -  Machine gun
+3  -  Health
+4  -  Flamethrower
+5  -  Laser SMG
+6  -  RPG

@@ -29,7 +29,7 @@ void CheckText()
 
 	if (CurrentString != "Blastoff!")
 	{
-		Message = TTF_RenderText_Solid(SysSmall,CurrentString.c_str(),Blue);
+		Message = TTF_RenderText_Solid(SysMid,CurrentString.c_str(),Blue);
 		SDL_SetAlpha(Message,SDL_SRCALPHA,CurrentAlpha);
 		ApplySurface((ScreenWidth - Message->w)/2, ScreenHeight - 100,Message,Screen);
 

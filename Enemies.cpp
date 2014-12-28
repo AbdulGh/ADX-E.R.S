@@ -47,48 +47,6 @@ Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 
 void Enemy::Gib()
 {
-	SDL_Surface *Sprite = Suicide;
-	switch(Type)
-	{
-	case 1:
-		Sprite = Suicide;
-		break;
-	case 2:
-		Sprite = Gunman;
-		break;
-	case 3:
-		Sprite = Serious;
-		break;
-	case 7:
-		Sprite = DoorGuard;
-		break;
-	case 8:
-		Sprite = Spawner;
-		break;
-	case 9:
-		Sprite = Frog;
-		break;
-	}
-
-	SDL_Rect Clip;
-	SDL_Surface *Part = Sprite;
-	int Limit = rand() % 3 + 3;
-
-	for (int i = 0; i <= Limit; i++)
-	{
-		Clip.x = rand() % (Sprite->w / 2);
-		Clip.y = rand() % (Sprite->h / 2);
-
-		Clip.w = rand() % (Sprite->w / 2 - 1);
-		Clip.h = rand() % (Sprite->h / 2 - 1);
-
-		Part->w = Clip.w;
-		Part->h = Clip.h;
-
-		ApplySurface(0,0,Sprite,Part,&Clip);
-		//__debugbreak();
-		AddObject(WorldX,WorldY,Part,rand() % 12 - 6, rand() % 12 - 6, rand() % 90);
-	}
 }
 
 void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why)
@@ -379,10 +337,12 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					case 2: //Gunman
 						Temp.Health = 100;
-						Temp.ShotCounter = rand() % 340;
+						Temp.ShotCounter = rand() % 70;
 						Temp.Speed = rand() % 2 + 4;
 						Temp.CollisionRect.w = Gunman->w;
 						Temp.CollisionRect.h = Gunman->h;
+
+						Temp.Timer = 100;
 					break;
 
 					case 3: //Beheaded Serious Sam guy
@@ -424,7 +384,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 8: //Spawner
-						Temp.Health = 110;
+						Temp.Health = 100;
 						Temp.Speed = 2;
 						Temp.CollisionRect.w = 25;
 						Temp.CollisionRect.h = 25;
@@ -524,81 +484,48 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		}
 		else if (CURRENTENEMY.Type == 2) //Gunman
 		{
-			if (CURRENTENEMY.Timer > 0) CURRENTENEMY.Timer--;
-			float XDiff = 0;
-			float YDiff = 0;
-			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
-			if ((Distance > 500 || Distance < 250) && CURRENTENEMY.Timer == 0)
-			{
-				CURRENTENEMY.Angle = 0;
-				float Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, PlayerX, PlayerY);
-				GetXYRatio(&XDiff, &YDiff, Angle, CURRENTENEMY.Speed);
-				if (Distance < 200)
-				{
-					XDiff *= -2;
-					YDiff *= -2;
-				}
-			}
-			else
-			{
-				if (CURRENTENEMY.Angle == 0 && CURRENTENEMY.Timer == 0) 
-				{
-					CURRENTENEMY.Angle = rand () % 359 + 1;
-					CURRENTENEMY.Timer = 20;
-				}
-				GetXYRatio(&XDiff, &YDiff, CURRENTENEMY.Angle, CURRENTENEMY.Speed);
-			}
-			
-			float Acceleration = 0.01;
 
-			if (XDiff > 0)
+			CURRENTENEMY.Timer++;
+			CURRENTENEMY.ShotCounter++;
+
+			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldX - PlayerX));
+
+			if (CURRENTENEMY.ShotCounter > 0 && CURRENTENEMY.ShotCounter % 10 == 0)
 			{
-				if (CURRENTENEMY.XVel += Acceleration > XDiff) CURRENTENEMY.XVel = XDiff;
-				else CURRENTENEMY.XVel += Acceleration;
+				CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
+				
+				if (CURRENTENEMY.ShotCounter >= 30) CURRENTENEMY.ShotCounter = -80;
 			}
 
-			else
+			if (CURRENTENEMY.Timer > 70)
 			{
-				if (CURRENTENEMY.XVel -= Acceleration < XDiff) CURRENTENEMY.XVel = XDiff;
-				else CURRENTENEMY.XVel -= Acceleration;
+				CURRENTENEMY.Timer = 0;
+
+				CURRENTENEMY.Frame = PlayerX + rand() % 700 - 350;
+				CURRENTENEMY.Frametime = PlayerY  + rand() % 700 - 350;
 			}
 
-			if (YDiff > 0)
-			{
-				if (CURRENTENEMY.YVel += Acceleration > YDiff) CURRENTENEMY.YVel = YDiff;
-				else CURRENTENEMY.YVel += Acceleration;
-			}
+			CURRENTENEMY.Frame += XVel;
+			CURRENTENEMY.Frametime += YVel;
 
-			else
-			{
-				if (CURRENTENEMY.YVel -= Acceleration < YDiff) CURRENTENEMY.YVel = YDiff;
-				else CURRENTENEMY.YVel -= Acceleration;
-			}
-			
-			if (CURRENTENEMY.XVel > CURRENTENEMY.Speed) CURRENTENEMY.XVel = CURRENTENEMY.Speed;
-			else if (CURRENTENEMY.XVel < -CURRENTENEMY.Speed) CURRENTENEMY.XVel = -CURRENTENEMY.Speed;
+			CURRENTENEMY.XVel = (CURRENTENEMY.Frame - CURRENTENEMY.WorldX) / 35;
+			CURRENTENEMY.YVel = (CURRENTENEMY.Frametime - CURRENTENEMY.WorldY) / 35;
 
-			if (CURRENTENEMY.YVel > CURRENTENEMY.Speed) CURRENTENEMY.YVel = CURRENTENEMY.Speed;
-			else if (CURRENTENEMY.YVel < -CURRENTENEMY.Speed) CURRENTENEMY.YVel = -CURRENTENEMY.Speed;
+			if (CURRENTENEMY.Frametime > CURRENTENEMY.WorldY) CURRENTENEMY.YVel += 3;
+			else CURRENTENEMY.YVel -= 3;
+
+			/*
+			if (CURRENTENEMY.XVel > 8) CURRENTENEMY.XVel = 8;
+			else if (CURRENTENEMY.XVel < -8) CURRENTENEMY.XVel = -8;
+
+			if (CURRENTENEMY.YVel > 8) CURRENTENEMY.YVel = 8;
+			else if (CURRENTENEMY.YVel < -8) CURRENTENEMY.YVel = -8;
+			*/
 
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 
-			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Gunman, Screen);
-
-			CURRENTENEMY.ShotCounter++;
-			if (CURRENTENEMY.ShotCounter % 60 == 0)
-			{
-				CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
-				
-			}
-
-			if (CURRENTENEMY.ShotCounter == 360)
-			{
-				CURRENTENEMY.BulletPattern(5);
-
-				CURRENTENEMY.ShotCounter = 0;
-			}
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Gunman, Screen);
 		}
 		else if (CURRENTENEMY.Type == 3) //Serious sam beheaded kamakazie
 		{
@@ -640,16 +567,32 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			
 			CURRENTENEMY.ShotCounter++;
 			if (CURRENTENEMY.ShotCounter == 90) {CURRENTENEMY.Shoot(2,0,0); CURRENTENEMY.ShotCounter = 60; }
+
+			float YAcceleration;
+			int YMaxSpeed;
+
+			if (InBetween(CURRENTENEMY.WorldX - 20, PlayerX, CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w + 20))
+			{
+				YAcceleration = 2;
+				YMaxSpeed = 12;
+			}
+
+			else
+			{
+				YAcceleration = 0.5;
+				YMaxSpeed = 5;
+			}
+
 			if (CURRENTENEMY.WorldY < PlayerY) 
 			{
-				if (CURRENTENEMY.YVel + 0.5 + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
-				else CURRENTENEMY.YVel += 0.5;
+				if (CURRENTENEMY.YVel + YAcceleration + CURRENTENEMY.WorldY > PlayerY) CURRENTENEMY.YVel = PlayerY - CURRENTENEMY.WorldY;
+				else CURRENTENEMY.YVel += YAcceleration;
 			}
 
 			else if (CURRENTENEMY.WorldY> PlayerY)
 			{
-				if (CURRENTENEMY.YVel - 0.5 + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
-				else CURRENTENEMY.YVel -= 0.5;
+				if (CURRENTENEMY.YVel - YAcceleration + CURRENTENEMY.WorldY < PlayerY) CURRENTENEMY.YVel = CURRENTENEMY.WorldY - PlayerY;
+				else CURRENTENEMY.YVel -= YAcceleration;
 			}
 
 			if (CURRENTENEMY.WorldX < (PlayerX - 300)) 
@@ -666,8 +609,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			
 			if (CURRENTENEMY.XVel > 5) CURRENTENEMY.XVel = 5;
 			else if (CURRENTENEMY.XVel < -10) CURRENTENEMY.XVel = -10;
-			if (CURRENTENEMY.YVel > 5) CURRENTENEMY.YVel = 5;
-			else if (CURRENTENEMY.YVel < -5) CURRENTENEMY.YVel = -5;
+			if (CURRENTENEMY.YVel > YMaxSpeed) CURRENTENEMY.YVel = YMaxSpeed;
+			else if (CURRENTENEMY.YVel < -YMaxSpeed) CURRENTENEMY.YVel = -YMaxSpeed;
 
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			if (CURRENTENEMY.WorldX < 20) CURRENTENEMY.WorldX = 20;
@@ -686,16 +629,17 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			ApplySurface(0, 0, Ship, ApplyThis, &ShipFrames[CURRENTENEMY.Frame]);
 			ApplyThis = rotozoomSurface(ApplyThis,CURRENTENEMY.YVel * 2,1,0);
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, ApplyThis, Screen);
+
+			Message = TTF_RenderText_Solid(SysSmall, "SIS: ", Green);
+			ApplySurface(10, 10, Message, Screen);
+
 			SDL_Rect BossHeight;
-			BossHeight.x = 100;
+			BossHeight.x = Message->w + 20;
 			BossHeight.y = 10;
 			BossHeight.h = 20;
-			BossHeight.w = CURRENTENEMY.Health / 4;
+			BossHeight.w = CURRENTENEMY.Health / 2;
 
 			SDL_FillRect(Screen, &BossHeight, 0x00FF00);
-
-			Message = TTF_RenderText_Solid(SysSmall,"SIS: ",Green);
-			ApplySurface(100 - (Message->w), 10, Message, Screen);
 		}
 
 		else if (CURRENTENEMY.Type == 5) //SIS Invader
@@ -813,7 +757,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.WorldY += YDiff;
 
 			CURRENTENEMY.ShotCounter++;
-			if (CURRENTENEMY.ShotCounter > 200)
+			if (CURRENTENEMY.ShotCounter > 300)
 			{
 				CURRENTENEMY.Shoot(5,PlayerX,PlayerY);
 				CURRENTENEMY.ShotCounter = 0;
@@ -869,16 +813,16 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 
 				XDiff = abs(((PlayerX - 15) - CURRENTENEMY.WorldX) / 20);
-				YDiff = abs(((PlayerY + 180) - CURRENTENEMY.WorldY) / 12);
+				YDiff = abs(((PlayerY + 210) - CURRENTENEMY.WorldY) / 12);
 
 				if (CURRENTENEMY.WorldX < (PlayerX - 15)) CURRENTENEMY.WorldX += XDiff;
 				else if (CURRENTENEMY.WorldX > (PlayerX - 15)) CURRENTENEMY.WorldX -= XDiff;
-				if (CURRENTENEMY.WorldY < PlayerY + 180) CURRENTENEMY.WorldY += YDiff;
-				else if (CURRENTENEMY.WorldY > PlayerY + 180) CURRENTENEMY.WorldY -= YDiff;
+				if (CURRENTENEMY.WorldY < PlayerY + 210) CURRENTENEMY.WorldY += YDiff;
+				else if (CURRENTENEMY.WorldY > PlayerY + 210) CURRENTENEMY.WorldY -= YDiff;
 
 				if (CURRENTENEMY.WorldY + 250 > LevelHeight - 20) CURRENTENEMY.WorldY  = LevelHeight - 270;
 				if (CURRENTENEMY.WorldX - 105 < 20) CURRENTENEMY.WorldX = 125;
-				else if (CURRENTENEMY.WorldX + 145 > LevelWidth - 20) CURRENTENEMY.WorldX = LevelWidth  - 165; //TODO finish this
+				else if (CURRENTENEMY.WorldX + 145 > LevelWidth - 20) CURRENTENEMY.WorldX = LevelWidth  - 165;
 
 				One.x = CURRENTENEMY.WorldX - Camera.x;
 				One.y = CURRENTENEMY.WorldY - Camera.y;
@@ -1468,29 +1412,39 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			CURRENTENEMY.ShotCounter++;
 
+			if (CURRENTENEMY.Health < 40)
+			{
+				CURRENTENEMY.Gib();
+				CURRENTENEMY.Health = -1;
+				Boss = false;
+			}
+
+			Message = TTF_RenderText_Solid(SysSmall, "W.A.R. DEN: ", Green);
+			ApplySurface(10, 10, Message, Screen);
+
 			SDL_Rect BossHeight;
-			BossHeight.x = 200;
+			BossHeight.x = 20 + Message->w;
 			BossHeight.y = 10;
 			BossHeight.h = 20;
 			BossHeight.w = CURRENTENEMY.Health / 2;
 
 			SDL_FillRect(Screen, &BossHeight, 0x00FF00);
 
-			Message = TTF_RenderText_Solid(SysSmall, "W.A.R. DEN: ", Green);
-			ApplySurface(200 - (Message->w), 10, Message, Screen);
-
 			if (CURRENTENEMY.ShotCounter % 2 == 0)
 			{
 				if (rand() % 110 <= 1) CURRENTENEMY.Frametime *= -1;
-				CURRENTENEMY.Frame += CURRENTENEMY.Frametime;
+				if (CURRENTENEMY.ShotCounter % 2 == 0) CURRENTENEMY.Frame += CURRENTENEMY.Frametime;
 
-				if (CURRENTENEMY.Health < 2400 && CURRENTENEMY.ShotCounter % 30 == 0) CURRENTENEMY.Shoot(10, 1);
-				if (CURRENTENEMY.Health < 1800 && CURRENTENEMY.ShotCounter % 45 == 0)
+				if (CURRENTENEMY.Health < 2600 && CURRENTENEMY.ShotCounter % 40 == 0) CURRENTENEMY.Shoot(10, 1);
+
+				if (CURRENTENEMY.Health < 2000 && CURRENTENEMY.ShotCounter % 55 == 0)
 				{
 					for (int s = 0; s < 3; s++) CURRENTENEMY.Shoot(9, rand() % 360);
 				}
-				if (CURRENTENEMY.Health < 1200 && CURRENTENEMY.ShotCounter % 20 == 0) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
-				if (CURRENTENEMY.Health < 600 && CURRENTENEMY.ShotCounter % 3 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
+
+				if (CURRENTENEMY.Health < 1400 && CURRENTENEMY.ShotCounter % 35 == 0) CURRENTENEMY.Shoot(3, PlayerX + XVel * 100, PlayerY + YVel * 100);
+
+				if (CURRENTENEMY.Health < 800 && CURRENTENEMY.ShotCounter % 10 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
 
 				EnemyProjectile Shot(3);
 				Shot.WorldX = CURRENTENEMY.WorldX + 140;

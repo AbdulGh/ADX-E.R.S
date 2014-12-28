@@ -74,6 +74,7 @@ SDL_Surface *VertLaser = NULL;
 SDL_Surface *Biggie = NULL;
 SDL_Surface *Warden = NULL;
 SDL_Surface *RIP = NULL;
+SDL_Surface *Grenade = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -83,6 +84,7 @@ SDL_Colour Blue = {0,0,255};
 TTF_Font *Start = NULL;
 TTF_Font *StartBig = NULL;
 TTF_Font *Sys = NULL;
+TTF_Font *SysMid = NULL;
 TTF_Font *SysSmall = NULL;
 TTF_Font *Small = NULL;
 TTF_Font *SmallSmall = NULL;
@@ -228,8 +230,8 @@ void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, 
 	if (Source != NULL)
 	{
 		SDL_Rect offset;
-		offset.x = x + XChange;
-		offset.y = y + YChange;
+		offset.x = x;
+		offset.y = y;
 		SDL_BlitSurface(Source, Clip, Destination, &offset);
 	}
 }
@@ -241,6 +243,7 @@ bool Load()
 	SmallSmall = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",12);
 	StartBig = TTF_OpenFont("Resources/Fonts/Start.ttf",128);
 	Sys = TTF_OpenFont("Resources/Fonts/Sys.ttf",160);
+	SysMid = TTF_OpenFont("Resources/Fonts/Sys.ttf", 64);
 	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf",32);
 	if (Start == NULL || Sys == NULL || Small == NULL) return false;
 
@@ -279,6 +282,7 @@ bool Load()
 	Biggie = LoadImage("Resources/Images/Biggie.png");
 	Warden = LoadImage("Resources/Images/Warden.png");
 	RIP = LoadImage("Resources/Images/RIP.png");
+	Grenade = LoadImage("Resources/Images/Grenade.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

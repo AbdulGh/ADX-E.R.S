@@ -56,6 +56,7 @@ extern SDL_Surface *VertLaser;
 extern SDL_Surface *Biggie;
 extern SDL_Surface *Warden;
 extern SDL_Surface *RIP;
+extern SDL_Surface *Grenade;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -109,6 +110,7 @@ extern Viewport Camera;
 extern TTF_Font *Start;
 extern TTF_Font *StartBig;
 extern TTF_Font *Sys;
+extern TTF_Font *SysMid;
 extern TTF_Font *SysSmall;
 extern TTF_Font *Small;
 extern TTF_Font *SmallSmall;

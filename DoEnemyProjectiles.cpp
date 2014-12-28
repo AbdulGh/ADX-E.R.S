@@ -7,6 +7,11 @@
 
 std::vector <EnemyProjectile> EnemyProjectileVector;
 
+void ClearProjectiles()
+{
+	EnemyProjectileVector.erase(EnemyProjectileVector.begin(), EnemyProjectileVector.end());
+}
+
 EnemyProjectile::EnemyProjectile(int ProjectileType)
 {
 	WorldX = 0;
@@ -49,8 +54,8 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 		Bearing = CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY);
 		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 10);
 
-		PushThis.CollisionRect.w = 3;
-		PushThis.CollisionRect.h = 3;
+		PushThis.CollisionRect.w = 5;
+		PushThis.CollisionRect.h = 5;
 
 		PushThis.WorldX = WorldX + CollisionRect.w / 2;
 		PushThis.WorldY = WorldY + CollisionRect.h / 2;
@@ -201,8 +206,8 @@ void Enemy::Shoot(int Type, int Bearing)
 	case 1: //Normal bullet
 		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 10);
 
-		PushThis.CollisionRect.w = 3;
-		PushThis.CollisionRect.h = 3;
+		PushThis.CollisionRect.w = 5;
+		PushThis.CollisionRect.h = 5;
 
 		PushThis.WorldX = WorldX + CollisionRect.w / 2;
 		PushThis.WorldY = WorldY + CollisionRect.h / 2;
@@ -400,7 +405,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			}
 		}
 		
-		if (CURRENTENEMYPROJECTILE.Collides && !Damaged)
+		if (CURRENTENEMYPROJECTILE.Collides && !Invincible)
 		{
 			SDL_Rect CurrentTile;
 			for (int eye = 0; eye < LevelVector.size(); eye++)

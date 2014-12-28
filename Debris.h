@@ -14,6 +14,8 @@ public:
 	int Time;
 };
 
+extern std::vector<Debris> DebrisVector;
+
 void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen);
 void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Uint32 Colour);
 #endif
