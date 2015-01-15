@@ -102,6 +102,7 @@ Mix_Chunk *MachineGunFire = NULL;
 Mix_Chunk *Pistol = NULL;
 Mix_Chunk *Empty = NULL;
 Mix_Chunk *SmashDeath = NULL;
+Mix_Chunk *Metal = NULL;
 
 Mix_Music *SmashSong = NULL;
 
@@ -247,14 +248,14 @@ bool Load()
 	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf",32);
 	if (Start == NULL || Sys == NULL || Small == NULL) return false;
 
-	ShotgunPump = Mix_LoadWAV("Resources/Sounds/Pump.wav");
-	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Shotgun.wav");
-	MachineGunFire = Mix_LoadWAV("Resources/Sounds/MachineGun.wav");
-	Pistol = Mix_LoadWAV("Resources/Sounds/Pistol.wav");
-	Empty = Mix_LoadWAV("Resources/Sounds/Empty.ogg");
-	SmashDeath = Mix_LoadWAV("Resources/Sounds/SmashDeath.wav");
+	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Shotgun1.wav");
+	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun1.wav");
+	Pistol = Mix_LoadWAV("Resources/Sounds/Weapons/Laser1.wav");
+	Empty = Mix_LoadWAV("Resources/Sounds/Weapons/Empty.ogg");
+	SmashDeath = Mix_LoadWAV("Resources/Sounds/Weapons/SmashDeath.wav");
+	Metal = Mix_LoadWAV("Resources/Sounds/Weapons/Metal1.ogg");
 
-	SmashSong = Mix_LoadMUS("Resources/Sounds/Smash.ogg");
+	SmashSong = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	Spawner = LoadImage("Resources/Images/Spawner.png");

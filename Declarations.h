@@ -3,11 +3,12 @@
 
 #define WEAPONS 6
 
-#include<iostream>
-#include<vector>
-#include<string>
-#include<string.h>
-#include<sstream>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <string.h>
+#include <sstream>
+#include <fstream>
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
@@ -19,7 +20,6 @@
 #include "CameraClass.h"
 #include "DoProjectiles.h"
 #include "SDL_rotozoom.h"
-#include <fstream>
 
 extern SDL_Event event;
 
@@ -117,6 +117,7 @@ extern TTF_Font *SmallSmall;
 
 extern Mix_Music *SmashSong;
 
+extern Mix_Chunk *Metal;
 extern Mix_Chunk *ShotgunFire;
 extern Mix_Chunk *ShotgunPump;
 extern Mix_Chunk *MachineGunFire;

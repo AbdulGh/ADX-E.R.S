@@ -145,6 +145,9 @@ void DeathScreen()
 
 		if (remiT.get_ticks() < 1000/60) SDL_Delay((1000/60) - remiT.get_ticks());
 	}
+
+	Camera.LevelHeight = LevelHeight;
+	Update = true;
 }
 
 void DoThings()
@@ -184,7 +187,7 @@ void DoThings()
 
 	HealthRect.w = 3 * Character.Health;
 	Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
-	ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y - 6, Message, Screen);
+	if (Message != NULL) ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y - 6, Message, Screen);
 	SDL_FillRect(Screen,&HealthRect,0x00FF00);
 	SpareStream.str("");
 	SpareStream << Character.Health << "%";
@@ -251,7 +254,7 @@ void DoThings()
 		DamageDealt = 0;
 		Mix_HaltMusic();
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
-		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0x00FF00);
+		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0xFFFFFF);
 		DeathScreen();
 		if (Character.Lives < 0)
 		{
@@ -327,8 +330,12 @@ void HandleEvents()
 			else
 			{
 				Ammo[1]--;
-				Mix_PlayChannel(-1,ShotgunFire,0);
-				Mix_PlayChannel(-1,ShotgunPump,0);
+				
+				SpareStream.str("");
+				SpareStream << "Resources/Sounds/Weapons/Shotgun" << rand() % 3 + 1 << ".wav";
+				ShotgunFire = Mix_LoadWAV(SpareStream.str().c_str());
+				Mix_PlayChannel(-1, ShotgunFire, 0);
+
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 				float XRatio, YRatio;
 				for (int i = 0; i <= 8; i++)
@@ -515,17 +522,19 @@ void Game()
 			break;
 
 		case 1:
-			if (Character.WorldY < 1800)
+			if (Character.WorldY < 1850)
 			{
 				LevelProgress = 2;
 				Laser = true;
 				LaserSpeed = 0;
-				LaserY = 2020;
+				LaserY = 2000;
 
 				Camera.TargetX = 0;
 				Camera.TargetY = 800;
 
 				Update = false;
+				Camera.LevelHeight = 2020;
+				Character.NormalMovement = false;
 			}
 			break;
 
@@ -562,6 +571,7 @@ void Game()
 				Boss = true;
 
 				Temp.Moving = false;
+				Character.NormalMovement = true;
 
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
@@ -675,7 +685,7 @@ void Game()
 				LevelProgress = 2;
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1600);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 			}
@@ -688,31 +698,31 @@ void Game()
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(50);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(50);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(50);
 				SpawnVector.push_back(1000);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1000);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(50);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(3);
+				SpawnVector.push_back(1);
 
 				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
@@ -738,7 +748,7 @@ void Game()
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1);
+				SpawnVector.push_back(2);
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1950);
@@ -754,7 +764,7 @@ void Game()
 
 				SpawnVector.push_back(1750);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1);
+				SpawnVector.push_back(3);
 
 				SpawnEnemies(SpawnVector);
 
@@ -974,12 +984,44 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
+	Here:
+
 	if (!LoadLevel("Resources/Levels/4")) {State = QUIT; Menu();}
-	NextLevel(1800,5850);
+	NextLevel(1000, 9950);
 
 	LaserY = 6000;
 
 	int Numero = 0;
+
+	EnemyProjectile Big(4);
+	Big.CollisionRect.w = 60;
+	Big.CollisionRect.h = 60;
+	Big.XVel = -7;
+	Big.YVel = 0;
+	Big.WorldX = 1919;
+	Big.WorldY = 0;
+	Big.Damage = 100;
+
+	EnemyProjectile Small(3);
+	Small.CollisionRect.w = 30;
+	Small.CollisionRect.h = 30;
+	Small.XVel = 7;
+	Small.YVel = 0;
+	Small.WorldX = 21;
+	Small.WorldY = 0;
+	Small.Damage = 50;
+
+	EnemyProjectile Sine(9);
+	Sine.CollisionRect.w = 20;
+	Sine.CollisionRect.h = 20;
+	Sine.WorldX = 0;
+	Sine.WorldY = 30;
+	Sine.Spare1 = 0;
+	Sine.Spare2 = 30;
+	Sine.Frame = 180;
+	Sine.Frametime = 0;
+	Sine.Damage = 50;
+	Sine.Wave = true;
 
 	while(LevelFinished == false && State == GAME)
 	{
@@ -993,86 +1035,66 @@ void Game()
 		case 0:
 			SpareTimer.start();
 			Laser = false;
-			Camera.y = 4000;
+			Camera.y = 8000;
 			LevelProgress = 1;
 			Numero = 0;
 			Character.NormalMovement = false;
 			break;
 		case 1:
-			if (SpareTimer.get_ticks() > 2000)
+			if (SpareTimer.get_ticks() > 500)
 			{
 				LevelProgress = 2;
 				Character.NormalMovement = true;
 			}
 
 		case 2:
-			if (Character.WorldY < 5800)
+			if (Character.WorldY < 9800)
 			{
 				Laser = true;
-				LaserSpeed = 2.4;
-				LaserY = 6000;
+				LaserSpeed = 1.5;
+				LaserY = 10000;
 				LevelProgress = 3;
+
+				SpawnVector.push_back(500);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(7);
+
+				SpawnVector.push_back(1500);
+				SpawnVector.push_back(20);
+				SpawnVector.push_back(7);
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 
 				Pickup UpPick;
 				UpPick.Type = 1;
-				UpPick.WorldY = 5730;
+				UpPick.WorldY = 9600;
 
-				for (int inc = 0; inc < 4; inc++)
+				for (int inc = 0; inc < 5; inc++)
 				{
-					UpPick.WorldX = 100 + 100 * inc;
+					UpPick.WorldX = 800 + 100 * inc;
 					PickupVector.push_back(UpPick);
 				}
 			}
 			break;
 
 		case 3:
-			if (Character.WorldY < 2000)
-			{
-				SpawnVector.push_back(950);
-				SpawnVector.push_back(20);
-				SpawnVector.push_back(7);
-
-				SpawnEnemies(SpawnVector);
-				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-				LevelProgress = 4;
-
-				LaserSpeed = 3.5;
-			}
-			break;
-
-		case 4:
 			Numero++;
-			if (Numero % 300 == 0)
-			{
-				SpawnVector.push_back(rand() % 1999 + 1);
-				SpawnVector.push_back(20);
-				SpawnVector.push_back(1);
 
-				SpawnEnemies(SpawnVector);
-				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-			}
-			else if (Numero % 400 == 0)
+			if (Numero % 5 == 0)
 			{
-				SpawnVector.push_back(rand() % 1999 + 1);
-				SpawnVector.push_back(20);
-				SpawnVector.push_back(3);
-
-				SpawnEnemies(SpawnVector);
-				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+				Small.WorldY = rand() % 6900 + 3021;
+				EnemyProjectileVector.push_back(Small);
 			}
 
-			else if (Numero % 650 == 0)
+			if (Numero % 10 == 0)
 			{
-				SpawnVector.push_back(rand() % 1999 + 1);
-				SpawnVector.push_back(20);
-				SpawnVector.push_back(3);
-
-				SpawnEnemies(SpawnVector);
-				SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
+				Big.WorldY = rand() % 6900 + 3021;
+				EnemyProjectileVector.push_back(Big);
 			}
 
-			if (Character.WorldY < 0)
-				LevelFinished = true;
+			if (Character.WorldY < 0) LevelFinished = true;
+
 			break;
 		};
 	}
@@ -1325,10 +1347,21 @@ void Game()
 				if (BoxYVel >= 0) BoxYVel+= 0.1;
 				else BoxYVel-= 0.1;
 
-				if (Temp1 + BoxXVel + 20 > LevelWidth - 20 || Temp1 + BoxXVel < 20) BoxXVel *= -0.9;
+				if (Temp1 + BoxXVel + 20 > LevelWidth - 20 || Temp1 + BoxXVel < 20)
+				{
+					BoxXVel *= -0.9;
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+				}
+
 				if (Temp2 + BoxYVel + 20 > LevelHeight - 20 || Temp2 + BoxYVel  < 20) 
 				{
 					BoxYVel *= -0.9;
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+
 					if (BoxYVel >= 0)
 					{
 						TopBounces--;
@@ -1348,6 +1381,10 @@ void Game()
 
 							CreateDebris(6,8,Temp1,20,0,15,0xFFFFFF);
 							CreateDebris(5,10,Temp1,20,0,15,0xFF0000);
+
+							Shake = true;
+							Mag = 30;
+							Dur = 50;
 
 							SpareTimer.start();
 						}

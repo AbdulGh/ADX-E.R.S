@@ -16,9 +16,6 @@ Gamestate Menu()
 	CreateButton((ScreenWidth - Options->w)/2,ScreenHeight - 200,2,Options,OptionsMouseover,0);
 	CreateButton(ScreenWidth - Quit->w - 150,ScreenHeight - 200,3,Quit,QuitMouseover,0);
 
-	Message = TTF_RenderText_Solid(Sys,"ADX E.R.S_",White);
-	int x = (ScreenWidth - Message->w)/2;
-
 	bool EpicFlag = false;
 	int Inc = 0;
 	while(true)
@@ -26,10 +23,10 @@ Gamestate Menu()
 		Inc++;
 		if (Inc > 60000) Inc = 0;
 		ClearScreen();
-		if ( Inc % 60 == 0 ) EpicFlag = !EpicFlag;
+		if ( Inc % 80 == 0 ) EpicFlag = !EpicFlag;
 		if (EpicFlag) Message = TTF_RenderText_Solid(Sys,"ADX E.R.S",White);
 		else Message = TTF_RenderText_Solid(Sys,"ADX E.R.S_",White);
-		ApplySurface(x,200,Message,Screen);
+		ApplySurface(Temp1,200,Message,Screen);
 		int x,y;
 		DoMouse(&x,&y);
 		int Clicked = DoButtons();

@@ -8,17 +8,17 @@
 #include<time.h>
 
 //Number of sound effects
-#define NUMBEROFDEATHS 5
+#define NUMBEROFDEATHS 7
 #define NUMBEROFTAUNTS 10
-#define NUMBEROFDAMAGE 9
+#define NUMBEROFDAMAGE 7
 
 int BossStage = 0;
 int BosNum1 = 0;
 int Direction = 3;
+int SFXTimer = 0;
 
 float XDiff;
 float YDiff;
-
 SDL_Rect One;
 SDL_Rect Two;
 SDL_Rect Three;
@@ -47,6 +47,14 @@ Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 
 void Enemy::Gib()
 {
+}
+
+void Enemy::StayInLevel()
+{
+	if (WorldX < 20) WorldX = 20;
+	else if (WorldX + CollisionRect.w > LevelWidth - 20) WorldX = LevelWidth - (CollisionRect.w + 20);
+	if (WorldY < 20) WorldY = 20;
+	else if (WorldY + CollisionRect.h > LevelHeight - 20) WorldY = LevelHeight - (CollisionRect.h + 20);
 }
 
 void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why)
@@ -237,12 +245,16 @@ void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 #define CURRENTENEMY EnemyVector.at(i)
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel)
 {
-	if (EnemyVector.size() != 0 && rand() % 950 == 42 && Boss == false)
+	SFXTimer++;
+
+	if (EnemyVector.size() != 0 && rand() % 300 == 42 && SFXTimer > 60)
 	{
+		SFXTimer = 0;
 		SpareStream.str("");
-		SpareStream << "Resources/Sounds/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
+		SpareStream << "Resources/Sounds/Enemies/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
 		Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-		//Mix_PlayChannel(-1,PlayThis,0);
+		Mix_PlayChannel(-1,PlayThis,0);
+		Mix_FreeChunk(PlayThis);
 	}
 
 	for (int i = 0; i < EnemyVector.size(); i++)
@@ -260,26 +272,31 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc, ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
 
+					Mix_PlayChannel(-1, Metal, 0);
+					SpareStream.str("");
+					SpareStream << "Resources/Sounds/Weapons/Metal" << rand() % 23 + 1 << ".ogg";
+					Metal = Mix_LoadWAV(SpareStream.str().c_str());
+
 					if (ProjectileVector.at(x).Type == 5)
+					{
+						if (ProjectileVector.at(x).Type == 5)
 						{
-							if (ProjectileVector.at(x).Type == 5)
+							int RocketX = ProjectileVector.at(x).WorldX;
+							int RocketY = ProjectileVector.at(x).WorldY;
+	
+							Shake = true;
+							Mag = 20;
+							Dur = 25;
+
+							for (int i = 0; i <= 360; i++)
 							{
-								int RocketX = ProjectileVector.at(x).WorldX;
-								int RocketY = ProjectileVector.at(x).WorldY;
-
-								Shake = true;
-								Mag = 20;
-								Dur = 25;
-
-								for (int i = 0; i <= 360; i++)
-								{
-									float XR = 0;
-									float YR = 0;
-									GetXYRatio(&XR,&YR,i,rand() % 20);
-									CreateProjectile(RocketX,RocketY,XR,YR,3);
-								}
+								float XR = 0;
+								float YR = 0;
+								GetXYRatio(&XR,&YR,i,rand() % 20);
+								CreateProjectile(RocketX,RocketY,XR,YR,3);
 							}
 						}
+					}
 					
 					if (CURRENTENEMY.Moving & ProjectileVector.at(x).Damage <= 100)
 					{
@@ -287,14 +304,15 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						CURRENTENEMY.WorldY += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).YInc / 3;
 					}
 
-					if (rand() % 140 < 5)
+					if (rand() % 100 < 5 && SFXTimer > 60)
 					{
+						SFXTimer = 0;
 						SpareStream.str("");
-						SpareStream << "Resources/Sounds/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".wav";
+						SpareStream << "Resources/Sounds/Enemies/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".wav";
 						
 						Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-
-						//Mix_PlayChannel(-1,PlayThis,0);
+						Mix_PlayChannel(-1,PlayThis,0);
+						Mix_FreeChunk(PlayThis);
 					}
 
 					CURRENTENEMY.Health -= ProjectileVector.at(x).Damage;
@@ -329,24 +347,24 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					switch(Temp.Type)
 					{
 					case 1: //suicide
-						Temp.Health = 80;
-						Temp.Speed = rand() % 4 + 6;
+						Temp.Health = 50;
+						Temp.Speed = rand() % 7 + 5;
 						Temp.CollisionRect.w = Suicide->w;
 						Temp.CollisionRect.h = Suicide->h;
 					break;
 
 					case 2: //Gunman
 						Temp.Health = 100;
-						Temp.ShotCounter = rand() % 70;
+						Temp.ShotCounter = rand() % 30 - 80;
 						Temp.Speed = rand() % 2 + 4;
 						Temp.CollisionRect.w = Gunman->w;
 						Temp.CollisionRect.h = Gunman->h;
 
-						Temp.Timer = 100;
+						Temp.Timer = rand() % 70;
 					break;
 
 					case 3: //Beheaded Serious Sam guy
-						Temp.Health = 120;
+						Temp.Health = 80;
 						Temp.Speed = rand() % 5 + 5;
 						Temp.CollisionRect.w = Serious->w;
 						Temp.CollisionRect.h = Serious->h;
@@ -480,6 +498,9 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			else if (CURRENTENEMY.YVel < CURRENTENEMY.Speed * -1) CURRENTENEMY.YVel = CURRENTENEMY.Speed * -1;
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+
+			CURRENTENEMY.StayInLevel();
+
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY,Suicide, Screen);
 		}
 		else if (CURRENTENEMY.Type == 2) //Gunman
@@ -488,11 +509,9 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.Timer++;
 			CURRENTENEMY.ShotCounter++;
 
-			int Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldX - PlayerX));
-
 			if (CURRENTENEMY.ShotCounter > 0 && CURRENTENEMY.ShotCounter % 10 == 0)
 			{
-				CURRENTENEMY.Shoot(1,PlayerX + XVel * (Distance / 10), PlayerY + YVel * (Distance / 10));
+				CURRENTENEMY.Shoot(1,PlayerX, PlayerY);
 				
 				if (CURRENTENEMY.ShotCounter >= 30) CURRENTENEMY.ShotCounter = -80;
 			}
@@ -501,8 +520,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			{
 				CURRENTENEMY.Timer = 0;
 
-				CURRENTENEMY.Frame = PlayerX + rand() % 700 - 350;
-				CURRENTENEMY.Frametime = PlayerY  + rand() % 700 - 350;
+				CURRENTENEMY.Frame = PlayerX + rand() % 900 - 450;
+				CURRENTENEMY.Frametime = PlayerY  + rand() % 900 - 450;
 			}
 
 			CURRENTENEMY.Frame += XVel;
@@ -525,8 +544,11 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 
+			CURRENTENEMY.StayInLevel();
+
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Gunman, Screen);
 		}
+
 		else if (CURRENTENEMY.Type == 3) //Serious sam beheaded kamakazie
 		{
 			float XDiff;
@@ -802,7 +824,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.ShotCounter++;
 				BosNum1 += Direction;
 
-				if (CURRENTENEMY.ShotCounter == 7)
+				if (CURRENTENEMY.ShotCounter == 9)
 				{
 					CURRENTENEMY.ShotCounter = 0;
 					CURRENTENEMY.CollisionRect.h = 0;
@@ -889,8 +911,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (CURRENTENEMY.YVel >= 0) CURRENTENEMY.YVel+= 0.1;
 				else CURRENTENEMY.YVel-= 0.1;
 
-				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 100 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel - 150 < 20) CURRENTENEMY.XVel *= -0.5;
-				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 140 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel - 105 < 20) CURRENTENEMY.YVel *= -0.5;
+				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 100 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel - 150 < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.XVel *= -0.5;
+				}
+
+				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 140 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel - 105 < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.YVel *= -0.5;
+				}
 
 				CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 				CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
@@ -933,15 +968,18 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 			case 3:
 				CURRENTENEMY.ShotCounter++;
-				if (CURRENTENEMY.ShotCounter > 220)
+				if (CURRENTENEMY.ShotCounter % 15 == 0) CURRENTENEMY.Shoot(1, 90);
+				if (CURRENTENEMY.ShotCounter > 260)
 				{
 					CURRENTENEMY.ShotCounter = 210;
 					CURRENTENEMY.CollisionRect.w = 200;
-					CURRENTENEMY.Shoot(1,90);
+					CURRENTENEMY.Shoot(3, 45);
+					CURRENTENEMY.Shoot(3, 135);
+					CURRENTENEMY.Shoot(3, 90);
 					CURRENTENEMY.CollisionRect.w = 100;
 
 					BosNum1++;
-					if (BosNum1 > 15)
+					if (BosNum1 > 20)
 					{
 						BosNum1 = 0;
 						CURRENTENEMY.ShotCounter = 0;
@@ -1023,8 +1061,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (CURRENTENEMY.YVel >= 0) CURRENTENEMY.YVel+= 0.1;
 				else CURRENTENEMY.YVel-= 0.1;
 
-				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 40 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel - 105 < 20) CURRENTENEMY.XVel *= -0.7;
-				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 100 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel - 150 < 20) CURRENTENEMY.YVel *= -0.7;
+				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 40 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel - 105 < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.XVel *= -0.7;
+				}
+
+				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 100 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel - 150 < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.YVel *= -0.7;
+				}
 
 				CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 				CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
@@ -1175,9 +1226,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (CURRENTENEMY.YVel >= 0) CURRENTENEMY.YVel+= 0.1;
 				else CURRENTENEMY.YVel-= 0.1;
 
-				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 130 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20) CURRENTENEMY.XVel *= -0.9;
-				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 40 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel  < 20) CURRENTENEMY.YVel *= -0.9;
+				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 130 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.XVel *= -0.9;
+				}
 
+				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 40 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.YVel *= -0.9;
+				}
 				CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 				CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 
@@ -1278,8 +1341,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				break;
 
 			case 8:
-				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 10 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20) CURRENTENEMY.XVel *= -0.3;
-				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 10 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel < 20) CURRENTENEMY.YVel *= -0.3;
+				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 10 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.XVel *= -0.3;
+				}
+
+				if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel + 10 > LevelHeight - 20 || CURRENTENEMY.WorldY + CURRENTENEMY.YVel < 20)
+				{
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+					CURRENTENEMY.YVel *= -0.3;
+				}
 
 				CURRENTENEMY.ShotCounter++;
 				
@@ -1337,6 +1413,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
 
+			CURRENTENEMY.StayInLevel();
 
 			if (IsIntersecting(CURRENTENEMY.CollisionRect,PlayerRect))
 			{
@@ -1472,12 +1549,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				int tni = rand() % 100 + 1; //tni = int backwards
 
-				if (tni <= 7)
+				if (tni <= 20 && SFXTimer > 60)
 				{
+					SFXTimer = 0;
 					SpareStream.str("");
-					SpareStream << "Resources/Sounds/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
+					SpareStream << "Resources/Sounds/Enemies/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
 					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-					//Mix_PlayChannel(-1,PlayThis,0);
+					Mix_PlayChannel(-1,PlayThis,0);
+					Mix_FreeChunk(PlayThis);
 				}
 				
 				if (CURRENTENEMY.Type == 8)
@@ -1555,6 +1634,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 			Enemies = EnemyVector.size();
 		}
+
 	}
 }
 

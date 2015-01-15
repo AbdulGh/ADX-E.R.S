@@ -112,21 +112,20 @@ void Player::Update()
 		PlayerRect.w = CurrentSprite->w + 1;
 		PlayerRect.h = CurrentSprite->h + 1;
 
-
 		for (int i = 0; i < RectVector.size(); i++)
 		{
 			if (IsIntersecting(PlayerRect, CURRENTRECT))
 			{
 				PlayerRect.x -= XVel;
 				
-				if (!IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1;
+				if (!IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1.1;
 
 				else
 				{
 					PlayerRect.x += XVel;
 					PlayerRect.y -= YVel;
-					YVel *= -1;
-					if (IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1;
+					YVel *= -1.1;
+					if (IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1.1;
 				}
 			}
 		}

@@ -12,20 +12,19 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 	if (!Init())
 	{
-		OpenDebugWindow("Failed to initalise SDL!");
-		OpenDebugWindow(SDL_GetError());
-		OpenDebugWindow("Open");
+		fprintf(stderr, "Failed to initialize SDL!\n");
+		fprintf(stderr, SDL_GetError());
 		return 1;
 	}
 
 	if (!Load())
 	{
 		OpenDebugWindow("Failed to load all files!");
-		OpenDebugWindow("Open");
 	}
 
 	SDL_ShowCursor(SDL_DISABLE);
 	SetClips();
+
 	std::string IntroText = "ADX E.R.S";
 	Message = TTF_RenderText_Solid(Sys,"_",White);
 	ApplySurface((ScreenWidth - Message->w)/2,200,Message,Screen);
@@ -37,8 +36,7 @@ int main(int argc, char *argv[])
 
 	int x;
 	bool EpicFlag = false;
-	bool Skip = false;
-	for (int i = 1; i <= IntroText.size() && Skip == false; i++)
+	for (int i = 1; i <= IntroText.size(); i++)
 	{
 		std::string ApplyThis = IntroText.substr(0,i);
 		Message = TTF_RenderText_Solid(Sys,ApplyThis.c_str(),White);
@@ -49,12 +47,12 @@ int main(int argc, char *argv[])
 			ApplyThis += "_";
 			Message = TTF_RenderText_Solid(Sys,ApplyThis.c_str(),White);
 		}
-		while(SDL_PollEvent(&event)) if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) Skip = true;
 		ClearScreen();
 		ApplySurface(x, 200, Message, Screen);
 		SDL_Flip(Screen);
 		SDL_Delay(300);
 	}
+	Temp1 = x;
 
 	State = Menu();
 	if (State == QUIT) return 0;

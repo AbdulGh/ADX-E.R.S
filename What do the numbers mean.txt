@@ -16,7 +16,6 @@
 4 - Flamethrower
 5 - Laser SMG
 6 - RPG
-7 - TOD gun
 
 
  /$$$$$$$                                               /$$     /$$ /$$                    

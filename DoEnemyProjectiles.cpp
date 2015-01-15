@@ -169,6 +169,9 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 		PushThis.WorldX = WorldX + CollisionRect.w / 2;
 		PushThis.WorldY = WorldY + CollisionRect.h / 2;
 
+		PushThis.Spare1 = PushThis.WorldX;
+		PushThis.Spare2 = PushThis.WorldY;
+
 		PushThis.Frame = Bearing;
 		PushThis.Frametime = 0;
 
