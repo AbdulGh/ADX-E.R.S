@@ -14,14 +14,13 @@ public:
 	float WorldY;
 	float XVel;
 	float YVel;
+	float Spare1;
+	float Spare2;
 
 	int Type;
 	int Frame;
 	int Frametime;
 	int Damage;
-
-	int Spare1;
-	int Spare2;
 
 	SDL_Rect CollisionRect;
 

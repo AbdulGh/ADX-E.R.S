@@ -251,7 +251,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 	{
 		SFXTimer = 0;
 		SpareStream.str("");
-		SpareStream << "Resources/Sounds/Enemies/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".wav";
+		SpareStream << "Resources/Sounds/Enemies/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".ogg";
 		Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
 		Mix_PlayChannel(-1,PlayThis,0);
 		Mix_FreeChunk(PlayThis);
@@ -272,29 +272,29 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc, ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
 
-					Mix_PlayChannel(-1, Metal, 0);
-					SpareStream.str("");
-					SpareStream << "Resources/Sounds/Weapons/Metal" << rand() % 23 + 1 << ".ogg";
-					Metal = Mix_LoadWAV(SpareStream.str().c_str());
+					if (ProjectileVector.at(x).Type != 3)
+					{
+						Mix_PlayChannel(-1, Metal, 0);
+						SpareStream.str("");
+						SpareStream << "Resources/Sounds/Weapons/Metal" << rand() % 23 + 1 << ".ogg";
+						Metal = Mix_LoadWAV(SpareStream.str().c_str());
+					}
 
 					if (ProjectileVector.at(x).Type == 5)
 					{
-						if (ProjectileVector.at(x).Type == 5)
-						{
-							int RocketX = ProjectileVector.at(x).WorldX;
-							int RocketY = ProjectileVector.at(x).WorldY;
+						int RocketX = ProjectileVector.at(x).WorldX;
+						int RocketY = ProjectileVector.at(x).WorldY;
 	
-							Shake = true;
-							Mag = 20;
-							Dur = 25;
+						Shake = true;
+						Mag = 20;
+						Dur = 25;
 
-							for (int i = 0; i <= 360; i++)
-							{
-								float XR = 0;
-								float YR = 0;
-								GetXYRatio(&XR,&YR,i,rand() % 20);
-								CreateProjectile(RocketX,RocketY,XR,YR,3);
-							}
+						for (int i = 0; i <= 360; i++)
+						{
+							float XR = 0;
+							float YR = 0;
+							GetXYRatio(&XR,&YR,i,rand() % 20);
+							CreateProjectile(RocketX,RocketY,XR,YR,3);
 						}
 					}
 					
@@ -308,7 +308,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					{
 						SFXTimer = 0;
 						SpareStream.str("");
-						SpareStream << "Resources/Sounds/Enemies/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".wav";
+						SpareStream << "Resources/Sounds/Enemies/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".ogg";
 						
 						Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
 						Mix_PlayChannel(-1,PlayThis,0);
@@ -354,17 +354,20 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					break;
 
 					case 2: //Gunman
-						Temp.Health = 100;
+						Temp.Health = 60;
 						Temp.ShotCounter = rand() % 30 - 80;
 						Temp.Speed = rand() % 2 + 4;
 						Temp.CollisionRect.w = Gunman->w;
 						Temp.CollisionRect.h = Gunman->h;
 
+						Temp.Frame = Temp.WorldX;
+						Temp.Frametime = Temp.WorldY;
+
 						Temp.Timer = rand() % 70;
 					break;
 
 					case 3: //Beheaded Serious Sam guy
-						Temp.Health = 80;
+						Temp.Health = 50;
 						Temp.Speed = rand() % 5 + 5;
 						Temp.CollisionRect.w = Serious->w;
 						Temp.CollisionRect.h = Serious->h;
@@ -445,7 +448,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 13: //Warden;
-						Temp.Health = 3000;
+						Temp.Health = 5000;
 						Temp.CollisionRect.w = 300;
 						Temp.CollisionRect.h = 300;
 
@@ -505,15 +508,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		}
 		else if (CURRENTENEMY.Type == 2) //Gunman
 		{
-
 			CURRENTENEMY.Timer++;
 			CURRENTENEMY.ShotCounter++;
 
-			if (CURRENTENEMY.ShotCounter > 0 && CURRENTENEMY.ShotCounter % 10 == 0)
+			if (IsIntersecting(PlayerRect, CURRENTENEMY.CollisionRect))
 			{
-				CURRENTENEMY.Shoot(1,PlayerX, PlayerY);
+					Damaged = true;
+					DamageDealt = 20;
+					continue;
+			}
+
+			if (CURRENTENEMY.ShotCounter > 0 && CURRENTENEMY.ShotCounter % 20 == 0)
+			{
+				CURRENTENEMY.Shoot(3,PlayerX, PlayerY);
 				
-				if (CURRENTENEMY.ShotCounter >= 30) CURRENTENEMY.ShotCounter = -80;
+				if (CURRENTENEMY.ShotCounter > 60) CURRENTENEMY.ShotCounter = -80;
 			}
 
 			if (CURRENTENEMY.Timer > 70)
@@ -532,14 +541,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 			if (CURRENTENEMY.Frametime > CURRENTENEMY.WorldY) CURRENTENEMY.YVel += 3;
 			else CURRENTENEMY.YVel -= 3;
-
-			/*
-			if (CURRENTENEMY.XVel > 8) CURRENTENEMY.XVel = 8;
-			else if (CURRENTENEMY.XVel < -8) CURRENTENEMY.XVel = -8;
-
-			if (CURRENTENEMY.YVel > 8) CURRENTENEMY.YVel = 8;
-			else if (CURRENTENEMY.YVel < -8) CURRENTENEMY.YVel = -8;
-			*/
 
 			CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
 			CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
@@ -1489,7 +1490,63 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			CURRENTENEMY.ShotCounter++;
 
-			if (CURRENTENEMY.Health < 40)
+			if (CURRENTENEMY.ShotCounter == 1)
+			{
+				for (float o = 0; o < 6.28; o += 1.26)
+				{
+					for (int p = 100; p <= 1400; p += 70)
+					{
+						CURRENTENEMY.Shoot(11, OrbitX - 20 + p * cos(o), OrbitY - 20 + p * sin(o));
+					}
+				}
+			}
+
+			if (CURRENTENEMY.Health == 4500)
+			{
+				Mix_PlayMusic(BossTheme, -1);
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat3.ogg");
+
+				Shake = true;
+				Mag = 10;
+				Dur = 50;
+
+				CURRENTENEMY.Health -= 20;
+			}
+
+			else if (CURRENTENEMY.Health == 3200)
+			{
+				Mix_PlayMusic(BossTheme, -1);
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat4.ogg");
+				
+				Shake = true;
+				Mag = 20;
+				Dur = 30;
+
+				CURRENTENEMY.Health -= 20;
+			}
+
+			else if (CURRENTENEMY.Health == 2000)
+			{
+				Mix_PlayMusic(BossTheme, -1);
+
+				Shake = true;
+				Mag = 20;
+				Dur = 30;
+
+				CURRENTENEMY.Frametime *= 2;
+				CURRENTENEMY.Health -= 20;
+			}
+			
+			else if (CURRENTENEMY.Health == 500)
+			{
+				Shake = true;
+				Mag = 20;
+				Dur = 30;
+
+				CURRENTENEMY.Health -= 20;
+			}
+
+			if (CURRENTENEMY.Health <= 20)
 			{
 				CURRENTENEMY.Gib();
 				CURRENTENEMY.Health = -1;
@@ -1503,27 +1560,31 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			BossHeight.x = 20 + Message->w;
 			BossHeight.y = 10;
 			BossHeight.h = 20;
-			BossHeight.w = CURRENTENEMY.Health / 2;
+			BossHeight.w = CURRENTENEMY.Health / 4;
 
 			SDL_FillRect(Screen, &BossHeight, 0x00FF00);
 
 			if (CURRENTENEMY.ShotCounter % 2 == 0)
 			{
 				if (rand() % 110 <= 1) CURRENTENEMY.Frametime *= -1;
-				if (CURRENTENEMY.ShotCounter % 2 == 0) CURRENTENEMY.Frame += CURRENTENEMY.Frametime;
+				if (CURRENTENEMY.ShotCounter % 2 == 0) AngleOffset += 0.5 * CURRENTENEMY.Frametime;
 
-				if (CURRENTENEMY.Health < 2600 && CURRENTENEMY.ShotCounter % 40 == 0) CURRENTENEMY.Shoot(10, 1);
+				if (CURRENTENEMY.Health < 4500 && CURRENTENEMY.ShotCounter % 40 == 0) CURRENTENEMY.Shoot(10, 1);
 
-				if (CURRENTENEMY.Health < 2000 && CURRENTENEMY.ShotCounter % 55 == 0)
+				if (CURRENTENEMY.Health < 3200 && CURRENTENEMY.ShotCounter % 55 == 0)
 				{
 					for (int s = 0; s < 3; s++) CURRENTENEMY.Shoot(9, rand() % 360);
 				}
 
-				if (CURRENTENEMY.Health < 1400 && CURRENTENEMY.ShotCounter % 35 == 0) CURRENTENEMY.Shoot(3, PlayerX + XVel * 100, PlayerY + YVel * 100);
+				if (CURRENTENEMY.Health < 2000 && CURRENTENEMY.ShotCounter % 12 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
 
-				if (CURRENTENEMY.Health < 800 && CURRENTENEMY.ShotCounter % 10 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
+				if (CURRENTENEMY.Health < 500 && CURRENTENEMY.ShotCounter % 40 == 0)
+				{
+					int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, PlayerX, PlayerY);
+					for (int u = -45; u <= 45; u += 45)  CURRENTENEMY.Shoot(3, Angle + u);
+				}
 
-				EnemyProjectile Shot(3);
+				/*EnemyProjectile Shot(3);
 				Shot.WorldX = CURRENTENEMY.WorldX + 140;
 				Shot.WorldY = CURRENTENEMY.WorldY + 140;
 				Shot.Damage = 50;
@@ -1534,7 +1595,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				{
 					GetXYRatio(&Shot.XVel, &Shot.YVel, f + CURRENTENEMY.Frame, 30);
 					EnemyProjectileVector.push_back(Shot);
-				}
+				}*/
 			}
 
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Warden, Screen);
@@ -1553,7 +1614,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				{
 					SFXTimer = 0;
 					SpareStream.str("");
-					SpareStream << "Resources/Sounds/Enemies/Death" << (tni % NUMBEROFDEATHS) + 1 << ".wav";
+					SpareStream << "Resources/Sounds/Enemies/Death" << (tni % NUMBEROFDEATHS) + 1 << ".ogg";
 					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
 					Mix_PlayChannel(-1,PlayThis,0);
 					Mix_FreeChunk(PlayThis);

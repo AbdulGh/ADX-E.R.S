@@ -12,8 +12,10 @@ bool Invincible = false;
 bool Boss = false;
 bool Shake = 0;
 bool Laser = false;
+bool SpawnFlowers = true;
 
 float LaserY = 0;
+float AngleOffset = 72;
 
 int XChange = 0;
 int YChange = 0;
@@ -28,6 +30,8 @@ int Temp2 = 0;
 int Temp3 = 0;
 int Dur = 0;
 int Mag = 0;
+int OrbitX = 1000;
+int OrbitY = 1150;
 
 Uint8 MouseStates;
 
@@ -102,9 +106,10 @@ Mix_Chunk *MachineGunFire = NULL;
 Mix_Chunk *Pistol = NULL;
 Mix_Chunk *Empty = NULL;
 Mix_Chunk *SmashDeath = NULL;
+Mix_Chunk *Impact = NULL;
 Mix_Chunk *Metal = NULL;
 
-Mix_Music *SmashSong = NULL;
+Mix_Music *BossTheme = NULL;
 
 void SetClips()
 {
@@ -250,12 +255,13 @@ bool Load()
 
 	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Shotgun1.wav");
 	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun1.wav");
-	Pistol = Mix_LoadWAV("Resources/Sounds/Weapons/Laser1.wav");
+	Pistol = Mix_LoadWAV("Resources/Sounds/Weapons/Laser1.ogg");
 	Empty = Mix_LoadWAV("Resources/Sounds/Weapons/Empty.ogg");
 	SmashDeath = Mix_LoadWAV("Resources/Sounds/Weapons/SmashDeath.wav");
+	Impact = Mix_LoadWAV("Resources/Sounds/Other/Impact.ogg");
 	Metal = Mix_LoadWAV("Resources/Sounds/Weapons/Metal1.ogg");
 
-	SmashSong = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
+	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
 
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	Spawner = LoadImage("Resources/Images/Spawner.png");

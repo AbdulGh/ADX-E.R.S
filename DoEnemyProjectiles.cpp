@@ -87,7 +87,7 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 		PushThis.WorldX = WorldX + CollisionRect.w / 2;
 		PushThis.WorldY = WorldY + CollisionRect.h / 2;
 
-		PushThis.Damage = 50;
+		PushThis.Damage = 30;
 		break;
 
 	case 4://Larger projectile
@@ -175,7 +175,7 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 		PushThis.Frame = Bearing;
 		PushThis.Frametime = 0;
 
-		PushThis.Damage = 50;
+		PushThis.Damage = 30;
 		
 		PushThis.Wave = true;
 		break;
@@ -194,8 +194,21 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 		PushThis.Spare1 = PushThis.WorldY;
 		PushThis.Spare2 = 1;
 		break;
-	};
 
+	case 11: //Approacher
+		PushThis.CollisionRect.w = 40;
+		PushThis.CollisionRect.h = 40;
+
+		PushThis.Damage = 50;
+		PushThis.Collides = false;
+
+		PushThis.WorldX = WorldX + CollisionRect.w / 2;
+		PushThis.WorldY = WorldY + CollisionRect.h / 2;
+
+		PushThis.Spare1 = TargetX;
+		PushThis.Spare2 = TargetY;
+		break;
+	};
 	EnemyProjectileVector.push_back(PushThis);
 }
 
@@ -241,7 +254,7 @@ void Enemy::Shoot(int Type, int Bearing)
 		PushThis.WorldX = WorldX + CollisionRect.w / 2;
 		PushThis.WorldY = WorldY + CollisionRect.h / 2;
 
-		PushThis.Damage = 50;
+		PushThis.Damage = 30;
 		break;
 
 	case 4://Larger projectile
@@ -361,7 +374,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			else if (CURRENTENEMYPROJECTILE.WorldY > PlayerRect.y && CURRENTENEMYPROJECTILE.YVel > -7) CURRENTENEMYPROJECTILE.YVel -= 0.3;
 		}
 
-		if (CURRENTENEMYPROJECTILE.Wave)
+		else if (CURRENTENEMYPROJECTILE.Wave)
 		{
 			CURRENTENEMYPROJECTILE.Spare1 += CURRENTENEMYPROJECTILE.XVel;
 			CURRENTENEMYPROJECTILE.Spare2 += CURRENTENEMYPROJECTILE.YVel;
@@ -378,6 +391,47 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 			CURRENTENEMYPROJECTILE.WorldX = CURRENTENEMYPROJECTILE.Frame + CURRENTENEMYPROJECTILE.XVel;
 			CURRENTENEMYPROJECTILE.WorldY = CURRENTENEMYPROJECTILE.Spare1 + CURRENTENEMYPROJECTILE.YVel;
+		}
+
+		else if (CURRENTENEMYPROJECTILE.Type == 11)
+		{
+			int XDiff = CURRENTENEMYPROJECTILE.Spare1 - CURRENTENEMYPROJECTILE.WorldX;
+			int YDiff = CURRENTENEMYPROJECTILE.Spare2 - CURRENTENEMYPROJECTILE.WorldY;
+
+			CURRENTENEMYPROJECTILE.WorldX += XDiff / 8;
+			CURRENTENEMYPROJECTILE.WorldY += YDiff / 8;
+
+			if (CURRENTENEMYPROJECTILE.Frametime > 120)
+			{
+				if (SpawnFlowers)
+				{
+					EnemyProjectile Flower(12);
+					Flower.WorldX = CURRENTENEMYPROJECTILE.Spare1;
+					Flower.WorldY = CURRENTENEMYPROJECTILE.Spare2;
+
+					Flower.CollisionRect.w = 40;
+					Flower.CollisionRect.h = 40;
+					Flower.Damage = 50;
+					Flower.Collides = false;
+
+					Flower.WorldX += 20;
+					Flower.WorldY += 20;
+					Flower.Spare1 = sqrt((Flower.WorldX - OrbitX) * (Flower.WorldX - OrbitX) + (Flower.WorldY - OrbitY) * (Flower.WorldY - OrbitY));
+					Flower.Spare2 = CalculateProjectileAngle(OrbitX, OrbitY, Flower.WorldX, Flower.WorldY);
+					Flower.WorldX -= 20;
+					Flower.WorldY -= 20;
+					Temp2 = 0;
+
+					EnemyProjectileVector.push_back(Flower);
+				}
+				CURRENTENEMYPROJECTILE.Active = false;
+			}
+		}
+
+		else if (CURRENTENEMYPROJECTILE.Type == 12)
+		{
+			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180)));
+			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180)));
 		}
 
 		else
@@ -408,7 +462,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			}
 		}
 		
-		if (CURRENTENEMYPROJECTILE.Collides && !Invincible)
+		if (CURRENTENEMYPROJECTILE.Collides)
 		{
 			SDL_Rect CurrentTile;
 			for (int eye = 0; eye < LevelVector.size(); eye++)
@@ -426,11 +480,11 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			}
 		}
 		
-		if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect))
+		if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && !Invincible)
 		{
 			Damaged = true;
 			DamageDealt = CURRENTENEMYPROJECTILE.Damage;
-			CURRENTENEMYPROJECTILE.Active = false;
+			if (CURRENTENEMYPROJECTILE.Collides) CURRENTENEMYPROJECTILE.Active = false;
 		}
 
 		if (CURRENTENEMYPROJECTILE.Active)

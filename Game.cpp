@@ -148,6 +148,7 @@ void DeathScreen()
 
 	Camera.LevelHeight = LevelHeight;
 	Update = true;
+	Mix_HaltMusic();
 }
 
 void DoThings()
@@ -249,10 +250,8 @@ void DoThings()
 	if (Character.Reset == true)
 	{
 		Character.Render = false;
-		Mix_HaltMusic();
 		Laser = false;
 		DamageDealt = 0;
-		Mix_HaltMusic();
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0xFFFFFF);
 		DeathScreen();
@@ -290,7 +289,7 @@ void HandleEvents()
 	{
 		if (event.type == SDL_KEYDOWN)
 		{
-			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true; main(NULL,NULL);}
+			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true;}
 			else if (event.key.keysym.sym == SDLK_e) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q) SwapWeapons(false);
 			else if (event.key.keysym.sym == SDLK_TAB)
@@ -317,12 +316,12 @@ void HandleEvents()
 		switch(CurrentSelection)
 		{
 		case 1: //Pistol
+			ShotTimer = 16;
 			Mix_PlayChannel(-1,Pistol,0);
 			Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 			float XRatio, YRatio;
 			GetXYRatio(&XRatio,&YRatio,Angle,20);
 			CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
-			ShotTimer = 50;
 			break;
 
 		case 2: //Shotgun
@@ -332,7 +331,7 @@ void HandleEvents()
 				Ammo[1]--;
 				
 				SpareStream.str("");
-				SpareStream << "Resources/Sounds/Weapons/Shotgun" << rand() % 3 + 1 << ".wav";
+				SpareStream << "Resources/Sounds/Weapons/Shotgun" << rand() % 2 + 1 << ".wav";
 				ShotgunFire = Mix_LoadWAV(SpareStream.str().c_str());
 				Mix_PlayChannel(-1, ShotgunFire, 0);
 
@@ -340,7 +339,7 @@ void HandleEvents()
 				float XRatio, YRatio;
 				for (int i = 0; i <= 8; i++)
 				{
-					GetXYRatio(&XRatio,&YRatio,Angle + rand () % 4 - i, 19);
+					GetXYRatio(&XRatio,&YRatio,Angle + rand () % 8 - i * 2, 19);
 					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
 				}
 				ShotTimer = 70;
@@ -359,7 +358,7 @@ void HandleEvents()
 				XRatio += Character.XVel;
 				YRatio += Character.YVel;
 				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,2);
-				ShotTimer = 7;
+				ShotTimer = 6;
 			}
 			break;
 
@@ -511,26 +510,27 @@ void Game()
 		switch (LevelProgress)
 		{
 		case 0:
-			AddObject(850, 1100, Warden);
+			AddObject(850, 1000, Warden);
 			AddObject(1750, 3400, PlayerNormal);
 			AddObject(1250, 3350, PlayerNormal);
 			AddObject(60, 3410, PlayerNormal);
 			AddObject(1090, 2530, RIP);
 			AddObject(250, 2550, PlayerNormal);
+			BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
 			LevelProgress = 1;
 			FrameCount = 0;
 			break;
 
 		case 1:
-			if (Character.WorldY < 1850)
+			if (Character.WorldY < 1650)
 			{
 				LevelProgress = 2;
 				Laser = true;
 				LaserSpeed = 0;
-				LaserY = 2000;
+				LaserY = 2010;
 
 				Camera.TargetX = 0;
-				Camera.TargetY = 800;
+				Camera.TargetY = 700;
 
 				Update = false;
 				Camera.LevelHeight = 2020;
@@ -540,28 +540,24 @@ void Game()
 
 		case 2:
 			FrameCount++;
-			if (InBetween(850, Character.WorldX, 1150) && InBetween(1100, Character.WorldY, 1400))
-			{
-				Damaged = true;
-				DamageDealt = 20;
-			}
 			
 			if (FrameCount % 70 == 0)
 			{
-				CreateDebris(6, 6, 850 + (rand() % 2) * 300, 1100 + (rand() % 2) * 300, rand() % 20 - 10, rand() % 20 - 10, 0xFFFFFF);
+				CreateDebris(6, 6, 850 + (rand() % 2) * 300, 1000 + (rand() % 2) * 300, rand() % 20 - 10, rand() % 20 - 10, 0xFFFFFF);
 				Shake = true;
 				Mag = 10;
 				Dur = 20;
+				Mix_PlayChannel(-1, Impact, 0);
 			}
 
-			if (FrameCount == 250)
+			if (FrameCount == 270)
 			{
 				Update = true;
 				LevelProgress = 3;
 
-				Enemy Temp(850,1100,13);
+				Enemy Temp(850,1000,13);
 
-				Temp.Health = 3000;
+				Temp.Health = 5000;
 				Temp.CollisionRect.w = 300;
 				Temp.CollisionRect.h = 300;
 
@@ -573,17 +569,17 @@ void Game()
 				Temp.Moving = false;
 				Character.NormalMovement = true;
 
+				Mix_PlayMusic(BossTheme, -1);
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat2.ogg");
+
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
+
+				
 			}
 			break;
 
 		case 3:
-			for (int s = 0; s < DebrisVector.size(); s++)
-			{
-				if (DebrisVector.at(s).Rect.h == 10) DebrisVector.erase(DebrisVector.begin() + s);
-			}
-
 			if (Boss == false)
 			{
 				Temp1 = 1240;
@@ -592,13 +588,14 @@ void Game()
 				Character.NormalMovement = false;
 				LevelProgress = 4;
 				ClearProjectiles();
+				Mix_HaltMusic();
 
 				SDL_Rect Core;
 				Core.x = 130;
 				Core.y = 130;
 				Core.w = 40;
 				Core.h = 40;
-				AddObject(900, 1240, Grenade);
+				AddObject(900, 1340, Grenade);
 			}
 			break;
 
@@ -648,8 +645,10 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	Here:
 
+	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
 	NextLevel(1000,1900);
 	float Vel = 0.01;
 
@@ -666,16 +665,16 @@ void Game()
 		case 0:
 			LevelProgress = 1;
 			FadeText("Q and E to change weapons");
-			Pickup UKIP;
-			UKIP.Type = 1;
-			UKIP.WorldX = 800;
-			UKIP.WorldY = 1700;
-			PickupVector.push_back(UKIP);
+			Pickup PICK;
+			PICK.Type = 1;
+			PICK.WorldX = 800;
+			PICK.WorldY = 1700;
+			PickupVector.push_back(PICK);
 
 			for (int p = 0; p < 5; p++)
 			{
-				UKIP.WorldX += 100;
-				PickupVector.push_back(UKIP);
+				PICK.WorldX += 100;
+				PickupVector.push_back(PICK);
 			}
 			break;
 
@@ -683,11 +682,24 @@ void Game()
 			if (PickupVector.size() == 0)
 			{
 				LevelProgress = 2;
-				SpawnVector.push_back(1000);
-				SpawnVector.push_back(1600);
-				SpawnVector.push_back(1);
-				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+
+				SpawnVector.push_back(1000);
+				SpawnVector.push_back(1000);
+				SpawnVector.push_back(2);
+
+				SpawnVector.push_back(2000);
+				SpawnVector.push_back(1000);
+				SpawnVector.push_back(2);
+
+				SpawnVector.push_back(1000);
+				SpawnVector.push_back(2000);
+				SpawnVector.push_back(2);
+
+				SpawnVector.push_back(2000);
+				SpawnVector.push_back(2000);
+				SpawnVector.push_back(2);
+				SpawnEnemies(SpawnVector);
 			}
 			break;
 
@@ -695,7 +707,7 @@ void Game()
 			if (Enemies == 0)
 			{
 				LevelProgress = 3;
-
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(50);
 				SpawnVector.push_back(1);
@@ -716,16 +728,11 @@ void Game()
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1);
 
-				SpawnVector.push_back(1000);
-				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1);
-
-				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1950);
+				SpawnVector.push_back(1150);
+				SpawnVector.push_back(2000);
 				SpawnVector.push_back(1);
 
 				SpawnEnemies(SpawnVector);
-				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 			}
 			break;
 
@@ -733,6 +740,7 @@ void Game()
 			if (Enemies == 0)
 			{
 				LevelProgress = 4;
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(50);
@@ -740,7 +748,7 @@ void Game()
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1000);
-				SpawnVector.push_back(2);
+				SpawnVector.push_back(3);
 
 				SpawnVector.push_back(50);
 				SpawnVector.push_back(1950);
@@ -748,26 +756,17 @@ void Game()
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(2);
-
-				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1950);
-				SpawnVector.push_back(2);
+				SpawnVector.push_back(3);
 
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(3);
 
 				SpawnVector.push_back(1950);
-				SpawnVector.push_back(1350);
-				SpawnVector.push_back(2);
-
-				SpawnVector.push_back(1750);
 				SpawnVector.push_back(1950);
 				SpawnVector.push_back(3);
 
 				SpawnEnemies(SpawnVector);
-
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 			}
 			break;
@@ -804,7 +803,7 @@ void Game()
 				SpawnVector.push_back(4);
 				Boss = true;
 				SpawnEnemies(SpawnVector);
-				Mix_PlayMusic(SmashSong, -1);
+				Mix_PlayMusic(BossTheme, -1);
 			}
 			break;
 
@@ -984,8 +983,6 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	Here:
-
 	if (!LoadLevel("Resources/Levels/4")) {State = QUIT; Menu();}
 	NextLevel(1000, 9950);
 
@@ -1002,6 +999,15 @@ void Game()
 	Big.WorldY = 0;
 	Big.Damage = 100;
 
+	EnemyProjectile Big2(4);
+	Big2.CollisionRect.w = 60;
+	Big2.CollisionRect.h = 60;
+	Big2.XVel = 0;
+	Big2.YVel = 7;
+	Big2.WorldX = 0;
+	Big2.WorldY = 30;
+	Big2.Damage = 100;
+
 	EnemyProjectile Small(3);
 	Small.CollisionRect.w = 30;
 	Small.CollisionRect.h = 30;
@@ -1009,7 +1015,16 @@ void Game()
 	Small.YVel = 0;
 	Small.WorldX = 21;
 	Small.WorldY = 0;
-	Small.Damage = 50;
+	Small.Damage = 30;
+
+	EnemyProjectile Small2(3);
+	Small2.CollisionRect.w = 30;
+	Small2.CollisionRect.h = 30;
+	Small2.XVel = 0;
+	Small2.YVel = -11;
+	Small2.WorldX = 21;
+	Small2.WorldY = LevelHeight - 40;
+	Small2.Damage = 30;
 
 	EnemyProjectile Sine(9);
 	Sine.CollisionRect.w = 20;
@@ -1018,9 +1033,10 @@ void Game()
 	Sine.WorldY = 30;
 	Sine.Spare1 = 0;
 	Sine.Spare2 = 30;
+	Sine.YVel = 9;
 	Sine.Frame = 180;
 	Sine.Frametime = 0;
-	Sine.Damage = 50;
+	Sine.Damage = 30;
 	Sine.Wave = true;
 
 	while(LevelFinished == false && State == GAME)
@@ -1059,10 +1075,6 @@ void Game()
 				SpawnVector.push_back(20);
 				SpawnVector.push_back(7);
 
-				SpawnVector.push_back(1500);
-				SpawnVector.push_back(20);
-				SpawnVector.push_back(7);
-
 				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 
@@ -1091,6 +1103,24 @@ void Game()
 			{
 				Big.WorldY = rand() % 6900 + 3021;
 				EnemyProjectileVector.push_back(Big);
+			}
+
+			if (Numero % 20 == 0)
+			{
+				Sine.WorldX = rand() % (LevelWidth - 60) + 20;
+				Sine.Spare1 = Sine.WorldX;
+				EnemyProjectileVector.push_back(Sine);
+
+				Small2.WorldX = Sine.WorldX;
+				EnemyProjectileVector.push_back(Small2);
+			}
+
+			if (Numero % 30 == 0)
+			{
+				Big2.WorldX = rand() % (LevelWidth - 140) + 20;
+				EnemyProjectileVector.push_back(Big2);
+
+				EnemyVector.at(0).WorldX = 2000 - EnemyVector.at(0).WorldX;
 			}
 
 			if (Character.WorldY < 0) LevelFinished = true;

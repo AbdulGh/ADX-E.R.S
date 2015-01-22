@@ -75,8 +75,10 @@ extern bool Invincible;
 extern bool Boss;
 extern bool Shake;
 extern bool Laser;
+extern bool SpawnFlowers;
 
 extern float LaserY;
+extern float AngleOffset;
 
 extern int XChange;
 extern int YChange;
@@ -91,6 +93,8 @@ extern int Temp2;
 extern int Temp3;
 extern int Dur;
 extern int Mag;
+extern int OrbitX;
+extern int OrbitY;
 
 extern Uint8 MouseStates;
 
@@ -115,7 +119,7 @@ extern TTF_Font *SysSmall;
 extern TTF_Font *Small;
 extern TTF_Font *SmallSmall;
 
-extern Mix_Music *SmashSong;
+extern Mix_Music *BossTheme;
 
 extern Mix_Chunk *Metal;
 extern Mix_Chunk *ShotgunFire;
@@ -124,6 +128,7 @@ extern Mix_Chunk *MachineGunFire;
 extern Mix_Chunk *Pistol;
 extern Mix_Chunk *Empty;
 extern Mix_Chunk *SmashDeath;
+extern Mix_Chunk *Impact;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
 extern Gamestate State;
