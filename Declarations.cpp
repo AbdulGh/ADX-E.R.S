@@ -1,5 +1,4 @@
 #include"Declarations.h"
-#include"OpenDebugWindow.h"
 #include"DoProjectiles.h"
 
 SDL_Event event;
@@ -15,7 +14,7 @@ bool Laser = false;
 bool SpawnFlowers = true;
 
 float LaserY = 0;
-float AngleOffset = 72;
+float AngleOffset = 0;
 
 int XChange = 0;
 int YChange = 0;
@@ -35,7 +34,7 @@ int OrbitY = 1150;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,0,0,0,0,0};
+int Ammo[WEAPONS] = {1,0,0,0,0,0,10};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -79,6 +78,8 @@ SDL_Surface *Biggie = NULL;
 SDL_Surface *Warden = NULL;
 SDL_Surface *RIP = NULL;
 SDL_Surface *Grenade = NULL;
+SDL_Surface *LaserShotgun = NULL;
+SDL_Surface *Warkid = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -108,6 +109,7 @@ Mix_Chunk *Empty = NULL;
 Mix_Chunk *SmashDeath = NULL;
 Mix_Chunk *Impact = NULL;
 Mix_Chunk *Metal = NULL;
+Mix_Chunk *Step = NULL;
 
 Mix_Music *BossTheme = NULL;
 
@@ -197,7 +199,7 @@ Gamestate State;
 
 SDL_Surface *LoadImage( std::string filename )
 {
-    OpenDebugWindow(filename);
+    DebugWindow(filename);
 	SDL_Surface* LoadedImage = NULL;
     SDL_Surface* OptimizedImage = NULL;
     LoadedImage = IMG_Load( filename.c_str() );
@@ -208,8 +210,7 @@ SDL_Surface *LoadImage( std::string filename )
     }
 	else
 	{
-		OpenDebugWindow("Failed to load last file");
-		OpenDebugWindow("Open");
+		DebugWindow("Failed to load last file");
 	}
 
     return OptimizedImage;
@@ -257,8 +258,9 @@ bool Load()
 	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun1.wav");
 	Pistol = Mix_LoadWAV("Resources/Sounds/Weapons/Laser1.ogg");
 	Empty = Mix_LoadWAV("Resources/Sounds/Weapons/Empty.ogg");
-	SmashDeath = Mix_LoadWAV("Resources/Sounds/Weapons/SmashDeath.wav");
+	SmashDeath = Mix_LoadWAV("Resources/Sounds/Other/SmashDeath.wav");
 	Impact = Mix_LoadWAV("Resources/Sounds/Other/Impact.ogg");
+	Step = Mix_LoadWAV("Resources/Sounds/Other/Step1.ogg");
 	Metal = Mix_LoadWAV("Resources/Sounds/Weapons/Metal1.ogg");
 
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
@@ -290,6 +292,8 @@ bool Load()
 	Warden = LoadImage("Resources/Images/Warden.png");
 	RIP = LoadImage("Resources/Images/RIP.png");
 	Grenade = LoadImage("Resources/Images/Grenade.png");
+	LaserShotgun = LoadImage("Resources/Images/LaserShotgun.png");
+	Warkid = LoadImage("Resources/Images/LoreDeepens.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

@@ -18,11 +18,13 @@ public:
 	int Frametime;
 	int ShotCounter;
 	int Speed;
+	int MaxSpeed;
+	int BurnTimer;
 	float XVel;
 	float YVel;
-	int MaxSpeed;
 
 	bool Moving;
+	bool OnFire;
 
 	SDL_Rect CollisionRect;
 
@@ -45,6 +47,11 @@ public:
 
 extern std::vector <Enemy> EnemyVector;
 extern std::vector <Pickup> PickupVector;
+
+extern std::string BossName;
+
+extern int BossHealth;
+extern int Divider;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);

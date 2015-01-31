@@ -1,7 +1,7 @@
 #ifndef BUTTONCLASS_H
 #define BUTTONCLASS_H
 #include"Declarations.h"
-#include"OpenDebugWindow.h"
+#include"DebugWindow.h"
 
 class Button
 {

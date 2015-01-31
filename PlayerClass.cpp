@@ -5,6 +5,8 @@
 #define TOPSPEED 10
 #define ACCELERATION 0.8
 
+int StepTimer = 240;
+
 Player::Player()
 {
 	Health = 100; 
@@ -132,6 +134,16 @@ void Player::Update()
 
 		WorldX += XVel;
 		WorldY += YVel;
+
+		StepTimer -= abs(XVel + YVel);
+		if (StepTimer <= 0)
+		{
+			StepTimer = 240;
+			Mix_PlayChannel(-1, Step, 0);
+			SpareStream.str("");
+			SpareStream << "Resources/Sounds/Other/Step" << rand() % 4 + 1 << ".ogg";
+			Step = Mix_LoadWAV(SpareStream.str().c_str());
+		}
 	}
 
 	if (Render == true) ApplySurface(WorldX - Camera.x, WorldY - Camera.y, CurrentSprite, Screen);

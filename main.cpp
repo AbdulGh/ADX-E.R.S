@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 	if (!Load())
 	{
-		OpenDebugWindow("Failed to load all files!");
+		DebugWindow("Failed to load all files!");
 	}
 
 	SDL_ShowCursor(SDL_DISABLE);
@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
 	for (int i = 1; i <= IntroText.size(); i++)
 	{
 		std::string ApplyThis = IntroText.substr(0,i);
-		Message = TTF_RenderText_Solid(Sys,ApplyThis.c_str(),White);
+		Message = TTF_RenderText_Blended(Sys,ApplyThis.c_str(),White);
 		x = (ScreenWidth - Message->w) / 2;
 		if (i % 3 == 0) EpicFlag = !EpicFlag;
 		if (EpicFlag)
 		{
 			ApplyThis += "_";
-			Message = TTF_RenderText_Solid(Sys,ApplyThis.c_str(),White);
+			Message = TTF_RenderText_Blended(Sys,ApplyThis.c_str(),White);
 		}
 		ClearScreen();
 		ApplySurface(x, 200, Message, Screen);

@@ -10,12 +10,13 @@
                                  | $$                                    
                                  |__/                                    
 (CurrentSelection)
-1 - Pistol
-2 - Shotgun
-3 - Machine Gun
-4 - Flamethrower
-5 - Laser SMG
-6 - RPG
+1  -  Pistol
+2  -  Shotgun
+3  -  Machine Gun
+4  -  Flamethrower
+5  -  Laser SMG
+6  -  RPG
+7  -  Laser shotgun
 
 
  /$$$$$$$                                               /$$     /$$ /$$                    
@@ -30,11 +31,11 @@
                        |  $$$$$$/                                                          
                         \______/                                                           
 (Projectile.Type)
-1 - Bullet
-2 - Better bullet
-3 - Flame
-4 - Laser
-5 - RPG
+1  -  Bullet
+2  -  Better bullet
+3  -  Flame
+4  -  Laser
+5  -  RPG
 
 
  /$$$$$$$$                                   /$$                    
@@ -60,6 +61,7 @@
 11 -  Vertical laser
 12 -  Biggie
 13 -  W.A.R DEN
+14 -  Warkid
 
 
  /$$$$$$$$                                            
@@ -89,12 +91,14 @@
 2  -  SIS bullet
 3  -  Large projectile
 4  -  Larger projectile
-5  -  Suicide spawner
+5  -  Gunmen spawner
 6  -  Homing missiles
 7  -  Vertical laser
 8  -  Fire
 9  -  Sine wave
 10 -  Circle
+11 -  Approachers
+12 -  Flow-ers
 
 
  /$$$$$$$  /$$           /$$                                    
@@ -115,3 +119,4 @@
 4  -  Flamethrower
 5  -  Laser SMG
 6  -  RPG
+7  -  Laser Shotgun

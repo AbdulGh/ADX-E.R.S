@@ -180,7 +180,7 @@ void MapCreator()
 					Grid = !Grid;
 					SpareStream.str("");
 					SpareStream << "Grid mode: " << Grid;
-					OpenDebugWindow(SpareStream.str().c_str());
+					DebugWindow(SpareStream.str().c_str());
 				}
 
 				else if (event.key.keysym.sym == SDLK_d)
@@ -188,7 +188,7 @@ void MapCreator()
 					Delete = !Delete;
 					SpareStream.str("");
 					SpareStream << "Delete mode: " << Delete;
-					OpenDebugWindow(SpareStream.str().c_str());
+					DebugWindow(SpareStream.str().c_str());
 				}
 				else if (event.key.keysym.sym == SDLK_RETURN)
 				{

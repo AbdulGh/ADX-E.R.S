@@ -147,7 +147,7 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 
 	case 8: //Fire
 		Bearing = CalculateProjectileAngle(WorldX, WorldY, TargetX, TargetY);
-		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 20 + (rand() % 10 - 5));
+		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 20 + (rand() % 8 - 4));
 
 		PushThis.CollisionRect.w = 3;
 		PushThis.CollisionRect.h = 3;
@@ -216,7 +216,8 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 void Enemy::Shoot(int Type, int Bearing)
 {
 	EnemyProjectile PushThis(Type);
-	
+	Bearing = Bearing % 360;
+
 	switch (Type)
 	{
 	case 1: //Normal bullet
@@ -301,7 +302,7 @@ void Enemy::Shoot(int Type, int Bearing)
 		break;
 
 	case 8: //Fire
-		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 20 + (rand() % 10 - 5));
+		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 20 + (rand() % 8 - 4));
 
 		PushThis.CollisionRect.w = 3;
 		PushThis.CollisionRect.h = 3;
@@ -403,11 +404,11 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 			if (CURRENTENEMYPROJECTILE.Frametime > 120)
 			{
-				if (SpawnFlowers)
+				if (SpawnFlowers) //this will be changed
 				{
 					EnemyProjectile Flower(12);
-					Flower.WorldX = CURRENTENEMYPROJECTILE.Spare1;
-					Flower.WorldY = CURRENTENEMYPROJECTILE.Spare2;
+					Flower.WorldX = CURRENTENEMYPROJECTILE.WorldX;
+					Flower.WorldY = CURRENTENEMYPROJECTILE.WorldY;
 
 					Flower.CollisionRect.w = 40;
 					Flower.CollisionRect.h = 40;
@@ -430,8 +431,8 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 		else if (CURRENTENEMYPROJECTILE.Type == 12)
 		{
-			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180)));
-			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180)));
+			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180))) - 20;
+			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180))) - 20;
 		}
 
 		else
@@ -448,7 +449,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			CURRENTENEMYPROJECTILE.XVel /= 1.05;
 			CURRENTENEMYPROJECTILE.YVel /= 1.05;
 
-			if(abs(CURRENTENEMYPROJECTILE.XVel < 0.5) && abs(CURRENTENEMYPROJECTILE.YVel < 0.5))
+			if(abs(CURRENTENEMYPROJECTILE.XVel) < 0.5 && abs(CURRENTENEMYPROJECTILE.YVel) < 0.5)
 			{
 				if (CURRENTENEMYPROJECTILE.SpawnsEnemies)
 				{

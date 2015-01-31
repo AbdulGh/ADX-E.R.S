@@ -14,6 +14,8 @@ public:
 	int Time;
 	int Damage;
 
+	bool Burning;
+
 	SDL_Rect ProjectileRect;
 	SDL_Surface ProjectileSurface;
 };

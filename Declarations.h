@@ -1,7 +1,7 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
-#define WEAPONS 6
+#define WEAPONS 7
 
 #include <iostream>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 #include "SDL_mixer.h"
-#include "OpenDebugWindow.h"
+#include "DebugWindow.h"
 #include "ButtonClass.h"
 #include "TileClass.h"
 #include "MapCreator.h"
@@ -57,6 +57,8 @@ extern SDL_Surface *Biggie;
 extern SDL_Surface *Warden;
 extern SDL_Surface *RIP;
 extern SDL_Surface *Grenade;
+extern SDL_Surface *LaserShotgun;
+extern SDL_Surface *Warkid;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -129,6 +131,7 @@ extern Mix_Chunk *Pistol;
 extern Mix_Chunk *Empty;
 extern Mix_Chunk *SmashDeath;
 extern Mix_Chunk *Impact;
+extern Mix_Chunk *Step;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
 extern Gamestate State;

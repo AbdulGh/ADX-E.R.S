@@ -13,6 +13,7 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 	elitcejorP.YInc = YRatio;
 	elitcejorP.ProjectileRect.x = x;
 	elitcejorP.ProjectileRect.y = y;
+	elitcejorP.Burning = false;
 
 	switch (Type)
 	{
@@ -31,12 +32,14 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 		elitcejorP.ProjectileRect.w = 4;
 		elitcejorP.ProjectileRect.h = 4;
 		elitcejorP.Damage = 3;
+		elitcejorP.Burning = true;
 		break;
 
 	case 4:
 		elitcejorP.ProjectileRect.w = 3;
 		elitcejorP.ProjectileRect.h = 3;
 		elitcejorP.Damage = 4;
+		elitcejorP.Burning = true;
 		break;
 
 	case 5:

@@ -4,12 +4,12 @@
 
 Gamestate Menu()
 {
-	SDL_Surface *NewGame = TTF_RenderText_Solid(Start,"New Game",White);
-	SDL_Surface *NewGameMouseover = TTF_RenderText_Solid(Start,"New Game",Green);
-	SDL_Surface *Options = TTF_RenderText_Solid(Start,"Options",White);
-	SDL_Surface *OptionsMouseover = TTF_RenderText_Solid(Start,"Options",Green);
-	SDL_Surface *Quit = TTF_RenderText_Solid(Start,"Exit",White);
-	SDL_Surface *QuitMouseover = TTF_RenderText_Solid(Start,"Exit",Green);
+	SDL_Surface *NewGame = TTF_RenderText_Blended(Start,"New Game",White);
+	SDL_Surface *NewGameMouseover = TTF_RenderText_Blended(Start,"New Game",Green);
+	SDL_Surface *Options = TTF_RenderText_Blended(Start,"Options",White);
+	SDL_Surface *OptionsMouseover = TTF_RenderText_Blended(Start,"Options",Green);
+	SDL_Surface *Quit = TTF_RenderText_Blended(Start,"Exit",White);
+	SDL_Surface *QuitMouseover = TTF_RenderText_Blended(Start,"Exit",Green);
 
 	ClearButtons();
 	CreateButton(100,ScreenHeight - 200,1,NewGame,NewGameMouseover,0);
@@ -24,8 +24,8 @@ Gamestate Menu()
 		if (Inc > 60000) Inc = 0;
 		ClearScreen();
 		if ( Inc % 80 == 0 ) EpicFlag = !EpicFlag;
-		if (EpicFlag) Message = TTF_RenderText_Solid(Sys,"ADX E.R.S",White);
-		else Message = TTF_RenderText_Solid(Sys,"ADX E.R.S_",White);
+		if (EpicFlag) Message = TTF_RenderText_Blended(Sys,"ADX E.R.S",White);
+		else Message = TTF_RenderText_Blended(Sys,"ADX E.R.S_",White);
 		ApplySurface(Temp1,200,Message,Screen);
 		int x,y;
 		DoMouse(&x,&y);

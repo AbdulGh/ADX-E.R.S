@@ -1,5 +1,5 @@
 #include<math.h>
-#include"OpenDebugWindow.h"
+#include"DebugWindow.h"
 #include"Declarations.h"
 
 double ArcTan(double Number)
@@ -74,7 +74,7 @@ double CalculateProjectileAngle(float PlayerX, float PlayerY, float MouseX, floa
 	}
 	else 
 	{
-		OpenDebugWindow("Something has gone wrong in CalculateProjectileAngle");
+		DebugWindow("Something has gone wrong in CalculateProjectileAngle");
 		return 999;
 	}
 }
