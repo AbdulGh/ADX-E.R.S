@@ -14,6 +14,7 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 	elitcejorP.ProjectileRect.x = x;
 	elitcejorP.ProjectileRect.y = y;
 	elitcejorP.Burning = false;
+	elitcejorP.Active = true;
 
 	switch (Type)
 	{
@@ -33,6 +34,7 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 		elitcejorP.ProjectileRect.h = 4;
 		elitcejorP.Damage = 3;
 		elitcejorP.Burning = true;
+		elitcejorP.Time = -1;
 		break;
 
 	case 4:
@@ -52,6 +54,11 @@ void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type)
 	ProjectileVector.push_back(elitcejorP);
 }
 
+bool Projectile::IsNotActive() const
+{
+	return !(Active);
+}
+
 #define CURRENTPROJECTILE ProjectileVector.at(i)
 void DoProjectiles(int CameraX, int CameraY)
 {
@@ -59,7 +66,6 @@ void DoProjectiles(int CameraX, int CameraY)
 	{
 		for( int i = 0; i < ProjectileVector.size(); i++ )
 		{	
-			bool Erase = false;
 			CURRENTPROJECTILE.WorldX += CURRENTPROJECTILE.XInc;
 			CURRENTPROJECTILE.WorldY += CURRENTPROJECTILE.YInc;
 
@@ -92,7 +98,7 @@ void DoProjectiles(int CameraX, int CameraY)
 						if (CURRENTPROJECTILE.Type != 3)
 						{
 							CreateDebris(2,3,CURRENTPROJECTILE.WorldX,CURRENTPROJECTILE.WorldY,-CURRENTPROJECTILE.XInc / 2,-CURRENTPROJECTILE.YInc / 2,0xFFFFFF);
-							Erase = true; 
+							CURRENTPROJECTILE.Active = false; 
 						}
 
 						else
@@ -119,12 +125,12 @@ void DoProjectiles(int CameraX, int CameraY)
 							}
 						}
 					}
-					if (Erase == true) break;
+					if (CURRENTPROJECTILE.Active == false) break;
 				}
 			}
-			if (CURRENTPROJECTILE.Time == 0) Erase = true;
+			if (CURRENTPROJECTILE.Time == 0) CURRENTPROJECTILE.Active = false;
 
-			if (Erase == false)
+			if (CURRENTPROJECTILE.Active == true)
 			{
 				CURRENTPROJECTILE.ProjectileRect.x = CURRENTPROJECTILE.WorldX - CameraX;
 				CURRENTPROJECTILE.ProjectileRect.y = CURRENTPROJECTILE.WorldY - CameraY;
@@ -132,8 +138,13 @@ void DoProjectiles(int CameraX, int CameraY)
 				else if (CURRENTPROJECTILE.Type == 4) SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFF0000);
 				else SDL_FillRect(Screen,&CURRENTPROJECTILE.ProjectileRect,0xFFFF00);
 			}
-
-			else ProjectileVector.erase(ProjectileVector.begin() + i);
 		}
 	}
+
+	ProjectileVector.erase(
+		std::remove_if(
+		ProjectileVector.begin(),
+		ProjectileVector.end(),
+		std::mem_fun_ref((&Projectile::IsNotActive))),
+		ProjectileVector.end());
 }

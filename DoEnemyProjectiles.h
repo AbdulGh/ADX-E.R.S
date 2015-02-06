@@ -34,6 +34,7 @@ public:
 	bool Circle;
 
 	EnemyProjectile(int Type);
+	bool IsNotActive() const;
 };
 
 extern std::vector <EnemyProjectile> EnemyProjectileVector;

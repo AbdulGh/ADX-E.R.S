@@ -91,18 +91,18 @@ void Enemy::Gib()
 	Part.y = 0;
 	Part.w = Sprite->w / 2 - 1;
 	Part.h = Sprite->h / 3;
-	AddObject(WorldX, WorldY, *Sprite, -rand() % 12, -rand() % 12, 100, Part);
+	AddObject(WorldX, WorldY, Sprite, -rand() % 12, -rand() % 12, 100, Part);
 
 	Part.x = Part.w;
-	AddObject(WorldX, WorldY, *Sprite, rand() % 12, -rand() % 12, 130, Part);
+	AddObject(WorldX, WorldY, Sprite, rand() % 12, -rand() % 12, 130, Part);
 
 	Part.x = 0;
 	Part.y = Part.h;
 	Part.h = 2* Sprite->h / 3 - 1;
-	AddObject(WorldX, WorldY, *Sprite, -rand() % 12, rand() % 12, 120, Part);
+	AddObject(WorldX, WorldY, Sprite, -rand() % 12, rand() % 12, 120, Part);
 
 	Part.x = Part.w;
-	AddObject(WorldX, WorldY, *Sprite, rand() % 12, rand() % 12, 140, Part);
+	AddObject(WorldX, WorldY, Sprite, rand() % 12, rand() % 12, 140, Part);
 }
 
 void Enemy::StayInLevel()
@@ -113,13 +113,18 @@ void Enemy::StayInLevel()
 	else if (WorldY + CollisionRect.h > LevelHeight - 20) WorldY = LevelHeight - (CollisionRect.h + 20);
 }
 
+bool Enemy::IsNotActive() const //I think std::mem_fun_ref can only take functions so I have to do this, I'm sorry
+{
+	return (Health <= 0);
+}
+
 void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why)
 {
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		int Rand1 = rand() % 16 - 8;
 		int Rand2 = rand() % 16 - 8;
-		CreateDebris(3,1,ex + 15,why + 15,ProjectileXVel + Rand1,ProjectileYVel + Rand2,0x808080);
+		CreateDebris(3, 1, ex + 15, why + 15, ProjectileXVel + Rand1, ProjectileYVel + Rand2, 0x262626);
 	}
 }
 
@@ -329,7 +334,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			if (CURRENTENEMY.BurnTimer % 10 == 0)
 			{
 				CURRENTENEMY.Health -= 3;
-				for (int w = 0; w <= 5; w++) CreateDebris(4, 1, CURRENTENEMY.WorldX + rand() % CURRENTENEMY.CollisionRect.w, CURRENTENEMY.WorldY + rand() % CURRENTENEMY.CollisionRect.h, rand() % 5 - 10, rand() % 5 - 10, 0xFF6A00);
+				for (int w = 0; w <= 4; w++) CreateDebris(4, 1, CURRENTENEMY.WorldX + rand() % CURRENTENEMY.CollisionRect.w, CURRENTENEMY.WorldY + rand() % CURRENTENEMY.CollisionRect.h, rand() % 5 - 10, rand() % 5 - 10, 0xFF6A00);
 				FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, "3", Red, 2);
 			}
 
@@ -1206,11 +1211,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			case 5:
 				CURRENTENEMY.ShotCounter++;
 
-				SpareStream.str("");
-				SpareStream << CURRENTENEMY.ShotCounter;
-				Message = TTF_RenderText_Solid(SysSmall, SpareStream.str().c_str(), Green);
-				ApplySurface(0, 0, Message, Screen);
-
 				if (CURRENTENEMY.ShotCounter % 30 == 0)
 				{
 					CURRENTENEMY.CollisionRect.h = 200;
@@ -1775,25 +1775,28 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				Temp1 = CURRENTENEMY.WorldX;
 				Temp2 = CURRENTENEMY.WorldY;
 			}
-
-			EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
-			Enemies = EnemyVector.size();
 		}
 	}
 
 	if (Boss)
 	{
-		Message = TTF_RenderText_Solid(SysSmall, BossName.c_str(), Green);
+		int Width = 0;
+		ApplyText(15, 5, BossName.c_str(), SysSmall, Green, &Width);
+		
+		BossHealthRect.x = Width + 25;
+		BossHealthRect.y = 5;
+		BossHealthRect.h = 20;
+		BossHealthRect.w = BossHealth * Divider;
 
-		if (Message != NULL)
-		{
-			BossHealthRect.x = Message->w + 25;
-			BossHealthRect.y = 5;
-			BossHealthRect.h = 20;
-			BossHealthRect.w = BossHealth * Divider;
-
-			ApplySurface(15, 5, Message, Screen);
-			SDL_FillRect(Screen, &BossHealthRect, 0x00FF00);
-		}
+		SDL_FillRect(Screen, &BossHealthRect, 0x00FF00);
 	}
+
+	EnemyVector.erase(
+		std::remove_if(
+		EnemyVector.begin(),
+		EnemyVector.end(),
+		std::mem_fun_ref(&Enemy::IsNotActive)),
+		EnemyVector.end());
+
+	Enemies = EnemyVector.size();
 }

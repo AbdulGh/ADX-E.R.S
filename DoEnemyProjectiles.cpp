@@ -43,6 +43,11 @@ EnemyProjectile::EnemyProjectile(int ProjectileType)
 	Wave = false;
 }
 
+bool EnemyProjectile::IsNotActive() const
+{
+	return !(EnemyProjectile::Active);
+}
+
 void Enemy::Shoot(int Type, int TargetX, int TargetY)
 {
 	EnemyProjectile PushThis(Type);
@@ -361,11 +366,19 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 {
 	PlayerRect.x += CameraX;
 	PlayerRect.y += CameraY;
+
+	SpareStream.str("");
+	SpareStream << EnemyProjectileVector.size();
+	DebugWindow(SpareStream.str().c_str());
 	
 	for (int i = 0; i < EnemyProjectileVector.size(); i++)
 	{
 		CURRENTENEMYPROJECTILE.Frametime++;
 		
+		SpareStream.str("");
+		SpareStream << CURRENTENEMYPROJECTILE.Type << " " << CURRENTENEMYPROJECTILE.CollisionRect.w;
+		DebugWindow(SpareStream.str().c_str());
+
 		if (CURRENTENEMYPROJECTILE.Homing)
 		{
 			if (CURRENTENEMYPROJECTILE.WorldX < PlayerRect.x && CURRENTENEMYPROJECTILE.XVel < 7) CURRENTENEMYPROJECTILE.XVel += 0.3;
@@ -488,6 +501,8 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			if (CURRENTENEMYPROJECTILE.Collides) CURRENTENEMYPROJECTILE.Active = false;
 		}
 
+		if (CURRENTENEMYPROJECTILE.WorldY > LevelHeight) CURRENTENEMYPROJECTILE.Active = false;
+
 		if (CURRENTENEMYPROJECTILE.Active)
 		{
 			SDL_Rect RenderRect;
@@ -511,12 +526,12 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				};
 			}
 		}
-
-		if (CURRENTENEMYPROJECTILE.WorldY > LevelHeight) CURRENTENEMYPROJECTILE.Active = false;
-
-		if (!CURRENTENEMYPROJECTILE.Active)
-		{
-			EnemyProjectileVector.erase(EnemyProjectileVector.begin() + i);
-		}
 	}
+
+	EnemyProjectileVector.erase(
+		std::remove_if(
+		EnemyProjectileVector.begin(),
+		EnemyProjectileVector.end(),
+		std::mem_fun_ref((&EnemyProjectile::IsNotActive))),
+		EnemyProjectileVector.end());
 }

@@ -15,6 +15,9 @@ public:
 	int Damage;
 
 	bool Burning;
+	bool Active;
+
+	bool IsNotActive() const;
 
 	SDL_Rect ProjectileRect;
 	SDL_Surface ProjectileSurface;

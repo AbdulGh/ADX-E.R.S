@@ -9,6 +9,8 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <functional>
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
@@ -28,10 +30,7 @@ extern int ScreenHeight;
 
 extern SDL_Surface *Screen;
 extern SDL_Surface *Gunman;
-extern SDL_Surface *Message;
 extern SDL_Surface *Rocket;
-extern SDL_Surface *Message2;
-extern SDL_Surface *Message3;
 extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
 extern SDL_Surface *TeleportSheet;
@@ -141,6 +140,8 @@ bool IsIntersecting(SDL_Rect Rect1, SDL_Rect Rect2);
 bool Init();
 bool InBetween (int Min, int Value, int Max);
 void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip = NULL );
+void ApplyText(int x, int y, std::string String, TTF_Font *Font, SDL_Color Color, int *Width = NULL, int *Height = NULL);
+void ApplyTextCentered(std::string String, TTF_Font *Font, SDL_Color Color, int *Width = NULL, int *Height = NULL, int XOffset = 0, int YOffset = 0);
 bool Load();
 void ClearScreen();
 void SetClips();

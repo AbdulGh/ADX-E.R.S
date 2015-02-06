@@ -1,6 +1,6 @@
 #include "MiscObject.h"
 
-MiscObject::MiscObject(int One, int Two, SDL_Surface Three, int Four, int Five, int Six, SDL_Rect Seven)
+MiscObject::MiscObject(int One, int Two, SDL_Surface* Three, int Four, int Five, int Six, SDL_Rect Seven)
 {
 	WorldX = One;
 	WorldY = Two;
@@ -11,19 +11,19 @@ MiscObject::MiscObject(int One, int Two, SDL_Surface Three, int Four, int Five, 
 	Rekt = Seven;
 }
 
-MiscObject::~MiscObject()
+bool MiscObject::IsNotActive() const
 {
-	//SDL_FreeSurface(&Surface);
+	return (Time == 0);
 }
 
 std::vector<MiscObject> ObjectVector;
 
-void AddObject(int X, int Y, SDL_Surface Image, int XSpeed, int YSpeed, int Frames, SDL_Rect Clip)
+void AddObject(int X, int Y, SDL_Surface *Image, int XSpeed, int YSpeed, int Frames, SDL_Rect Clip)
 {
 	if (Clip.w == 0)
 	{
-		Clip.w = Image.w;
-		Clip.h = Image.h;
+		Clip.w = Image->w;
+		Clip.h = Image->h;
 	}
 	
 	MiscObject PushThis(X, Y, Image, XSpeed, YSpeed, Frames, Clip);
@@ -47,12 +47,21 @@ void DoObjects(float CameraX, float CameraY)
 			CURRENTOBJECT.YVel /= 1.1;
 		}
 
-		ApplySurface(CURRENTOBJECT.WorldX - CameraX, CURRENTOBJECT.WorldY - CameraY, &CURRENTOBJECT.Surface, Screen, &CURRENTOBJECT.Rekt);
+		ApplySurface(CURRENTOBJECT.WorldX - CameraX, CURRENTOBJECT.WorldY - CameraY, CURRENTOBJECT.Surface, Screen, &CURRENTOBJECT.Rekt);
 
-		if (CURRENTOBJECT.Time != -1)
+		if (CURRENTOBJECT.Time != 0)
 		{
 			CURRENTOBJECT.Time--;
-			if (CURRENTOBJECT.Time == 0) ObjectVector.erase(ObjectVector.begin() + i);
 		}
+
+		else SDL_FreeSurface(CURRENTOBJECT.Surface);
+		//__debugbreak();
 	}
+
+	ObjectVector.erase(
+		std::remove_if(
+		ObjectVector.begin(),
+		ObjectVector.end(),
+		std::mem_fun_ref((&MiscObject::IsNotActive))),
+		ObjectVector.end());
 }

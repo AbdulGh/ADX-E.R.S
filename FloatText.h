@@ -13,6 +13,8 @@ public:
 	std::string String;
 	int Time;
 	int Type;
+
+	bool IsNotActive() const;
 };
 
 extern std::vector <FloatText> FloatVector;

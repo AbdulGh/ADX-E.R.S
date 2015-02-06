@@ -19,23 +19,33 @@ void FloatSomeText(int WorldX, int WorldY, std::string String, SDL_Color Colour,
 	}
 }
 
+bool FloatText::IsNotActive() const
+{
+	return (Alpha <= 4);
+}
+
 #define CURRENTFLOAT FloatVector.at(i)
 
 void DoFloat(float CameraX,float CameraY)
 {
+	SDL_Surface *Message;
 	for (int i = 0; i < FloatVector.size(); i++)
 	{
 		CURRENTFLOAT.Time++;
-		switch (CURRENTFLOAT.Type)
+		
+		if (CURRENTFLOAT.Time <= 60)
 		{
-		case 1:
-			Message = TTF_RenderText_Solid(Small,CURRENTFLOAT.String.c_str(),CURRENTFLOAT.Colour);
-			break;
-		case 2:
-			Message = TTF_RenderText_Solid(SmallSmall,CURRENTFLOAT.String.c_str(),CURRENTFLOAT.Colour);
+			switch (CURRENTFLOAT.Type)
+			{
+			case 1:
+				Message = TTF_RenderText_Solid(Small, CURRENTFLOAT.String.c_str(), CURRENTFLOAT.Colour);
+				break;
+			case 2:
+				Message = TTF_RenderText_Solid(SmallSmall, CURRENTFLOAT.String.c_str(), CURRENTFLOAT.Colour);
+			}
 		}
 
-		if (CURRENTFLOAT.Time > 60)
+		else
 		{
 			switch (CURRENTFLOAT.Type)
 			{
@@ -53,7 +63,14 @@ void DoFloat(float CameraX,float CameraY)
 		}
 
 		ApplySurface(CURRENTFLOAT.x - CameraX, CURRENTFLOAT.y - CameraY, Message, Screen);
-
+		SDL_FreeSurface(Message);
 		if (CURRENTFLOAT.Alpha <= 4) FloatVector.erase(FloatVector.begin() + i);
 	}
+
+	FloatVector.erase(
+		std::remove_if(
+		FloatVector.begin(),
+		FloatVector.end(),
+		std::mem_fun_ref((&FloatText::IsNotActive))),
+		FloatVector.end());
 }

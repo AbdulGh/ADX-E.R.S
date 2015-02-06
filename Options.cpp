@@ -4,8 +4,7 @@
 void Options()
 {
 	ClearScreen();
-	Message = TTF_RenderText_Solid(Start,"OPTIONS GOES HERE",White);
-	ApplySurface((ScreenWidth - Message->w) /2, (ScreenHeight - Message->h)/2,Message,Screen);
+	ApplyTextCentered("OPTIONS GO HERE", Start, White);
 	SDL_Flip(Screen);
 	SDL_Delay(2000);
 }

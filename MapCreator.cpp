@@ -8,15 +8,18 @@ int GetNumber(std::string String, int Min)
 	bool Done = false;
 	int Increment = 1;
 	int ReturnThis = Min;
+	SDL_Surface *Message;
 	while (!Done)
 	{
 		ClearScreen();
 		SpareStream.str("");
 		SpareStream << String << ReturnThis;
+		SDL_FreeSurface(Message);
 		Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
 		ApplySurface((ScreenWidth - Message->w) / 2, 300, Message, Screen);
 		SpareStream.str("");
 		SpareStream << "Increment: " << Increment;
+		SDL_FreeSurface(Message);
 		Message = TTF_RenderText_Solid(Start,SpareStream.str().c_str(),White);
 		ApplySurface((ScreenWidth - Message->w) / 2, 600, Message, Screen);
 		while(SDL_PollEvent(&event))
@@ -150,11 +153,12 @@ void MapCreator()
 						DoTiles(EditorCamera.x, EditorCamera.y);
 						SpareStream.str("");
 						SpareStream << "X: " << EditorCamera.x + TempRect.x << " Y: " << EditorCamera.y + TempRect.y << " W: " << TempRect.w << " H: " << TempRect.h;
-						Message = TTF_RenderText_Solid(SysSmall, SpareStream.str().c_str(), Green);
+						
+						ApplyText(0, 0, SpareStream.str(), SysSmall, Green);
 						SDL_FillRect(Screen, &TempRect, 0xFFFFFF);
-						ApplySurface(0, 0, Message, Screen);
 						SDL_Flip(Screen);
 						ClearScreen();
+
 						SDL_PumpEvents();
 						while (SDL_PollEvent(&event))
 						{
@@ -219,8 +223,12 @@ void MapCreator()
 		SDL_GetMouseState(&TempX,&TempY);
 		SpareStream.str("");
 		SpareStream << "Camera X: " << EditorCamera.x << " Camera Y: " << EditorCamera.y << " MouseX: " << EditorCamera.x + TempX << " MouseY: " << EditorCamera.y + TempY;
+		
+		SDL_Surface *Message;
 		Message =TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
 		ApplySurface(1920 - Message->w - 10, 0, Message, Screen);
+		SDL_FreeSurface(Message);
+
 		PrintDebugWindow(SysSmall,Green,Screen);
 		SDL_Flip(Screen);
 		ClearScreen();

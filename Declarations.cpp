@@ -50,9 +50,6 @@ Viewport Camera;
 SDL_Surface *Screen = NULL;
 SDL_Surface *Serious = NULL;
 SDL_Surface *Gunman = NULL;
-SDL_Surface *Message = NULL;
-SDL_Surface *Message2 = NULL;
-SDL_Surface *Message3 = NULL;
 SDL_Surface *PlayerNormal = NULL;
 SDL_Surface *CursorSheet = NULL;
 SDL_Surface *TeleportSheet = NULL;
@@ -232,7 +229,7 @@ bool Init()
 	YChange = 0;
 }
 
-void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip)
+void ApplySurface(int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip)
 {
 	if (Source != NULL)
 	{
@@ -241,6 +238,24 @@ void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, 
 		offset.y = y;
 		SDL_BlitSurface(Source, Clip, Destination, &offset);
 	}
+}
+
+void ApplyText(int x, int y, std::string String, TTF_Font *Font, SDL_Color Color, int *Width, int *Height)
+{
+	SDL_Surface *AppliedText = TTF_RenderText_Solid(Font, String.c_str(), Color);
+	ApplySurface(x, y, AppliedText, Screen);
+	if (Width != NULL) *Width = AppliedText->w;
+	if (Height != NULL) *Height = AppliedText->h;
+	SDL_FreeSurface(AppliedText);
+}
+
+void ApplyTextCentered(std::string String, TTF_Font *Font, SDL_Color Color, int *Width, int *Height, int XOffset, int YOffset)
+{
+	SDL_Surface *AppliedText = TTF_RenderText_Solid(Font, String.c_str(), Color);
+	ApplySurface((ScreenWidth - AppliedText->w) / 2 + XOffset, (ScreenHeight - AppliedText->h) / 2 + YOffset, AppliedText, Screen);
+	if (Width != NULL) *Width = AppliedText->w;
+	if (Height != NULL) *Height = AppliedText->h;
+	SDL_FreeSurface(AppliedText);
 }
 
 bool Load()

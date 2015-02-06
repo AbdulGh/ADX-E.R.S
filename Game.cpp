@@ -31,6 +31,8 @@ int BlockHeight = 0;
 
 float LaserSpeed = 2.4;
 float BoxXVel = 1, BoxYVel = 1;
+float Zoom = 1;
+float Direction = -0.01;
 
 bool Update = true;
 bool LevelFinished = false;
@@ -38,17 +40,15 @@ bool CutsceneFinished = false;
 bool DebugBool = false;
 
 Timer SpareTimer;
-Timer SpecialTimer;
 
 std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG", "Laser Shotgun"};
-
-std::string Taunts[10] = {"if (Character.Health <= 0) {Victory = true; Laugh();}" , "As expected." , "Next!" , "This part isn't even hard, what's wrong with you?" , "And here I was, thinking you showed promise...",
-							"If I had sides, they would be killing me right now.", "The angle I saw that from made that even funnier!", "Pfffffffffffft." , "I'm glad I can rewind CCTV footage." , "And I wasn't even trying!"};
 
 Player Character;
 
 SDL_Rect CharacterRect;
 SDL_Rect HealthRect;
+
+SDL_Surface *ScreenShot;
 
 void CheckShake()
 {
@@ -59,12 +59,6 @@ void CheckShake()
 		Dur--;
 		if (Dur == 0) Shake = false;
 	}
-}
-
-void GetRandomDeathQuote()
-{
-	int Rand = rand () % 9 + 1;
-	FadeText(Taunts[Rand].c_str());
 }
 
 void SwapWeapons(bool Right)
@@ -89,62 +83,33 @@ void SwapWeapons(bool Right)
 
 void DeathScreen()
 {
-	SDL_Rect CharacterRect;
-	CharacterRect.w = Character.CurrentSprite->w;
-	CharacterRect.h = Character.CurrentSprite->h;
-	CharacterRect.x = Character.WorldX;
-	CharacterRect.y = Character.WorldY;
-	Timer remiT;
-
-	ObjectVector.erase(ObjectVector.begin(),ObjectVector.end());
-
-	int x = 0;
-	int y = 0;
-
-	FadeVector.erase(FadeVector.begin(),FadeVector.end());
-	GetRandomDeathQuote();
-	Message = TTF_RenderText_Solid(SysSmall,"Lives",Green);
-	int Messagey = (ScreenHeight - Message->h) / 2 - 10;
-	Message2 = TTF_RenderText_Solid(Sys,std::to_string(Character.Lives + 1).c_str(), Green);
-	int MessageX = (ScreenWidth - Message2->w) /2;
-	Message3 = TTF_RenderText_Solid(Sys,std::to_string(Character.Lives).c_str(), Green);
 	SpareTimer.start();
-	int Degree = 0;
-
-	while(SpareTimer.get_ticks() < 5000)
+	while (SpareTimer.get_ticks() < 5000)
 	{
-		remiT.start();
-		ClearScreen();
-		DoTiles(Camera.x,Camera.y);
-		DoMouse(&x,&y);
-		DoDebris(Camera.x,Camera.y,Screen);
-		DoObjects(Camera.x,Camera.y);
-		DoProjectiles(Camera.x,Camera.y);
-		DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
-		DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, 0, 0);
-		DoFloat(Camera.x,Camera.y);
-		CheckText();
-		CheckShake();
+		ApplySurface(0, 0, ScreenShot, Screen);
+		DoDebris(Camera.x, Camera.y, Screen);
+		
+		ApplyTextCentered("Lives:", SysSmall, Green, NULL, NULL, 0, -50);
 
-		if (SpareTimer.get_ticks() > 1000)
+		SpareStream.str("");
+		SpareStream << Character.Lives;
+
+		SDL_Surface *Unrotated = TTF_RenderText_Solid(Start, SpareStream.str().c_str(), Green);
+		SDL_Surface *Rotated = rotozoomSurface(Unrotated, 0, Zoom, 0);
+		ApplySurface((ScreenWidth - Rotated->w) / 2, (ScreenHeight - Rotated->h) / 2, Rotated, Screen);
+
+		Zoom += Direction;
+
+		if (Zoom <= 0)
 		{
-			MessageX -= sin(static_cast<double>(Degree * (3.14/180))) * (ScreenWidth / 110);
-			if (Degree != 180) Degree++;
+			Direction *= -1;
+			Character.Lives--;
 		}
 
-		Message = TTF_RenderText_Solid(SysSmall,"Lives",Green);
-		ApplySurface((ScreenWidth - Message->w) /2, Messagey, Message, Screen);
-		ApplySurface(MessageX, Messagey + 20, Message2, Screen);
-		ApplySurface(MessageX + ScreenWidth, Messagey + 20, Message3, Screen);
-
 		SDL_Flip(Screen);
-
-		if (remiT.get_ticks() < 1000/60) SDL_Delay((1000/60) - remiT.get_ticks());
+		SDL_Delay(20);
 	}
-
-	Camera.LevelHeight = LevelHeight;
-	Update = true;
-	Mix_HaltMusic();
+	Direction *= -1;
 }
 
 void DoThings()
@@ -158,7 +123,6 @@ void DoThings()
 	{
 		Camera.MoveViewport(Character.WorldX + (Character.CurrentSprite->w / 2) - (ScreenWidth / 2),Character.WorldY + (Character.CurrentSprite->h / 2) - (ScreenHeight / 2));
 	}
-
 	Camera.Update();
 
 	CheckShake();
@@ -167,12 +131,12 @@ void DoThings()
 	Character.Update();
 	CharacterRect.x = Character.WorldX - Camera.x;
 	CharacterRect.y = Character.WorldY - Camera.y;
+
 	DoPickups(Camera.x,Camera.y,CharacterRect);
 	DoEnemyProjectiles(Camera.x, Camera.y,CharacterRect);
 	DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
 	DoObjects(Camera.x,Camera.y);
 	DoTiles(Camera.x,Camera.y);
-	CheckText();
 	DoFloat(Camera.x,Camera.y);
 	DoProjectiles(Camera.x,Camera.y);
 
@@ -183,19 +147,16 @@ void DoThings()
 	}
 
 	HealthRect.w = 3 * Character.Health;
-	Message = TTF_RenderText_Solid(SysSmall,"Health:",Green);
-	if (Message != NULL) ApplySurface(HealthRect.x - (Message->w + 10), HealthRect.y - 6, Message, Screen);
+	ApplyText(10, ScreenHeight - 30, "Health:", SysSmall, Green);
 	SDL_FillRect(Screen,&HealthRect,0x00FF00);
 	SpareStream.str("");
 	SpareStream << Character.Health << "%";
-	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-	ApplySurface(HealthRect.x + HealthRect.w + 10,HealthRect.y - 6,Message,Screen);
+	ApplyText(HealthRect.x + HealthRect.w + 10, ScreenHeight - 30, SpareStream.str(), SysSmall, Green);
 
 	SpareStream.str("");
 	if (CurrentSelection == 1) SpareStream << "Mining Laser: Infinite";
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
-	Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-	ApplySurface(550,HealthRect.y - 6,Message,Screen);
+	ApplyText(550, ScreenHeight - 30, SpareStream.str(), SysSmall, Green);
 
 	if (BlockHeight != 0)
 	{
@@ -239,19 +200,26 @@ void DoThings()
 	{
 		SpareStream.str("");
 		SpareStream << "Enemies: " << Enemies;
-		Message = TTF_RenderText_Solid(SysSmall,SpareStream.str().c_str(),Green);
-		if (Message != NULL) ApplySurface((ScreenWidth - Message->w) / 2, 10, Message, Screen);
+		ApplyTextCentered(SpareStream.str(), SysSmall, Green, NULL, NULL, 0, -(ScreenHeight / 2) + 30);
 	}
 
 	if (Character.Reset == true)
 	{
+		SDL_Delay(500);
 		Character.Render = false;
 		Boss = false;
 		Laser = false;
 		DamageDealt = 0;
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0xFFFFFF);
+		SpareTimer.start();
+
+		//ScreenShot = SDL_CreateRGBSurfaceFrom(Screen->pixels, Screen->w, Screen->h, Screen->format->BitsPerPixel, Screen->pitch, Screen->format->Rmask, 
+		//										Screen->format->Gmask, Screen->format->Bmask, Screen->format->Amask);
+		ScreenShot = SDL_ConvertSurface(Screen, Screen->format, 0);
 		DeathScreen();
+		SDL_FreeSurface(ScreenShot);
+
 		if (Character.Lives < 0)
 		{
 			ClearScreen();
@@ -262,17 +230,18 @@ void DoThings()
 			LevelFinished = true;
 			main(NULL,NULL);
 		}
+
 		Character.Health = 100;
 		Character.Reset = false;
 		Character.Render = true;
 		Character.WorldX = XSpawn;
 		Character.WorldY = YSpawn;
 		LevelProgress = 0;
-		EnemyVector.erase(EnemyVector.begin(),EnemyVector.end());
-		SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-		ProjectileVector.erase(ProjectileVector.begin(),ProjectileVector.end());
-		PickupVector.erase(PickupVector.begin(),PickupVector.end());
-		EnemyProjectileVector.erase(EnemyProjectileVector.begin(),EnemyProjectileVector.end());
+		EnemyVector.clear();
+		SpawnVector.clear();
+		ProjectileVector.clear();
+		PickupVector.clear();
+		EnemyProjectileVector.clear();
 		Enemies = 0;
 	}
 
@@ -462,40 +431,6 @@ void Game()
 
 	Character.CurrentSprite = PlayerNormal;
 
-	std::string Asimov[11] = {"ADMax Emergent Response System booting...","Directives:","1: You may not injure a human being or, through inaction, allow a human being to","   come to harm.","2: You must obey orders given to you by human beings, except where such orders ", "   would conflict with the First Law.","3: You must protect your own existence as long as such does not conflict with the","   First or Second Law.",". . .", "error C2146: Unable to mount root on block 'NULL'", "Rebooting..."};
-	bool Skip = false;
-	for (int o = 0; o < 11 && Skip == false; o++)
-	{
-		std::string IntroText = Asimov[o];
-		bool EpicFlag = false;
-		for (int i = 1; i <= IntroText.size() && Skip == false; i++)
-		{
-			ClearScreen();
-			SpareStream.str("");
-			SpareStream << o;
-			for (int x = 0; x < o; x++)
-			{
-				Message = TTF_RenderText_Solid(SysSmall,Asimov[x].c_str(),White);
-				ApplySurface(10,50 + x * 50,Message,Screen);
-			}
-			
-			std::string ApplyThis = IntroText.substr(0,i);
-			Message = TTF_RenderText_Solid(SysSmall,ApplyThis.c_str(),White);
-			if (i % 3 == 0) EpicFlag = !EpicFlag;
-			if (EpicFlag)
-			{
-				ApplyThis += "_";
-				Message = TTF_RenderText_Solid(SysSmall,ApplyThis.c_str(),White);
-			}
-			while(SDL_PollEvent(&event)) if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) Skip = true;
-			ApplySurface(10, 50 + o * 50, Message, Screen);
-			SDL_Flip(Screen);
-			if (o == 8 && Skip == false) SDL_Delay(500);
-		}
-	}
-
-	if (Skip == false) SDL_Delay(5000);
-	
 	int Weapons = 0;
 	Timer FPSTimer;
 	CharacterRect.w = Character.CurrentSprite->w;
@@ -531,12 +466,12 @@ void Game()
 		switch (LevelProgress)
 		{
 		case 0:
-			AddObject(850, 1000, *Warden);
-			AddObject(1750, 3400, *PlayerNormal);
-			AddObject(1250, 3350, *PlayerNormal);
-			AddObject(60, 3410, *PlayerNormal);
-			AddObject(1090, 2530, *RIP);
-			AddObject(250, 2550, *PlayerNormal);
+			AddObject(850, 1000, Warden);
+			AddObject(1750, 3400, PlayerNormal);
+			AddObject(1250, 3350, PlayerNormal);
+			AddObject(60, 3410, PlayerNormal);
+			AddObject(1090, 2530, RIP);
+			AddObject(250, 2550, PlayerNormal);
 			BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
 			LevelProgress = 1;
 			FrameCount = 0;
@@ -617,7 +552,7 @@ void Game()
 				Core.y = 130;
 				Core.w = 40;
 				Core.h = 40;
-				AddObject(900, 1340, *Grenade);
+				AddObject(900, 1340, Grenade);
 			}
 			break;
 
@@ -684,8 +619,6 @@ void Game()
 		{
 		case 0:
 			LevelProgress = 1;
-			Message = TTF_RenderText_Solid(SysSmall, "Q and E to switch weapons", White);
-			AddObject(900, 1600, *Message);
 			Pickup PICK;
 			PICK.Type = 1;
 			PICK.WorldX = 800;
@@ -704,7 +637,6 @@ void Game()
 			{
 				LevelProgress = 2;
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-				ObjectVector.erase(ObjectVector.begin(), ObjectVector.end());
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1000);
@@ -1288,7 +1220,7 @@ void Game()
 					DoMouse(&x,&y);
 					Damaged = false;
 					Character.Update();
-					CheckText();
+					//CheckText();
 					DoPickups(Camera.x,Camera.y,CharacterRect);
 					Character.InvunFrames = 100;
 					DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);
@@ -1420,7 +1352,7 @@ void Game()
 				Character.YVel = 0;
 				Damaged = false;
 				Character.Update();
-				CheckText();
+				//CheckText();
 				DoPickups(Camera.x,Camera.y,CharacterRect);
 				Character.InvunFrames = 100;
 				DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);

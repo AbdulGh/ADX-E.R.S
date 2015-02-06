@@ -35,6 +35,7 @@ public:
 	void Gib();
 	void StayInLevel();
 	void BulletPattern(int Type);
+	bool IsNotActive() const;
 };
 
 class Pickup

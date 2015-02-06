@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	SetClips();
 
 	std::string IntroText = "ADX E.R.S";
-	Message = TTF_RenderText_Solid(Sys,"_",White);
+	SDL_Surface *Message = TTF_RenderText_Solid(Sys,"_",White);
 	ApplySurface((ScreenWidth - Message->w)/2,200,Message,Screen);
 	SDL_Flip(Screen);
 	SDL_Delay(900);
@@ -35,20 +35,22 @@ int main(int argc, char *argv[])
 	SDL_Delay(900);
 
 	int x;
-	bool EpicFlag = false;
+	bool Underscore = false;
 	for (int i = 1; i <= IntroText.size(); i++)
 	{
 		std::string ApplyThis = IntroText.substr(0,i);
 		Message = TTF_RenderText_Blended(Sys,ApplyThis.c_str(),White);
 		x = (ScreenWidth - Message->w) / 2;
-		if (i % 3 == 0) EpicFlag = !EpicFlag;
-		if (EpicFlag)
+		if (i % 3 == 0) Underscore = !Underscore;
+		if (Underscore)
 		{
 			ApplyThis += "_";
+			SDL_FreeSurface(Message);
 			Message = TTF_RenderText_Blended(Sys,ApplyThis.c_str(),White);
 		}
 		ClearScreen();
 		ApplySurface(x, 200, Message, Screen);
+		SDL_FreeSurface(Message);
 		SDL_Flip(Screen);
 		SDL_Delay(300);
 	}

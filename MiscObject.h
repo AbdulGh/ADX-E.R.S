@@ -11,15 +11,15 @@ public:
 	float YVel;
 	int Time;
 
-	SDL_Surface Surface;
+	SDL_Surface *Surface;
 	SDL_Rect Rekt;
 
-	MiscObject(int,int, SDL_Surface , int, int, int, SDL_Rect);
-	~MiscObject();
+	MiscObject(int,int, SDL_Surface* , int, int, int, SDL_Rect);
+	bool IsNotActive() const;
 };
 
 extern std::vector<MiscObject> ObjectVector;
 
-void AddObject(int, int, SDL_Surface, int = 0, int = 0, int = -1, SDL_Rect = { 0, 0, 0, 0 });
+void AddObject(int, int, SDL_Surface*, int = 0, int = 0, int = -1, SDL_Rect = { 0, 0, 0, 0 });
 void DoObjects(float CameraX, float CameraY);
 #endif

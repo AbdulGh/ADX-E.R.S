@@ -1,7 +1,14 @@
 #include"Debris.h"
+#include<algorithm>
+#include<functional>
 #include<time.h>
 
 std::vector<Debris> DebrisVector;
+
+bool Debris::IsNotActive() const
+{
+	return (Time >= 60);
+}
 
 void CreateDebris(int Size, int Number, float x, float y, int XVel, int YVel, Uint32 Colour)
 {
@@ -47,7 +54,13 @@ void DoDebris(int CameraX, int CameraY, SDL_Surface *Screen)
 			if (CURRENTDEBRIS.YVel < 1 && CURRENTDEBRIS.YVel > -1) CURRENTDEBRIS.YVel = 0;
 			SDL_FillRect(Screen,&FillThis,CURRENTDEBRIS.Colour);
 			CURRENTDEBRIS.Time++;
-			if (CURRENTDEBRIS.Time == 60) DebrisVector.erase(DebrisVector.begin() + i, DebrisVector.begin() + i + 1);
 		}
 	}
+
+	DebrisVector.erase(
+		std::remove_if(
+		DebrisVector.begin(),
+		DebrisVector.end(),
+		std::mem_fun_ref((&Debris::IsNotActive))),
+		DebrisVector.end());
 }

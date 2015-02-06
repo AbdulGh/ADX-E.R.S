@@ -12,6 +12,8 @@ public:
 	float YVel;
 	Uint32 Colour;
 	int Time;
+
+	bool IsNotActive() const;
 };
 
 extern std::vector<Debris> DebrisVector;
