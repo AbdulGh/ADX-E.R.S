@@ -18,6 +18,7 @@ void CreateButton(int Wx, int Wy, int WID,SDL_Surface *WUnPressed, SDL_Surface *
 
 #define CURRENTBUTTON ButtonVector.at(i) 
 int CurrentMouseX, CurrentMouseY = 0;
+
 int DoButtons()
 {
 	bool MouseOver = false;
@@ -46,5 +47,10 @@ int DoButtons()
 }
 void ClearButtons()
 {
-	ButtonVector.erase(ButtonVector.begin(),ButtonVector.end());
+	for (int i = 0; i < ButtonVector.size(); i++)
+	{
+		SDL_FreeSurface(CURRENTBUTTON.Normal);
+		SDL_FreeSurface(CURRENTBUTTON.NotNormal);
+	}
+	ButtonVector.clear();
 }

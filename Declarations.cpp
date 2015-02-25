@@ -34,7 +34,7 @@ int OrbitY = 1150;
 
 Uint8 MouseStates;
 
-int Ammo[WEAPONS] = {1,0,0,0,0,0,10};
+int Ammo[WEAPONS] = {1,0,0,0,0,0,0,0,0};
 
 Uint32 LevelColour = 0xFF0000;
 
@@ -77,6 +77,8 @@ SDL_Surface *RIP = NULL;
 SDL_Surface *Grenade = NULL;
 SDL_Surface *LaserShotgun = NULL;
 SDL_Surface *Warkid = NULL;
+SDL_Surface *Turret = NULL;
+SDL_Surface *Fader = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -208,6 +210,7 @@ SDL_Surface *LoadImage( std::string filename )
 	else
 	{
 		DebugWindow("Failed to load last file");
+		DumpDebugWindowTostderr();
 	}
 
     return OptimizedImage;
@@ -221,23 +224,24 @@ bool Init()
 	if (Screen == NULL) return false;
     if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
 	Mix_AllocateChannels(16);
-    SDL_WM_SetCaption("it worked", NULL);
+    SDL_WM_SetCaption("ADXERS", NULL);
     SDL_EnableUNICODE(SDL_ENABLE);
-    return true;
-
-	XChange = 0;
-	YChange = 0;
+	Fader = SDL_CreateRGBSurface(0, ScreenWidth, ScreenHeight, 32, Screen->format->Rmask, Screen->format->Gmask, Screen->format->Bmask, Screen->format->Amask);
+	SDL_Rect ScreenRect;
+	ScreenRect.x = 0;
+	ScreenRect.y = 0;
+	ScreenRect.w = ScreenWidth;
+	ScreenRect.h = ScreenHeight;
+	SDL_FillRect(Fader, &ScreenRect, 0x000000);
+	return true;
 }
 
 void ApplySurface(int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip)
 {
-	if (Source != NULL)
-	{
-		SDL_Rect offset;
-		offset.x = x;
-		offset.y = y;
-		SDL_BlitSurface(Source, Clip, Destination, &offset);
-	}
+	SDL_Rect offset;
+	offset.x = x;
+	offset.y = y;
+	SDL_BlitSurface(Source, Clip, Destination, &offset);
 }
 
 void ApplyText(int x, int y, std::string String, TTF_Font *Font, SDL_Color Color, int *Width, int *Height)
@@ -309,6 +313,8 @@ bool Load()
 	Grenade = LoadImage("Resources/Images/Grenade.png");
 	LaserShotgun = LoadImage("Resources/Images/LaserShotgun.png");
 	Warkid = LoadImage("Resources/Images/LoreDeepens.png");
+	Turret = LoadImage("Resources/Images/Turret.png");
+	//Fader = LoadImage("Resources/Images/Rectangle.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

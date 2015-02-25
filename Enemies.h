@@ -20,6 +20,10 @@ public:
 	int Speed;
 	int MaxSpeed;
 	int BurnTimer;
+	int Damage;
+	int DamageFrames;
+	int XOffset;
+	int YOffset;
 	float XVel;
 	float YVel;
 
@@ -51,8 +55,10 @@ extern std::vector <Pickup> PickupVector;
 
 extern std::string BossName;
 
+extern SDL_Rect BossHealthRect;
+
 extern int BossHealth;
-extern int Divider;
+extern double Multiplier;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type
 void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect PlayerRect, int XVel, int YVel);

@@ -37,9 +37,11 @@ EnemyProjectile::EnemyProjectile(int ProjectileType)
 	Collides = true;
 	RenderRect = true;
 	Friction = false;
+	SpawnsFlowers = false;
+	Approaches = false;
 	Homing = false;
 	Circle = false;
-	SpawnsEnemies = false;
+	SpawnsGunmen = false;
 	Wave = false;
 }
 
@@ -120,7 +122,7 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 
 		PushThis.Damage = 30;
 		PushThis.Friction = true;
-		PushThis.SpawnsEnemies = true;
+		PushThis.SpawnsGunmen = true;
 		break;
 
 	case 6: //Homing missiles
@@ -203,6 +205,8 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 	case 11: //Approacher
 		PushThis.CollisionRect.w = 40;
 		PushThis.CollisionRect.h = 40;
+		PushThis.Approaches = true;
+		PushThis.SpawnsFlowers = true;
 
 		PushThis.Damage = 50;
 		PushThis.Collides = false;
@@ -286,7 +290,7 @@ void Enemy::Shoot(int Type, int Bearing)
 
 		PushThis.Damage = 30;
 		PushThis.Friction = true;
-		PushThis.SpawnsEnemies = true;
+		PushThis.SpawnsGunmen = true;
 
 		break;
 
@@ -366,18 +370,10 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 {
 	PlayerRect.x += CameraX;
 	PlayerRect.y += CameraY;
-
-	SpareStream.str("");
-	SpareStream << EnemyProjectileVector.size();
-	DebugWindow(SpareStream.str().c_str());
 	
 	for (int i = 0; i < EnemyProjectileVector.size(); i++)
 	{
 		CURRENTENEMYPROJECTILE.Frametime++;
-		
-		SpareStream.str("");
-		SpareStream << CURRENTENEMYPROJECTILE.Type << " " << CURRENTENEMYPROJECTILE.CollisionRect.w;
-		DebugWindow(SpareStream.str().c_str());
 
 		if (CURRENTENEMYPROJECTILE.Homing)
 		{
@@ -407,7 +403,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			CURRENTENEMYPROJECTILE.WorldY = CURRENTENEMYPROJECTILE.Spare1 + CURRENTENEMYPROJECTILE.YVel;
 		}
 
-		else if (CURRENTENEMYPROJECTILE.Type == 11)
+		else if (CURRENTENEMYPROJECTILE.Approaches)
 		{
 			int XDiff = CURRENTENEMYPROJECTILE.Spare1 - CURRENTENEMYPROJECTILE.WorldX;
 			int YDiff = CURRENTENEMYPROJECTILE.Spare2 - CURRENTENEMYPROJECTILE.WorldY;
@@ -415,31 +411,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			CURRENTENEMYPROJECTILE.WorldX += XDiff / 8;
 			CURRENTENEMYPROJECTILE.WorldY += YDiff / 8;
 
-			if (CURRENTENEMYPROJECTILE.Frametime > 120)
-			{
-				if (SpawnFlowers) //this will be changed
-				{
-					EnemyProjectile Flower(12);
-					Flower.WorldX = CURRENTENEMYPROJECTILE.WorldX;
-					Flower.WorldY = CURRENTENEMYPROJECTILE.WorldY;
-
-					Flower.CollisionRect.w = 40;
-					Flower.CollisionRect.h = 40;
-					Flower.Damage = 50;
-					Flower.Collides = false;
-
-					Flower.WorldX += 20;
-					Flower.WorldY += 20;
-					Flower.Spare1 = sqrt((Flower.WorldX - OrbitX) * (Flower.WorldX - OrbitX) + (Flower.WorldY - OrbitY) * (Flower.WorldY - OrbitY));
-					Flower.Spare2 = CalculateProjectileAngle(OrbitX, OrbitY, Flower.WorldX, Flower.WorldY);
-					Flower.WorldX -= 20;
-					Flower.WorldY -= 20;
-					Temp2 = 0;
-
-					EnemyProjectileVector.push_back(Flower);
-				}
-				CURRENTENEMYPROJECTILE.Active = false;
-			}
+			if (CURRENTENEMYPROJECTILE.Frametime > 120) CURRENTENEMYPROJECTILE.Active = false;
 		}
 
 		else if (CURRENTENEMYPROJECTILE.Type == 12)
@@ -453,7 +425,7 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			CURRENTENEMYPROJECTILE.WorldX += CURRENTENEMYPROJECTILE.XVel;
 			CURRENTENEMYPROJECTILE.WorldY += CURRENTENEMYPROJECTILE.YVel;
 		}
-		
+
 		CURRENTENEMYPROJECTILE.CollisionRect.x = CURRENTENEMYPROJECTILE.WorldX;
 		CURRENTENEMYPROJECTILE.CollisionRect.y = CURRENTENEMYPROJECTILE.WorldY;
 
@@ -462,20 +434,9 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			CURRENTENEMYPROJECTILE.XVel /= 1.05;
 			CURRENTENEMYPROJECTILE.YVel /= 1.05;
 
-			if(abs(CURRENTENEMYPROJECTILE.XVel) < 0.5 && abs(CURRENTENEMYPROJECTILE.YVel) < 0.5)
-			{
-				if (CURRENTENEMYPROJECTILE.SpawnsEnemies)
-				{
-					SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-					SpawnVector.push_back(CURRENTENEMYPROJECTILE.WorldX);
-					SpawnVector.push_back(CURRENTENEMYPROJECTILE.WorldY);
-					SpawnVector.push_back(2);
-					SpawnEnemies(SpawnVector);
-				}
-				CURRENTENEMYPROJECTILE.Active = false;
-			}
+			if (abs(CURRENTENEMYPROJECTILE.XVel) < 0.5 && abs(CURRENTENEMYPROJECTILE.YVel) < 0.5) CURRENTENEMYPROJECTILE.Active = false;
 		}
-		
+
 		if (CURRENTENEMYPROJECTILE.Collides)
 		{
 			SDL_Rect CurrentTile;
@@ -485,15 +446,15 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				CurrentTile.y = LevelVector.at(eye).WorldY;
 				CurrentTile.w = LevelVector.at(eye).Width;
 				CurrentTile.h = LevelVector.at(eye).Height;
-				
-				if (IsIntersecting(CurrentTile,CURRENTENEMYPROJECTILE.CollisionRect))
+
+				if (IsIntersecting(CurrentTile, CURRENTENEMYPROJECTILE.CollisionRect))
 				{
 					CURRENTENEMYPROJECTILE.Active = false;
 					if (CURRENTENEMYPROJECTILE.Type != 10) CreateDebris(CURRENTENEMYPROJECTILE.CollisionRect.h / 3, 6, CURRENTENEMYPROJECTILE.WorldX, CURRENTENEMYPROJECTILE.WorldY, CURRENTENEMYPROJECTILE.XVel * -1, CURRENTENEMYPROJECTILE.YVel * -1, 0xFFFFFF);
 				}
 			}
 		}
-		
+
 		if (IsIntersecting(PlayerRect, CURRENTENEMYPROJECTILE.CollisionRect) && !Invincible)
 		{
 			Damaged = true;
@@ -525,6 +486,36 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 					break;
 				};
 			}
+		}
+
+		else if (CURRENTENEMYPROJECTILE.SpawnsFlowers)
+		{
+			EnemyProjectile Flower(12);
+			Flower.WorldX = CURRENTENEMYPROJECTILE.WorldX;
+			Flower.WorldY = CURRENTENEMYPROJECTILE.WorldY;
+
+			Flower.CollisionRect.w = 40;
+			Flower.CollisionRect.h = 40;
+			Flower.Damage = 50;
+			Flower.Collides = false;
+
+			Flower.WorldX += 20;
+			Flower.WorldY += 20;
+			Flower.Spare1 = sqrt((Flower.WorldX - OrbitX) * (Flower.WorldX - OrbitX) + (Flower.WorldY - OrbitY) * (Flower.WorldY - OrbitY));
+			Flower.Spare2 = CalculateProjectileAngle(OrbitX, OrbitY, Flower.WorldX, Flower.WorldY);
+			Flower.WorldX -= 20;
+			Flower.WorldY -= 20;
+			Temp2 = 0;
+			EnemyProjectileVector.push_back(Flower);
+		}
+
+		else if (CURRENTENEMYPROJECTILE.SpawnsGunmen)
+		{
+			SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+			SpawnVector.push_back(CURRENTENEMYPROJECTILE.WorldX);
+			SpawnVector.push_back(CURRENTENEMYPROJECTILE.WorldY);
+			SpawnVector.push_back(2);
+			SpawnEnemies(SpawnVector);
 		}
 	}
 

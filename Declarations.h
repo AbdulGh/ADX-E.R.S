@@ -1,7 +1,7 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
-#define WEAPONS 7
+#define WEAPONS 9
 
 #include <iostream>
 #include <vector>
@@ -58,6 +58,8 @@ extern SDL_Surface *RIP;
 extern SDL_Surface *Grenade;
 extern SDL_Surface *LaserShotgun;
 extern SDL_Surface *Warkid;
+extern SDL_Surface *Turret;
+extern SDL_Surface *Fader;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

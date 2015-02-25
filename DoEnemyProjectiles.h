@@ -29,7 +29,9 @@ public:
 	bool RenderRect;
 	bool Wave;
 	bool Friction;
-	bool SpawnsEnemies;
+	bool SpawnsGunmen;
+	bool SpawnsFlowers;
+	bool Approaches;
 	bool Homing;
 	bool Circle;
 

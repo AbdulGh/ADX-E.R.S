@@ -5,6 +5,7 @@
 #include"LoadLevel.h"
 #include"Menu.h"
 #include"FadeText.h"
+#include"DoAsteroids.h"
 #include"CalculateProjectileAngle.h"
 #include"GetXYRatio.h"
 #include"DoTiles.h"
@@ -13,6 +14,7 @@
 #include"DoEnemyProjectiles.h"
 #include"FloatText.h"
 #include"MiscObject.h"
+#include"Terminal.h"
 #include<string>
 #include<string.h>
 #include<fstream>
@@ -28,11 +30,13 @@ int Number = 0;
 int TopBounces = 1;
 int TypeDelay = 0;
 int BlockHeight = 0;
+int ScreenAlpha = 0;
+int ScreenDirection = 4;
 
 float LaserSpeed = 2.4;
 float BoxXVel = 1, BoxYVel = 1;
 float Zoom = 1;
-float Direction = -0.01;
+float Direction = -0.02;
 
 bool Update = true;
 bool LevelFinished = false;
@@ -41,7 +45,7 @@ bool DebugBool = false;
 
 Timer SpareTimer;
 
-std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG", "Laser Shotgun"};
+std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG", "Automatic Laser Shotgun", "Grenade Machinegun", "Minigun"};
 
 Player Character;
 
@@ -58,6 +62,23 @@ void CheckShake()
 		Camera.y += (rand() % Mag) - Mag/2;
 		Dur--;
 		if (Dur == 0) Shake = false;
+	}
+}
+
+void CheckScreenFade()
+{
+	if (ScreenAlpha > 0)
+	{
+		SDL_SetAlpha(Fader, SDL_SRCALPHA, ScreenAlpha);
+		ScreenAlpha += ScreenDirection;
+		ApplySurface(0, 0, Fader, Screen);
+
+		if (ScreenAlpha >= 250) ScreenDirection *= -1;
+		else if (ScreenAlpha <= 0)
+		{
+			ScreenAlpha = 0;
+			ScreenDirection = 1;
+		}
 	}
 }
 
@@ -98,13 +119,15 @@ void DeathScreen()
 		SDL_Surface *Rotated = rotozoomSurface(Unrotated, 0, Zoom, 0);
 		ApplySurface((ScreenWidth - Rotated->w) / 2, (ScreenHeight - Rotated->h) / 2, Rotated, Screen);
 
-		Zoom += Direction;
-
 		if (Zoom <= 0)
 		{
 			Direction *= -1;
 			Character.Lives--;
+			Zoom = Direction;
+			SDL_Delay(500);
 		}
+
+		else if (Zoom <= 1) Zoom += Direction;
 
 		SDL_Flip(Screen);
 		SDL_Delay(20);
@@ -135,6 +158,7 @@ void DoThings()
 	DoPickups(Camera.x,Camera.y,CharacterRect);
 	DoEnemyProjectiles(Camera.x, Camera.y,CharacterRect);
 	DoEnemies(Camera.x,Camera.y,Character.WorldX,Character.WorldY,CharacterRect, Character.XVel, Character.YVel);
+	DoAsteroids(Camera.x, Camera.y, CharacterRect);
 	DoObjects(Camera.x,Camera.y);
 	DoTiles(Camera.x,Camera.y);
 	DoFloat(Camera.x,Camera.y);
@@ -147,8 +171,8 @@ void DoThings()
 	}
 
 	HealthRect.w = 3 * Character.Health;
+	if (Character.Health != 0) SDL_FillRect(Screen, &HealthRect, 0x00FF00);
 	ApplyText(10, ScreenHeight - 30, "Health:", SysSmall, Green);
-	SDL_FillRect(Screen,&HealthRect,0x00FF00);
 	SpareStream.str("");
 	SpareStream << Character.Health << "%";
 	ApplyText(HealthRect.x + HealthRect.w + 10, ScreenHeight - 30, SpareStream.str(), SysSmall, Green);
@@ -196,7 +220,20 @@ void DoThings()
 		}
 	}
 
-	else if (Enemies != 0 && Boss == false)
+	if (Boss)
+	{
+		int Width = 0;
+		ApplyText(15, 5, BossName.c_str(), SysSmall, Green, &Width);
+
+		BossHealthRect.x = Width + 25;
+		BossHealthRect.y = 5;
+		BossHealthRect.h = 20;
+		BossHealthRect.w = BossHealth * Multiplier;
+
+		SDL_FillRect(Screen, &BossHealthRect, 0x00FF00);
+	}
+
+	else if (Enemies != 0)
 	{
 		SpareStream.str("");
 		SpareStream << "Enemies: " << Enemies;
@@ -213,9 +250,6 @@ void DoThings()
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0xFFFFFF);
 		SpareTimer.start();
-
-		//ScreenShot = SDL_CreateRGBSurfaceFrom(Screen->pixels, Screen->w, Screen->h, Screen->format->BitsPerPixel, Screen->pitch, Screen->format->Rmask, 
-		//										Screen->format->Gmask, Screen->format->Bmask, Screen->format->Amask);
 		ScreenShot = SDL_ConvertSurface(Screen, Screen->format, 0);
 		DeathScreen();
 		SDL_FreeSurface(ScreenShot);
@@ -245,6 +279,7 @@ void DoThings()
 		Enemies = 0;
 	}
 
+	CheckScreenFade();
 	SDL_Flip(Screen);
 }
 
@@ -304,9 +339,9 @@ void HandleEvents()
 
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y);
 				float XRatio, YRatio;
-				for (int i = 0; i <= 8; i++)
+				for (int i = -3; i <= 3; i += 1)
 				{
-					GetXYRatio(&XRatio,&YRatio,Angle + rand () % 8 - i * 2, 19);
+					GetXYRatio(&XRatio,&YRatio,Angle + i, 19);
 					CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2),Character.WorldY + (Character.CurrentSprite->h / 2),XRatio,YRatio,1);
 				}
 				ShotTimer = 65;
@@ -392,22 +427,61 @@ void HandleEvents()
 					{
 						CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2) + i * (-XRatio / 20), Character.WorldY + (Character.CurrentSprite->h / 2) + i * (-YRatio / 20), XRatio, YRatio, 4);
 					}
-					ShotTimer = 45;
+					ShotTimer = 12;
 				}
+			}
+			break;
+
+		case 8: //Grenade machinegun
+			if (Ammo[7] == 0) Mix_PlayChannel(-1, Empty, 0);
+			else
+			{
+				Ammo[7]--;
+				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y);
+				GetXYRatio(&XRatio, &YRatio, Angle, 30);
+				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 6);
+				ShotTimer = 20;
+			}
+			break;
+
+		case 9: //Minigun
+			if (Ammo[8] == 0) Mix_PlayChannel(-1, Empty, 0);
+			else
+			{
+				Ammo[8]--;
+				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y) + (rand() % 6 - 3);
+				GetXYRatio(&XRatio, &YRatio, Angle, 20);
+				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 1);
+				ShotTimer = 1;
 			}
 			break;
 		}
 	}
 }
 
-void NextLevel(int SpawnX, int SpawnY)
+void NextLevel(int SpawnX, int SpawnY, std::string Level)
 {
-	EnemyVector.erase(EnemyVector.begin(),EnemyVector.end());
-	SpawnVector.erase(SpawnVector.begin(),SpawnVector.end());
-	ProjectileVector.erase(ProjectileVector.begin(),ProjectileVector.end());
-	PickupVector.erase(PickupVector.begin(),PickupVector.end());
-	EnemyProjectileVector.erase(EnemyProjectileVector.begin(),EnemyProjectileVector.end());
-	ObjectVector.erase(ObjectVector.begin(), ObjectVector.end());
+	ScreenAlpha = 1;
+	while (ScreenAlpha < 250)
+	{
+		DoThings();
+		DebugWindow(std::to_string(ScreenAlpha));
+		SDL_Delay(10);
+	}
+	
+	if (!LoadLevel(Level))
+	{
+		DebugWindow("Couldn't load level!");
+		DumpDebugWindowTostderr();
+		State = QUIT;
+	}
+
+	EnemyVector.clear();
+	SpawnVector.clear();
+	ProjectileVector.clear();
+	PickupVector.clear();
+	EnemyProjectileVector.clear();
+	ObjectVector.clear();
 
 	Character.Lives += 2;
 	Character.Health = 100;
@@ -444,7 +518,9 @@ void Game()
 	HealthRect.y = ScreenHeight - 25;
 	HealthRect.w = 200;
 
-	goto Here;
+	Terminal("Resources/Text/Booting");
+
+	//goto Here; //Only used for debugging purposes I promise
 
 	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
@@ -473,6 +549,7 @@ void Game()
 			AddObject(1090, 2530, RIP);
 			AddObject(250, 2550, PlayerNormal);
 			BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
+			Camera.LevelHeight = LevelHeight;
 			LevelProgress = 1;
 			FrameCount = 0;
 			break;
@@ -516,7 +593,6 @@ void Game()
 				Temp.Health = 5000;
 				Temp.CollisionRect.w = 300;
 				Temp.CollisionRect.h = 300;
-
 				Temp.Frame = 0;
 				Temp.Frametime = 1;
 				AngleOffset = 0;
@@ -529,8 +605,7 @@ void Game()
 
 				Boss = true;
 				BossName = "W.A.R DEN";
-				Divider = (ScreenWidth - 50) / Temp.Health;
-
+				Multiplier = (float)(ScreenWidth-50)/5000;
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
 			}
@@ -539,7 +614,7 @@ void Game()
 		case 3:
 			if (Boss == false)
 			{
-				Temp1 = 1240;
+				Temp1 = 1030;
 				Temp2 = 0;
 				Update = false;
 				Character.NormalMovement = false;
@@ -547,20 +622,19 @@ void Game()
 				ClearProjectiles();
 				Mix_HaltMusic();
 
-				SDL_Rect Core;
-				Core.x = 130;
-				Core.y = 130;
-				Core.w = 40;
-				Core.h = 40;
-				AddObject(900, 1340, Grenade);
+				EnemyProjectile WallBreaker(4);
+				WallBreaker.WorldX = 980;
+				WallBreaker.WorldY = 1030;
+				WallBreaker.CollisionRect.w = 40;
+				WallBreaker.CollisionRect.h = 40;
+				WallBreaker.XVel = 0;
+				WallBreaker.YVel = -6;
+				EnemyProjectileVector.push_back(WallBreaker);
 			}
 			break;
 
 		case 4:
-			Temp2++;
-			Temp1 -= Temp2 / 10;
-			ObjectVector.at(ObjectVector.size() - 1).WorldY = Temp1;
-
+			Temp1 -= 6;
 			Camera.MoveViewport(980 - ScreenWidth / 2, Temp1 - ScreenHeight / 2);
 
 			if (Temp1 <= 20)
@@ -582,7 +656,6 @@ void Game()
 
 				CreateDebris(8, 5, 950, 10, 0, 10, 0xFFFFFFF);
 				CreateDebris(8, 5, 1050, 10, 0, 10, 0xFFFFFFF);
-				ObjectVector.erase(ObjectVector.end() - 1);
 
 				Shake = true;
 				Mag = 30;
@@ -601,10 +674,10 @@ void Game()
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
-
-	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	Here:
+	//if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
-	NextLevel(1000,1950);
+	NextLevel(1000, 1950, "Resources/Levels/2");;
 	float Vel = 0.01;
 
 	while(LevelFinished == false && State == GAME)
@@ -728,7 +801,7 @@ void Game()
 		case 4:
 			if (Enemies == 0)
 			{
-				LevelProgress = 5;
+				LevelProgress = 6; //NOT a typo
 
 				Pickup PushThis;
 				PushThis.Type = 1;
@@ -744,24 +817,16 @@ void Game()
 					PickupVector.push_back(PushThis);
 				}
 
-				Boss = true;
-				BossName = "S.I.S:";
-				BossHealth = 1900;
-				Divider = (ScreenWidth - 50) / 1900;
-
-				SpareTimer.start();
-			}
-			break;
-
-		case 5:
-			if (SpareTimer.get_ticks() > 6000)
-			{
-				LevelProgress = 6;
 				SpawnVector.push_back(Character.WorldX - 300);
 				SpawnVector.push_back(Character.WorldY);
 				SpawnVector.push_back(4);
 				SpawnEnemies(SpawnVector);
 				Mix_PlayMusic(BossTheme, -1);
+
+				Boss = true;
+				BossName = "S.I.S:";
+				BossHealth = 1900;
+				Multiplier = (float)(ScreenWidth - 50) / BossHealth;
 			}
 			break;
 
@@ -876,8 +941,10 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	if (!LoadLevel("Resources/Levels/3")) { State = QUIT; Menu(); }
-	NextLevel(1000,4500);
+	Terminal("Resources/Text/Attempt1");
+
+	//if (!LoadLevel("Resources/Levels/3")) { State = QUIT; Menu(); }
+	NextLevel(1000, 4500, "Resources/Levels/3");
 
 	while(LevelFinished == false && State == GAME)
 	{
@@ -941,8 +1008,7 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	if (!LoadLevel("Resources/Levels/4")) {State = QUIT; Menu();}
-	NextLevel(1000, 9950);
+	NextLevel(1000, 9950, "Resources/Levels/4");
 
 	LaserY = 6000;
 
@@ -1078,10 +1144,9 @@ void Game()
 		};
 	}
 
-	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 	Pickup pukciP;
 	pukciP.Type = 4;
-	NextLevel(1100,1100);
+	NextLevel(1100, 1100, "Resources/Levels/2");
 
 	SDL_Rect *RenderRect = &TeleportClips[0];
 
@@ -1445,20 +1510,14 @@ void Game()
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
-Here:
 
 	Temp1 = 500;
-	if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
-	NextLevel(Temp1,50);
+	//if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+	NextLevel(Temp1, 50, "Resources/Levels/2");
 
 	while (!LevelFinished && State == GAME)
 	{
 		FPSTimer.start();
-
-		SpareStream.str("");
-		SpareStream << TTF_GetError();
-		DebugWindow(SpareStream.str().c_str());
-
 		DoThings();
 		HandleEvents();
 
@@ -1481,7 +1540,7 @@ Here:
 
 			BossName = "Enemies:";
 			BossHealth = 90;
-			Divider = (ScreenWidth - 50) / 90;
+			Multiplier = (float)(ScreenWidth - 50) / 90;
 			Boss = true;
 			Temp2 = 0;
 			LevelProgress = 1;
@@ -1549,7 +1608,7 @@ Here:
 	}
 
 	if (!LoadLevel("Resources/Levels/5")) {State = QUIT; Menu();}
-	NextLevel(500,5860);
+	NextLevel(500, 5860, "Resources/Levels/5");
 
 	while(!LevelFinished && State == GAME)
 	{

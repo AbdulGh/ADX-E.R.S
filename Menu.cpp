@@ -27,10 +27,14 @@ Gamestate Menu()
 		ClearScreen();
 		
 		Inc++;
-		if ( Inc % 80 == 0 ) Underscore = !Underscore;
-		if (Underscore) ApplySurface(Temp1, 200, Message, Screen);
+		if (Inc == 80)
+		{
+			Underscore = !Underscore;
+			Inc = 0;
+		}
+
+		if (Underscore) ApplySurface(Temp1, 200, Message2, Screen);
 		else ApplySurface(Temp1, 200, Message, Screen);
-		ApplySurface(Temp1,200,Message2,Screen);
 
 		int x,y;
 		DoMouse(&x,&y);

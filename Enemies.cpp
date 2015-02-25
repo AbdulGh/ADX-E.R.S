@@ -7,15 +7,10 @@
 #include"MiscObject.h"
 #include<time.h>
 
-//Number of sound effects
-#define NUMBEROFDEATHS 7
-#define NUMBEROFTAUNTS 10
-#define NUMBEROFDAMAGE 7
-
 int BossStage = 0;
 int BosNum1 = 0;
 int BossHealth = 0;
-int Divider = 0;
+double Multiplier = 0;
 int Direction = 3;
 int SFXTimer = 0;
 
@@ -36,6 +31,8 @@ std::vector <Enemy> EnemyVector;
 
 std::string BossName;
 
+
+
 Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 {
 	WorldX = x;
@@ -47,6 +44,10 @@ Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 	Timer = 0;
 	XVel = 0;
 	YVel = 0;
+	Damage = 0;
+	DamageFrames = 0;
+	XOffset = 0;
+	YOffset = 0;
 	Moving = true;
 	OnFire = false;
 }
@@ -98,7 +99,7 @@ void Enemy::Gib()
 
 	Part.x = 0;
 	Part.y = Part.h;
-	Part.h = 2* Sprite->h / 3 - 1;
+	Part.h = 2 * Sprite->h / 3 - 1;
 	AddObject(WorldX, WorldY, Sprite, -rand() % 12, rand() % 12, 120, Part);
 
 	Part.x = Part.w;
@@ -113,14 +114,14 @@ void Enemy::StayInLevel()
 	else if (WorldY + CollisionRect.h > LevelHeight - 20) WorldY = LevelHeight - (CollisionRect.h + 20);
 }
 
-bool Enemy::IsNotActive() const //I think std::mem_fun_ref can only take functions so I have to do this, I'm sorry
+bool Enemy::IsNotActive() const
 {
 	return (Health <= 0);
 }
 
 void Enemy::Bleed(int ProjectileXVel, int ProjectileYVel, int ex, int why)
 {
-	for(int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		int Rand1 = rand() % 16 - 8;
 		int Rand2 = rand() % 16 - 8;
@@ -140,7 +141,7 @@ void Enemy::BulletPattern(int Type)
 		Shot.Damage = 50;
 		Shot.CollisionRect.w = 30;
 		Shot.CollisionRect.h = 30;
-		
+
 		for (int i = 10; i <= 360; i += 20)
 		{
 			GetXYRatio(&Shot.XVel, &Shot.YVel, i, 3 + i / 26);
@@ -158,7 +159,7 @@ void Enemy::BulletPattern(int Type)
 		break;
 
 	case 4: //Plain 4 directional shot
-		for (int a = 0; a <= 270; a += 90) Shoot(3,a);
+		for (int a = 0; a <= 270; a += 90) Shoot(3, a);
 		break;
 
 	case 5: //Cool sine wave rotating thing
@@ -189,7 +190,12 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			YDiff = CURRENTPICKUPY - PlayerRect.y;
 			Distance = sqrt(XDiff * XDiff + YDiff * YDiff);
 
-			if (Distance < 150)
+			bool Collected = (Distance < 36);
+
+			TempRect.x = CURRENTPICKUPX;
+			TempRect.y = CURRENTPICKUPY;
+
+			if (Distance < 150 && Distance != 0)
 			{
 				if (XDiff > 0) CURRENTPICKUPX -= 230 / Distance;
 				else CURRENTPICKUPX += 230 / Distance;
@@ -197,11 +203,6 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				if (YDiff > 0) CURRENTPICKUPY -= 230 / Distance;
 				else CURRENTPICKUPY += 230 / Distance;
 			}
-
-			bool Collected = (Distance < 36);
-
-			TempRect.x = CURRENTPICKUPX;
-			TempRect.y = CURRENTPICKUPY;
 
 			switch (CURRENTPICKUPTYPE)
 			{
@@ -288,6 +289,18 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
+
+			case 8: //Grenade machinegun
+				TempRect.w = Grenade->w;
+				TempRect.h = Grenade->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Grenade, Screen);
+				if (Collected)
+				{
+					Ammo[7] += 10;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Automatic Grenade Machinegun +10", White);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
 			}
 		}
 	}
@@ -296,7 +309,7 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 void SpawnEnemies(std::vector <int> Enemus) //X Y Type
 {
 	Enemy Teleport;
-	for (int i = 0; i < Enemus.size(); i+=3)
+	for (int i = 0; i < Enemus.size(); i += 3)
 	{
 		Teleport.WorldX = Enemus.at(i);
 		Teleport.WorldY = Enemus.at(i + 1);
@@ -316,16 +329,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 {
 	SFXTimer++;
 
-	/*if (EnemyVector.size() != 0 && rand() % 300 == 42 && SFXTimer > 60)
-	{
-		SFXTimer = 0;
-		Mix_PlayChannel(-1, PlayThis, 0);
-		SpareStream.str("");
-		SpareStream << "Resources/Sounds/Enemies/Taunt" << (rand() % NUMBEROFTAUNTS) + 1 << ".ogg";
-		Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-	}*/
-
-
 	for (int i = 0; i < EnemyVector.size(); i++)
 	{
 		if (CURRENTENEMY.OnFire)
@@ -334,23 +337,25 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			if (CURRENTENEMY.BurnTimer % 10 == 0)
 			{
 				CURRENTENEMY.Health -= 3;
+				CURRENTENEMY.Damage += 3;
+				CURRENTENEMY.XOffset = rand() % CURRENTENEMY.CollisionRect.w;
+				CURRENTENEMY.YOffset = rand() % CURRENTENEMY.CollisionRect.h;
 				for (int w = 0; w <= 4; w++) CreateDebris(4, 1, CURRENTENEMY.WorldX + rand() % CURRENTENEMY.CollisionRect.w, CURRENTENEMY.WorldY + rand() % CURRENTENEMY.CollisionRect.h, rand() % 5 - 10, rand() % 5 - 10, 0xFF6A00);
-				FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, "3", Red, 2);
 			}
 
 			if (CURRENTENEMY.BurnTimer == 0) CURRENTENEMY.OnFire = false;
 		}
-		
+
 		CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - CameraX;
 		CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY - CameraY;
 		if (CURRENTENEMY.Type != 0)
 		{
-			for (int x = 0; x < ProjectileVector.size(); x++)
+			for (int x = 0; x < ProjectileVector.size() && ProjectileVector.at(x).Active && CURRENTENEMY.Health > 0; x++)
 			{
 				ProjectileVector.at(x).ProjectileRect.x = ProjectileVector.at(x).WorldX - CameraX;
 				ProjectileVector.at(x).ProjectileRect.y = ProjectileVector.at(x).WorldY - CameraY;
 
-				if (IsIntersecting(CURRENTENEMY.CollisionRect,ProjectileVector.at(x).ProjectileRect))
+				if (IsIntersecting(CURRENTENEMY.CollisionRect, ProjectileVector.at(x).ProjectileRect))
 				{
 					CURRENTENEMY.Bleed(ProjectileVector.at(x).XInc, ProjectileVector.at(x).YInc, ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
 
@@ -365,66 +370,128 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Mix_PlayChannel(-1, Metal, 0);
 						SpareStream.str("");
 						SpareStream << "Resources/Sounds/Weapons/Metal" << rand() % 23 + 1 << ".ogg";
+						Mix_FreeChunk(Metal);
 						Metal = Mix_LoadWAV(SpareStream.str().c_str());
 					}
 
-					if (ProjectileVector.at(x).Type == 5)
+					if (ProjectileVector.at(x).Type == 5 || ProjectileVector.at(x).Type == 6)
 					{
-						int RocketX = ProjectileVector.at(x).WorldX;
-						int RocketY = ProjectileVector.at(x).WorldY;
-	
-						Shake = true;
-						Mag = 20;
-						Dur = 25;
-
-						for (int i = 0; i <= 360; i++)
-						{
-							float XR = 0;
-							float YR = 0;
-							GetXYRatio(&XR,&YR,i,rand() % 20);
-							CreateProjectile(RocketX,RocketY,XR,YR,3);
-						}
+						CreateExplosion(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
 					}
-					
+
 					if (CURRENTENEMY.Moving & ProjectileVector.at(x).Damage <= 100)
 					{
 						CURRENTENEMY.WorldX += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).XInc / 3;
 						CURRENTENEMY.WorldY += (ProjectileVector.at(x).Damage / 8) * ProjectileVector.at(x).YInc / 3;
 					}
 
-					if (rand() % 100 < 5 && SFXTimer > 60)
-					{
-						SFXTimer = 0;
-						SpareStream.str("");
-						SpareStream << "Resources/Sounds/Enemies/Damage" << (rand() % NUMBEROFDAMAGE) + 1 << ".ogg";
-						
-						Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-						Mix_PlayChannel(-1,PlayThis,0);
-						Mix_FreeChunk(PlayThis);
-					}
-
 					CURRENTENEMY.Health -= ProjectileVector.at(x).Damage;
-					SpareStream.str("");
-					SpareStream << ProjectileVector.at(x).Damage;
-					FloatSomeText(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY, SpareStream.str().c_str(), Red, 2);
-					ProjectileVector.erase(ProjectileVector.begin() + x, ProjectileVector.begin() + x + 1);
+					CURRENTENEMY.Damage += ProjectileVector.at(x).Damage;
+					CURRENTENEMY.XOffset = ProjectileVector.at(x).WorldX - CURRENTENEMY.WorldX;
+					CURRENTENEMY.YOffset = ProjectileVector.at(x).WorldY - CURRENTENEMY.WorldY;
+					ProjectileVector.at(x).Active = false;
+					CURRENTENEMY.DamageFrames = 100;
+
+					if (CURRENTENEMY.Health <= 0)
+					{
+						if (CURRENTENEMY.Health <= -60) CURRENTENEMY.Gib();
+
+						FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY - 30, std::to_string(CURRENTENEMY.Damage), Red);
+
+						if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
+						{
+
+							int tni = rand() % 100 + 1; //tni = int backwards
+
+							if (CURRENTENEMY.Type == 8)
+							{
+								Pickup pukciP; //pukciP = Pickup backwards
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 4;
+								PickupVector.push_back(pukciP);
+							}
+
+							else if (tni > 95)
+							{
+								Pickup pukciP;
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 3;
+								PickupVector.push_back(pukciP);
+							}
+
+							else if (tni < 75 && CURRENTENEMY.Type == 1)
+							{
+								Pickup pukciP; //pukciP = Pickup backwards
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 1;
+								PickupVector.push_back(pukciP);
+							}
+
+							else if (tni < 50 && CURRENTENEMY.Type == 2)
+							{
+								Pickup pukciP;
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 2;
+								PickupVector.push_back(pukciP);
+							}
+
+							else if (tni < 40 && CURRENTENEMY.Type == 10)
+							{
+								Pickup pukciP;
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 5;
+								PickupVector.push_back(pukciP);
+							}
+
+							else if (tni > 60 && CURRENTENEMY.Type == 10)
+							{
+								Pickup pukciP;
+								pukciP.WorldX = CURRENTENEMY.WorldX;
+								pukciP.WorldY = CURRENTENEMY.WorldY;
+								pukciP.Type = 4;
+								PickupVector.push_back(pukciP);
+							}
+
+							CreateDebris(5, 6, CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, CURRENTENEMY.XVel * 4, CURRENTENEMY.YVel * 4, 0xFFFFFF);
+
+							if (CURRENTENEMY.Type == 3) //Explosion
+							{
+								for (int OutOfRange = 0; OutOfRange < 360; OutOfRange += 45)
+								{
+									CURRENTENEMY.Shoot(1, OutOfRange);
+								}
+							}
+						}
+
+						if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13)
+						{
+							Boss = false;
+							Temp1 = CURRENTENEMY.WorldX;
+							Temp2 = CURRENTENEMY.WorldY;
+						}
+					}
 				}
 			}
 		}
-		
+
 		else //Teleport
 		{
 			if (CURRENTENEMY.Frametime < 15)
 			{
-			CURRENTENEMY.Frametime++;
-			ApplySurface(CURRENTENEMY.WorldX - CameraX,CURRENTENEMY.WorldY - CameraY,TeleportSheet,Screen,&TeleportClips[CURRENTENEMY.Frametime % 2]);
+				CURRENTENEMY.Frametime++;
+				ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, TeleportSheet, Screen, &TeleportClips[CURRENTENEMY.Frametime % 2]);
 			}
 
 			else
 			{
 				CURRENTENEMY.Frame++;
 				CURRENTENEMY.Frametime = 0;
-				if (CURRENTENEMY.Frame == 4) 
+				if (CURRENTENEMY.Frame == 4)
 				{
 					Enemy Temp;
 					Temp.WorldX = CURRENTENEMY.WorldX;
@@ -432,7 +499,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Temp.Frame = 0;
 					Temp.Frametime = 0;
 					Temp.Type = CURRENTENEMY.Health;
-					switch(Temp.Type)
+					switch (Temp.Type)
 					{
 					case 1: //suicide
 						Temp.Health = 50;
@@ -505,7 +572,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.h = 100;
 						Boss = true;
 						BossName = "M.A.R.S:";
-						Divider = 12;
+						Multiplier = 12;
 						BossStage = 0;
 						break;
 
@@ -541,12 +608,11 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.w = 300;
 						Temp.CollisionRect.h = 300;
 
-						Temp.Frame = 0;
 						Temp.Frametime = 1;
 
 						Boss = true;
 						BossName = "W.A.R DEN:";
-						Divider = (ScreenWidth - 40) / Temp.Health;
+						Multiplier = Temp.Health / (ScreenWidth + 50);
 						Temp.Moving = false;
 						break;
 
@@ -555,20 +621,25 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.w = 100;
 						Temp.CollisionRect.h = 100;
 
-						Temp.Frame = 0;
 						Temp.Frametime = 1;
 
 						Temp.Moving = false;
 						break;
+
+					case 15: //Turret
+						Temp.Health = 200;
+						Temp.CollisionRect.w = 32;
+						Temp.CollisionRect.h = 32;
+						Temp.Moving = false;
 					};
-					EnemyVector.erase(EnemyVector.begin() + i ,EnemyVector.begin() + i + 1);
+					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
 					continue;
 				}
 			}
 		}
 
-		if (Laser && CURRENTENEMY.Type != 0 && CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h > LaserY) 
+		if (Laser && CURRENTENEMY.Type != 0 && CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h > LaserY)
 		{
 			CURRENTENEMY.Health = 0;
 		}
@@ -723,7 +794,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 			if (CURRENTENEMY.WorldX < (PlayerX - 300))
 			{
-				if (CURRENTENEMY.XVel + 2.5 + CURRENTENEMY.WorldX >(PlayerX - 300)) CURRENTENEMY.XVel = 0;
+				if (CURRENTENEMY.XVel + 2.5 + CURRENTENEMY.WorldX > (PlayerX - 300)) CURRENTENEMY.XVel = 0;
 				else CURRENTENEMY.XVel += 2.5;
 			}
 
@@ -783,7 +854,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 		case 6: //SIS Worm
 			CURRENTENEMY.WorldX += CURRENTENEMY.Speed;
-			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX;
+			CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX - Camera.x;
 
 			if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect) && Invincible == false)
 			{
@@ -927,7 +998,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				YDiff = abs(((PlayerY + 210) - CURRENTENEMY.WorldY) / 12);
 
 				if (CURRENTENEMY.WorldX < (PlayerX - 15)) CURRENTENEMY.WorldX += XDiff;
-				else if (CURRENTENEMY.WorldX >(PlayerX - 15)) CURRENTENEMY.WorldX -= XDiff;
+				else if (CURRENTENEMY.WorldX > (PlayerX - 15)) CURRENTENEMY.WorldX -= XDiff;
 				if (CURRENTENEMY.WorldY < PlayerY + 210) CURRENTENEMY.WorldY += YDiff;
 				else if (CURRENTENEMY.WorldY > PlayerY + 210) CURRENTENEMY.WorldY -= YDiff;
 
@@ -1080,7 +1151,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				YDiff = abs(((PlayerY + 15) - CURRENTENEMY.WorldY) / 12);
 
 				if (CURRENTENEMY.WorldX < (PlayerX - 255)) CURRENTENEMY.WorldX += XDiff;
-				else if (CURRENTENEMY.WorldX >(PlayerX - 255)) CURRENTENEMY.WorldX -= XDiff;
+				else if (CURRENTENEMY.WorldX > (PlayerX - 255)) CURRENTENEMY.WorldX -= XDiff;
 				if (CURRENTENEMY.WorldY < PlayerY + 15) CURRENTENEMY.WorldY += YDiff;
 				else if (CURRENTENEMY.WorldY > PlayerY + 15) CURRENTENEMY.WorldY -= YDiff;
 
@@ -1249,7 +1320,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				YDiff = abs(((PlayerY - 220) - CURRENTENEMY.WorldY) / 12);
 
 				if (CURRENTENEMY.WorldX < (PlayerX - 15)) CURRENTENEMY.WorldX += XDiff;
-				else if (CURRENTENEMY.WorldX >(PlayerX - 15)) CURRENTENEMY.WorldX -= XDiff;
+				else if (CURRENTENEMY.WorldX > (PlayerX - 15)) CURRENTENEMY.WorldX -= XDiff;
 				if (CURRENTENEMY.WorldY < PlayerY - 220) CURRENTENEMY.WorldY += YDiff;
 				else if (CURRENTENEMY.WorldY > PlayerY - 220) CURRENTENEMY.WorldY -= YDiff;
 
@@ -1368,7 +1439,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				YDiff = abs(((PlayerY - 10) - CURRENTENEMY.WorldY) / 10);
 
 				if (CURRENTENEMY.WorldX < (PlayerX + 165)) CURRENTENEMY.WorldX += XDiff;
-				else if (CURRENTENEMY.WorldX >(PlayerX + 165)) CURRENTENEMY.WorldX -= XDiff;
+				else if (CURRENTENEMY.WorldX > (PlayerX + 165)) CURRENTENEMY.WorldX -= XDiff;
 				if (CURRENTENEMY.WorldY < PlayerY - 10) CURRENTENEMY.WorldY += YDiff;
 				else if (CURRENTENEMY.WorldY > PlayerY - 10) CURRENTENEMY.WorldY -= YDiff;
 
@@ -1667,6 +1738,12 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		case 14: //Warkid
 			CURRENTENEMY.ShotCounter++;
 
+			if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect))
+			{
+				Damaged = true;
+				DamageDealt = 50;
+			}
+
 			if (CURRENTENEMY.ShotCounter % 30 == 0) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
 			if (CURRENTENEMY.ShotCounter % 60 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
 			if (CURRENTENEMY.ShotCounter % 120 == 0) CURRENTENEMY.BulletPattern(3);
@@ -1683,114 +1760,35 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			}
 
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Warkid, Screen);
-		}
+			break;
 
-		if (CURRENTENEMY.Health <= 0) 
+		case 15: //Turret
+			CURRENTENEMY.ShotCounter++;
+
+			if (CURRENTENEMY.ShotCounter >= 50)
+			{
+				int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, PlayerX, PlayerY);
+				for (int u = -45; u <= 45; u += 45)
+				{
+					CURRENTENEMY.Shoot(3, Angle + u);
+					for (int p = 0; p <= 10; p++) CURRENTENEMY.Shoot(8, rand() % 360);
+				}
+			}
+			break;
+		};
+
+		if (CURRENTENEMY.DamageFrames != 0)
 		{
-			if (CURRENTENEMY.Health <= -100) CURRENTENEMY.Gib();
-			
-			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
+			ApplyText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset - Camera.x, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset - Camera.y, std::to_string(CURRENTENEMY.Damage), Small, Red);
+			CURRENTENEMY.DamageFrames--;
+
+			if (CURRENTENEMY.DamageFrames == 0)
 			{
-
-				int tni = rand() % 100 + 1; //tni = int backwards
-
-				if (tni <= 20 && SFXTimer > 60)
-				{
-					SFXTimer = 0;
-					SpareStream.str("");
-					SpareStream << "Resources/Sounds/Enemies/Death" << (tni % NUMBEROFDEATHS) + 1 << ".ogg";
-					Mix_Chunk *PlayThis = Mix_LoadWAV(SpareStream.str().c_str());
-					Mix_PlayChannel(-1,PlayThis,0);
-					Mix_FreeChunk(PlayThis);
-				}
-				
-				if (CURRENTENEMY.Type == 8)
-				{
-					Pickup pukciP; //pukciP = Pickup backwards
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 4;
-					PickupVector.push_back(pukciP);
-				}
-
-				else if (tni > 95)
-				{
-					Pickup pukciP;
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 3;
-					PickupVector.push_back(pukciP);
-				}
-
-				else if (tni < 75 &&CURRENTENEMY.Type == 1)
-				{
-					Pickup pukciP; //pukciP = Pickup backwards
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 1;
-					PickupVector.push_back(pukciP);
-				}
-
-				else if (tni < 50 && CURRENTENEMY.Type == 2)
-				{
-					Pickup pukciP;
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 2;
-					PickupVector.push_back(pukciP);
-				}
-
-				else if (tni < 40 && CURRENTENEMY.Type == 10)
-				{
-					Pickup pukciP;
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 5;
-					PickupVector.push_back(pukciP);
-				}
-
-				else if (tni > 60 && CURRENTENEMY.Type == 10)
-				{
-					Pickup pukciP;
-					pukciP.WorldX = CURRENTENEMY.WorldX;
-					pukciP.WorldY = CURRENTENEMY.WorldY;
-					pukciP.Type = 4;
-					PickupVector.push_back(pukciP);
-				}
-
-				CreateDebris(5,6,CURRENTENEMY.WorldX,CURRENTENEMY.WorldY,CURRENTENEMY.XVel * 4,CURRENTENEMY.YVel * 4,0xFFFFFF);
-
-				if (CURRENTENEMY.Type == 3) //Explosion
-				{
-					for (int OutOfRange = 0; OutOfRange < 360; OutOfRange += 45)
-					{
-						CURRENTENEMY.Shoot(1,OutOfRange);
-					}
-				}
-			}
-
-			if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13) 
-			{
-				Boss = false;
-				Temp1 = CURRENTENEMY.WorldX;
-				Temp2 = CURRENTENEMY.WorldY;
+				FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset, std::to_string(CURRENTENEMY.Damage), Red);
+				CURRENTENEMY.Damage = 0;
 			}
 		}
 	}
-
-	if (Boss)
-	{
-		int Width = 0;
-		ApplyText(15, 5, BossName.c_str(), SysSmall, Green, &Width);
-		
-		BossHealthRect.x = Width + 25;
-		BossHealthRect.y = 5;
-		BossHealthRect.h = 20;
-		BossHealthRect.w = BossHealth * Divider;
-
-		SDL_FillRect(Screen, &BossHealthRect, 0x00FF00);
-	}
-
 	EnemyVector.erase(
 		std::remove_if(
 		EnemyVector.begin(),

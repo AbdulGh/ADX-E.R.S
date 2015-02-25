@@ -25,5 +25,6 @@ public:
 
 void CreateProjectile(float x, float y, float XRatio, float YRatio, int Type);
 void DoProjectiles(int CameraX, int CameraY);
+void CreateExplosion(int X, int Y);
 
 #endif

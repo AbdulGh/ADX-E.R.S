@@ -4,7 +4,7 @@ std::vector <FloatText> FloatVector;
 
 void FloatSomeText(int WorldX, int WorldY, std::string String, SDL_Color Colour, int Type)
 {
-	if (FloatVector.size() <= 200)
+	if (FloatVector.size() <= 50)
 	{
 		FloatText PushThis;
 		PushThis.x = WorldX;
