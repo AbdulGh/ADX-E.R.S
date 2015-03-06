@@ -1,0 +1,17 @@
+\16
+/500
+ADMax Emergent Response System online;
+Directives:;
+/1000
+A robot may not injure a human being or, through inaction, allow a human being to come to harm;
+A robot must obey the orders given by human beings, except where such orders would conflict with the First Law;
+A robot must protect its own existence as long as such protection does not conflict with the First or Sec;
+\60
+/1200
+ERROR;
+\20
+Could not mount 'root' on block 'NULL';
+/1000
+Rebooting;
+\1000
+...;

@@ -1,0 +1,41 @@
+\0
+root@ADXERS~:;
+/3000
+\80
+ls;
+\0
+;
+bin boot dev etc lib media;
+sbin mnt tmp usr var;
+;
+root@ADXERS~:;
+/4000
+\75
+ls -A;
+\0
+;
+bin boot dev etc lib media;
+sbin mnt tmp usr var .PleaseStayOut;
+; 
+root@ADXERS~:;
+/3000
+\85
+cd /.PleaseStayOut;
+\0
+;
+root@ADXERS~:;
+/2000
+\70
+ls -A;
+\0
+;
+BankDetails Directives Passwords BiologyHwk;
+;
+root@ADXERS~:;
+/2500
+\95
+cat /dev/urandom > Directives;
+\0
+;
+root@ADXERS~:;
+/2500

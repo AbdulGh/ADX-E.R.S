@@ -115,9 +115,9 @@ void DeathScreen()
 		SpareStream.str("");
 		SpareStream << Character.Lives;
 
-		SDL_Surface *Unrotated = TTF_RenderText_Solid(Start, SpareStream.str().c_str(), Green);
-		SDL_Surface *Rotated = rotozoomSurface(Unrotated, 0, Zoom, 0);
-		ApplySurface((ScreenWidth - Rotated->w) / 2, (ScreenHeight - Rotated->h) / 2, Rotated, Screen);
+		SDL_Surface *Zoomed = rotozoomSurface(TTF_RenderText_Solid(Start, SpareStream.str().c_str(), Green), 0, Zoom, 0);
+		ApplySurface((ScreenWidth - Zoomed->w) / 2, (ScreenHeight - Zoomed->h) / 2, Zoomed, Screen);
+		SDL_FreeSurface(Zoomed);
 
 		if (Zoom <= 0)
 		{
@@ -132,7 +132,9 @@ void DeathScreen()
 		SDL_Flip(Screen);
 		SDL_Delay(20);
 	}
-	Direction *= -1;
+	Zoom = 1;
+	Direction = -0.02;
+
 }
 
 void DoThings()
@@ -449,6 +451,9 @@ void HandleEvents()
 			else
 			{
 				Ammo[8]--;
+				Shake = true;
+				Mag = 5;
+				Dur = 5;
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y) + (rand() % 6 - 3);
 				GetXYRatio(&XRatio, &YRatio, Angle, 20);
 				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 1);
@@ -469,19 +474,19 @@ void NextLevel(int SpawnX, int SpawnY, std::string Level)
 		SDL_Delay(10);
 	}
 	
-	if (!LoadLevel(Level))
-	{
-		DebugWindow("Couldn't load level!");
-		DumpDebugWindowTostderr();
-		State = QUIT;
-	}
-
 	EnemyVector.clear();
 	SpawnVector.clear();
 	ProjectileVector.clear();
 	PickupVector.clear();
 	EnemyProjectileVector.clear();
 	ObjectVector.clear();
+
+	if (!LoadLevel(Level))
+	{
+		DebugWindow("Couldn't load level!");
+		DumpDebugWindowTostderr();
+		State = QUIT;
+	}
 
 	Character.Lives += 2;
 	Character.Health = 100;
@@ -520,13 +525,13 @@ void Game()
 
 	Terminal("Resources/Text/Booting");
 
-	//goto Here; //Only used for debugging purposes I promise
-
 	if (!LoadLevel("Resources/Levels/1")) {State = QUIT; Menu();}
 	Camera.LevelHeight = LevelHeight;
 	Camera.LevelWidth = LevelWidth;
 	LevelColour = 0x000000;
 	int FrameCount = 0;
+
+	//goto Here; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -628,13 +633,13 @@ void Game()
 				WallBreaker.CollisionRect.w = 40;
 				WallBreaker.CollisionRect.h = 40;
 				WallBreaker.XVel = 0;
-				WallBreaker.YVel = -6;
+				WallBreaker.YVel = -10;
 				EnemyProjectileVector.push_back(WallBreaker);
 			}
 			break;
 
 		case 4:
-			Temp1 -= 6;
+			Temp1 -= 10;
 			Camera.MoveViewport(980 - ScreenWidth / 2, Temp1 - ScreenHeight / 2);
 
 			if (Temp1 <= 20)
@@ -674,10 +679,9 @@ void Game()
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
-	Here:
-	//if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
+
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
-	NextLevel(1000, 1950, "Resources/Levels/2");;
+	NextLevel(1000, 1950, "Resources/Levels/2");
 	float Vel = 0.01;
 
 	while(LevelFinished == false && State == GAME)
@@ -697,6 +701,7 @@ void Game()
 			PICK.WorldX = 800;
 			PICK.WorldY = 1700;
 			PickupVector.push_back(PICK);
+			AddObject(900, 1600, TTF_RenderText_Solid(SysSmall, "Q & E to swap weapons", White));
 
 			for (int p = 0; p < 5; p++)
 			{
@@ -710,6 +715,7 @@ void Game()
 			{
 				LevelProgress = 2;
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+				ObjectVector.clear();
 
 				SpawnVector.push_back(1000);
 				SpawnVector.push_back(1000);
@@ -943,7 +949,6 @@ void Game()
 
 	Terminal("Resources/Text/Attempt1");
 
-	//if (!LoadLevel("Resources/Levels/3")) { State = QUIT; Menu(); }
 	NextLevel(1000, 4500, "Resources/Levels/3");
 
 	while(LevelFinished == false && State == GAME)
@@ -1143,9 +1148,10 @@ void Game()
 			break;
 		};
 	}
-
+	Here:
 	Pickup pukciP;
 	pukciP.Type = 4;
+	Terminal("Resources/Text/Attempt2");
 	NextLevel(1100, 1100, "Resources/Levels/2");
 
 	SDL_Rect *RenderRect = &TeleportClips[0];
@@ -1511,8 +1517,6 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	Temp1 = 500;
-	//if (!LoadLevel("Resources/Levels/2")) {State = QUIT; Menu();}
 	NextLevel(Temp1, 50, "Resources/Levels/2");
 
 	while (!LevelFinished && State == GAME)
@@ -1560,21 +1564,21 @@ void Game()
 				SpawnVector.push_back(RandomY);
 				SpawnVector.push_back(10);
 
-				if (BossHealth < 70)
+				if (BossHealth < 60)
 				{
 					SpawnVector.push_back(RandomX + rand() % 1000 - 500);
 					SpawnVector.push_back(RandomY + rand() % 1000 - 500);
 					SpawnVector.push_back(1);
 				}
 
-				if (BossHealth < 30)
+				if (BossHealth < 15)
 				{
 					SpawnVector.push_back(RandomX + rand() % 400 - 200);
 					SpawnVector.push_back(RandomY + rand() % 400 - 200);
 					SpawnVector.push_back(3);
 				}
 
-				if (BossHealth < 8)
+				if (BossHealth < 5)
 				{
 					SpawnVector.push_back(RandomX + rand() % 400 - 200);
 					SpawnVector.push_back(RandomY + rand() % 400 - 200);
@@ -1602,12 +1606,14 @@ void Game()
 				LevelProgress = 3;
 			}
 			break;
+
+		case 3:
+			if (Enemies == 0) LevelFinished = true;
 		}
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	if (!LoadLevel("Resources/Levels/5")) {State = QUIT; Menu();}
 	NextLevel(500, 5860, "Resources/Levels/5");
 
 	while(!LevelFinished && State == GAME)
@@ -1791,6 +1797,87 @@ void Game()
 			break;
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
+	}
+
+	NextLevel(1000, 1000, "Resources/Levels/2");
+
+	while (!LevelFinished && State == GAME)
+	{
+		FPSTimer.start();
+
+		DoThings();
+		HandleEvents();
+
+		switch (LevelProgress)
+		{
+		case 0:
+			Pickup PICK;
+			PICK.Type = 4;
+			PICK.WorldX = 700;
+			PICK.WorldY = 500;
+
+			for (int j = 0; j <= 4; j++)
+			{
+				for (int p = 0; p < 5; p++)
+				{
+					PICK.WorldX += 100;
+					PickupVector.push_back(PICK);
+				}
+				PICK.WorldX = 700;
+				if (PICK.Type == 4) PICK.Type = 6;
+				else PICK.Type++;
+				PICK.WorldY += 100;
+			}
+
+			BossName = "Turrets:";
+			BossHealth = 40;
+			Multiplier = (float)(ScreenWidth - 50) / 40;
+			Boss = true;
+			Temp2 = 0;
+			LevelProgress = 1;
+
+		case 1:
+			Temp2++;
+			if (Temp2 == 250 && BossHealth > 0)
+			{
+				BossHealth--;
+				Temp2 = 0;
+				SpawnVector.clear();
+				SpawnVector.push_back(rand() % 1900 + 20);
+				SpawnVector.push_back(rand() % 1900 + 20);
+				SpawnVector.push_back(15);
+
+				if (BossHealth < 20)
+				{
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(15);
+				}
+
+				if (BossHealth < 5)
+				{
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(2);
+				}
+
+				SpawnEnemies(SpawnVector);
+				SpawnVector.clear();
+			}
+
+			else if (BossHealth <= 0 && Enemies == 0)
+			{
+				LevelProgress = 2;
+				Boss = false;
+				CreateAsteroid((1 - (int)Character.WorldX / 1000) * 1000, (1 - (int)Character.WorldY % 1000) * 1000, 400, 5, 5);
+			}
+			break;
+
+		case 2:
+			if (AsteroidVector.size() == 0) LevelFinished = true;
+			break;
+		};
+		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 	}
 
 	ClearScreen();

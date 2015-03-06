@@ -79,6 +79,7 @@ SDL_Surface *LaserShotgun = NULL;
 SDL_Surface *Warkid = NULL;
 SDL_Surface *Turret = NULL;
 SDL_Surface *Fader = NULL;
+SDL_Surface *Minigun = NULL;
 
 SDL_Colour White = {255,255,255};
 SDL_Colour Red = {255,0,0};
@@ -314,7 +315,7 @@ bool Load()
 	LaserShotgun = LoadImage("Resources/Images/LaserShotgun.png");
 	Warkid = LoadImage("Resources/Images/LoreDeepens.png");
 	Turret = LoadImage("Resources/Images/Turret.png");
-	//Fader = LoadImage("Resources/Images/Rectangle.png");
+	Minigun = LoadImage("Resources/Images/Minigun.png");
 
 	if (PlayerNormal == NULL || CursorSheet == NULL) return false;
 	return true;

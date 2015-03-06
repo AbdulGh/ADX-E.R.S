@@ -60,6 +60,7 @@ extern SDL_Surface *LaserShotgun;
 extern SDL_Surface *Warkid;
 extern SDL_Surface *Turret;
 extern SDL_Surface *Fader;
+extern SDL_Surface *Minigun;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;

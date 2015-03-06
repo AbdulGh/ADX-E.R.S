@@ -16,7 +16,9 @@
 4  -  Flamethrower
 5  -  Laser SMG
 6  -  RPG
-7  -  Laser shotgun
+7  -  Auto Laser shotgun
+8  -  Grenade Machinegun
+9  -  Minigun
 
 
  /$$$$$$$                                               /$$     /$$ /$$                    
@@ -62,6 +64,7 @@
 12 -  Biggie
 13 -  W.A.R DEN
 14 -  Warkid
+15 -  Turret
 
 
  /$$$$$$$$                                            
@@ -120,3 +123,4 @@
 5  -  Laser SMG
 6  -  RPG
 7  -  Laser Shotgun
+8  -  Grenade Machinegun

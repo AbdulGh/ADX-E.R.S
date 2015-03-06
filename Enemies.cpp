@@ -284,8 +284,8 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, LaserShotgun, Screen);
 				if (Collected)
 				{
-					Ammo[6] += 5;
-					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Laser Shotgun +6", White);
+					Ammo[6] += 20;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Automatic Laser Shotgun +20", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -298,6 +298,18 @@ void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 				{
 					Ammo[7] += 10;
 					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Automatic Grenade Machinegun +10", White);
+					PickupVector.erase(PickupVector.begin() + i);
+				}
+				break;
+
+			case 9: //Minigun
+				TempRect.w = Grenade->w;
+				TempRect.h = Grenade->h;
+				ApplySurface(CURRENTPICKUPX - CameraX, CURRENTPICKUPY - CameraY, Minigun, Screen);
+				if (Collected)
+				{
+					Ammo[8] += 500;
+					FloatSomeText(PlayerRect.x, PlayerRect.y - 20, "Minigun +500", White);
 					PickupVector.erase(PickupVector.begin() + i);
 				}
 				break;
@@ -391,90 +403,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					CURRENTENEMY.YOffset = ProjectileVector.at(x).WorldY - CURRENTENEMY.WorldY;
 					ProjectileVector.at(x).Active = false;
 					CURRENTENEMY.DamageFrames = 100;
-
-					if (CURRENTENEMY.Health <= 0)
-					{
-						if (CURRENTENEMY.Health <= -60) CURRENTENEMY.Gib();
-
-						FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY - 30, std::to_string(CURRENTENEMY.Damage), Red);
-
-						if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
-						{
-
-							int tni = rand() % 100 + 1; //tni = int backwards
-
-							if (CURRENTENEMY.Type == 8)
-							{
-								Pickup pukciP; //pukciP = Pickup backwards
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 4;
-								PickupVector.push_back(pukciP);
-							}
-
-							else if (tni > 95)
-							{
-								Pickup pukciP;
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 3;
-								PickupVector.push_back(pukciP);
-							}
-
-							else if (tni < 75 && CURRENTENEMY.Type == 1)
-							{
-								Pickup pukciP; //pukciP = Pickup backwards
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 1;
-								PickupVector.push_back(pukciP);
-							}
-
-							else if (tni < 50 && CURRENTENEMY.Type == 2)
-							{
-								Pickup pukciP;
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 2;
-								PickupVector.push_back(pukciP);
-							}
-
-							else if (tni < 40 && CURRENTENEMY.Type == 10)
-							{
-								Pickup pukciP;
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 5;
-								PickupVector.push_back(pukciP);
-							}
-
-							else if (tni > 60 && CURRENTENEMY.Type == 10)
-							{
-								Pickup pukciP;
-								pukciP.WorldX = CURRENTENEMY.WorldX;
-								pukciP.WorldY = CURRENTENEMY.WorldY;
-								pukciP.Type = 4;
-								PickupVector.push_back(pukciP);
-							}
-
-							CreateDebris(5, 6, CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, CURRENTENEMY.XVel * 4, CURRENTENEMY.YVel * 4, 0xFFFFFF);
-
-							if (CURRENTENEMY.Type == 3) //Explosion
-							{
-								for (int OutOfRange = 0; OutOfRange < 360; OutOfRange += 45)
-								{
-									CURRENTENEMY.Shoot(1, OutOfRange);
-								}
-							}
-						}
-
-						if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13)
-						{
-							Boss = false;
-							Temp1 = CURRENTENEMY.WorldX;
-							Temp2 = CURRENTENEMY.WorldY;
-						}
-					}
 				}
 			}
 		}
@@ -628,8 +556,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					case 15: //Turret
 						Temp.Health = 200;
-						Temp.CollisionRect.w = 32;
-						Temp.CollisionRect.h = 32;
+						Temp.CollisionRect.w = 30;
+						Temp.CollisionRect.h = 30;
 						Temp.Moving = false;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
@@ -1765,15 +1693,24 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		case 15: //Turret
 			CURRENTENEMY.ShotCounter++;
 
-			if (CURRENTENEMY.ShotCounter >= 50)
+			if (CURRENTENEMY.ShotCounter % 50 == 0)
 			{
 				int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, PlayerX, PlayerY);
 				for (int u = -45; u <= 45; u += 45)
 				{
 					CURRENTENEMY.Shoot(3, Angle + u);
+				}
+
+				if (CURRENTENEMY.ShotCounter == 150)
 					for (int p = 0; p <= 10; p++) CURRENTENEMY.Shoot(8, rand() % 360);
+
+				else if (CURRENTENEMY.ShotCounter == 300)
+				{
+					CURRENTENEMY.BulletPattern(5);
+					CURRENTENEMY.ShotCounter = 0;
 				}
 			}
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Turret, Screen);
 			break;
 		};
 
@@ -1788,6 +1725,91 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Damage = 0;
 			}
 		}
+
+		if (CURRENTENEMY.Health <= 0)
+		{
+			if (CURRENTENEMY.Health <= -60) CURRENTENEMY.Gib();
+
+			FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY - 30, std::to_string(CURRENTENEMY.Damage), Red);
+
+			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
+			{
+
+				int tni = rand() % 100 + 1; //tni = int backwards
+
+				if (CURRENTENEMY.Type == 8)
+				{
+					Pickup pukciP; //pukciP = Pickup backwards
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 4;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni > 95)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 3;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni < 75 && CURRENTENEMY.Type == 1)
+				{
+					Pickup pukciP; //pukciP = Pickup backwards
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 1;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni < 50 && CURRENTENEMY.Type == 2)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 2;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni < 40 && CURRENTENEMY.Type == 10)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 5;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni > 60 && CURRENTENEMY.Type == 10)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 4;
+					PickupVector.push_back(pukciP);
+				}
+
+				CreateDebris(5, 6, CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, CURRENTENEMY.XVel * 4, CURRENTENEMY.YVel * 4, 0xFFFFFF);
+
+				if (CURRENTENEMY.Type == 3) //Explosion
+				{
+					for (int OutOfRange = 0; OutOfRange < 360; OutOfRange += 45)
+					{
+						CURRENTENEMY.Shoot(1, OutOfRange);
+					}
+				}
+			}
+
+			if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13)
+			{
+				Boss = false;
+				Temp1 = CURRENTENEMY.WorldX;
+				Temp2 = CURRENTENEMY.WorldY;
+			}
+		}
+
 	}
 	EnemyVector.erase(
 		std::remove_if(

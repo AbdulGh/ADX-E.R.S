@@ -1,0 +1,23 @@
+\0
+Password:;
+\70
+/1000
+***********;
+/600
+\0
+Sorry, try again;
+Password:;
+\75
+/1000
+***********;
+/600
+\0
+Sorry, try again;
+Password:;
+\50
+/400
+*********;
+/600
+\0
+root@ADXERS~:;
+/1500
