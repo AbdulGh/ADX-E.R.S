@@ -105,6 +105,7 @@ void SwapWeapons(bool Right)
 void DeathScreen()
 {
 	SpareTimer.start();
+	Mix_HaltMusic();
 	while (SpareTimer.get_ticks() < 5000)
 	{
 		ApplySurface(0, 0, ScreenShot, Screen);
@@ -464,7 +465,7 @@ void HandleEvents()
 	}
 }
 
-void NextLevel(int SpawnX, int SpawnY, std::string Level)
+void NextLevel(int SpawnX, int SpawnY, std::string Level, const char *Text = NULL)
 {
 	ScreenAlpha = 1;
 	while (ScreenAlpha < 250)
@@ -502,6 +503,8 @@ void NextLevel(int SpawnX, int SpawnY, std::string Level)
 	Laser = false;
 	Boss = false;
 	Enemies = 0;
+
+	if (Text != NULL) Terminal(Text);
 }
 
 void Game()
@@ -531,7 +534,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	//goto Here; //Only used for debugging purposes I promise
+	goto Here; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -680,6 +683,7 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
+Here:
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
 	NextLevel(1000, 1950, "Resources/Levels/2");
 	float Vel = 0.01;
@@ -831,7 +835,7 @@ void Game()
 
 				Boss = true;
 				BossName = "S.I.S:";
-				BossHealth = 1900;
+				BossHealth = 1500;
 				Multiplier = (float)(ScreenWidth - 50) / BossHealth;
 			}
 			break;
@@ -947,9 +951,7 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	Terminal("Resources/Text/Attempt1");
-
-	NextLevel(1000, 4500, "Resources/Levels/3");
+	NextLevel(1000, 4500, "Resources/Levels/3", "Resources/Text/Attempt1");
 
 	while(LevelFinished == false && State == GAME)
 	{
@@ -1148,11 +1150,11 @@ void Game()
 			break;
 		};
 	}
-	Here:
+
 	Pickup pukciP;
 	pukciP.Type = 4;
-	Terminal("Resources/Text/Attempt2");
-	NextLevel(1100, 1100, "Resources/Levels/2");
+
+	NextLevel(1100, 1100, "Resources/Levels/2", "Resources/Text/Attempt2");
 
 	SDL_Rect *RenderRect = &TeleportClips[0];
 
@@ -1383,6 +1385,11 @@ void Game()
 				Character.NormalMovement = true;
 				Update = true;
 
+				BossName = "M.A.R.S:";
+				BossHealth = 14000;
+				Multiplier = (float)(ScreenWidth - 50) / BossHealth;
+				Boss = true;
+
 				pukciP.WorldX = Character.WorldX - 200;
 				pukciP.WorldY = Character.WorldY;
 				PickupVector.push_back(pukciP);
@@ -1423,7 +1430,6 @@ void Game()
 				Character.YVel = 0;
 				Damaged = false;
 				Character.Update();
-				//CheckText();
 				DoPickups(Camera.x,Camera.y,CharacterRect);
 				Character.InvunFrames = 100;
 				DoEnemyProjectiles(Camera.x,Camera.y,CharacterRect);

@@ -399,8 +399,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					CURRENTENEMY.Health -= ProjectileVector.at(x).Damage;
 					CURRENTENEMY.Damage += ProjectileVector.at(x).Damage;
-					CURRENTENEMY.XOffset = ProjectileVector.at(x).WorldX - CURRENTENEMY.WorldX;
-					CURRENTENEMY.YOffset = ProjectileVector.at(x).WorldY - CURRENTENEMY.WorldY;
+					CURRENTENEMY.XOffset = ProjectileVector.at(x).WorldX - CURRENTENEMY.WorldX - 5;
+					CURRENTENEMY.YOffset = ProjectileVector.at(x).WorldY - CURRENTENEMY.WorldY - 5;
 					ProjectileVector.at(x).Active = false;
 					CURRENTENEMY.DamageFrames = 100;
 				}
@@ -458,7 +458,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 4: //SIS Boss
-						Temp.Health = 1900;
+						Temp.Health = 1000;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
@@ -499,8 +499,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.w = 40;
 						Temp.CollisionRect.h = 100;
 						Boss = true;
-						BossName = "M.A.R.S:";
-						Multiplier = 12;
 						BossStage = 0;
 						break;
 
@@ -1719,7 +1717,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			ApplyText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset - Camera.x, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset - Camera.y, std::to_string(CURRENTENEMY.Damage), Small, Red);
 			CURRENTENEMY.DamageFrames--;
 
-			if (CURRENTENEMY.DamageFrames == 0)
+			if (CURRENTENEMY.Damage == 0)
 			{
 				FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset, std::to_string(CURRENTENEMY.Damage), Red);
 				CURRENTENEMY.Damage = 0;
@@ -1730,7 +1728,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		{
 			if (CURRENTENEMY.Health <= -60) CURRENTENEMY.Gib();
 
-			FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY - 30, std::to_string(CURRENTENEMY.Damage), Red);
+			if (CURRENTENEMY.Damage != 0) FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY - 30, std::to_string(CURRENTENEMY.Damage), Red);
 
 			if (CURRENTENEMY.Type != 5 && CURRENTENEMY.Type != 6)
 			{
