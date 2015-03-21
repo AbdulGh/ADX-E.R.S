@@ -31,7 +31,8 @@ int TopBounces = 1;
 int TypeDelay = 0;
 int BlockHeight = 0;
 int ScreenAlpha = 0;
-int ScreenDirection = 4;
+int ScreenDirection = 8;
+int LoopingChannel = -50;
 
 float LaserSpeed = 2.4;
 float BoxXVel = 1, BoxYVel = 1;
@@ -106,6 +107,7 @@ void DeathScreen()
 {
 	SpareTimer.start();
 	Mix_HaltMusic();
+	if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
 	while (SpareTimer.get_ticks() < 5000)
 	{
 		ApplySurface(0, 0, ScreenShot, Screen);
@@ -289,13 +291,13 @@ void DoThings()
 void HandleEvents()
 {
 	SDL_PumpEvents();
-	while(SDL_PollEvent(&event))
+	while(SDL_PollEvent(&event) && Character.NormalMovement)
 	{
 		if (event.type == SDL_KEYDOWN)
 		{
 			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true;}
-			else if (event.key.keysym.sym == SDLK_e) SwapWeapons(true);
-			else if (event.key.keysym.sym == SDLK_q) SwapWeapons(false);
+			else if (event.key.keysym.sym == SDLK_e && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(true);
+			else if (event.key.keysym.sym == SDLK_q && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(false);
 			else if (event.key.keysym.sym == SDLK_TAB)
 			{
 				DebugBool = !DebugBool;
@@ -372,6 +374,7 @@ void HandleEvents()
 			else
 			{
 				Ammo[3]-=1;
+				if (LoopingChannel == -50) LoopingChannel = Mix_PlayChannel(-1, FlamethrowerSFX, -1);
 				for (int e = 0; e < 3; e++)
 				{
 					Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x + (rand() % 16) - 8, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y) + (rand() % 16) - 8;
@@ -440,6 +443,7 @@ void HandleEvents()
 			else
 			{
 				Ammo[7]--;
+				Mix_PlayChannel(-1, Pistol, 0);
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y);
 				GetXYRatio(&XRatio, &YRatio, Angle, 30);
 				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 6);
@@ -451,10 +455,11 @@ void HandleEvents()
 			if (Ammo[8] == 0) Mix_PlayChannel(-1, Empty, 0);
 			else
 			{
+				if (LoopingChannel == -50) LoopingChannel = Mix_PlayChannel(-1, MinigunSFX, -1);
 				Ammo[8]--;
 				Shake = true;
-				Mag = 5;
-				Dur = 5;
+				Mag = 6;
+				Dur = 2;
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y) + (rand() % 6 - 3);
 				GetXYRatio(&XRatio, &YRatio, Angle, 20);
 				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 1);
@@ -463,15 +468,22 @@ void HandleEvents()
 			break;
 		}
 	}
+
+	else if (LoopingChannel != -50 && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT)))
+	{
+		Mix_HaltChannel(LoopingChannel);
+		LoopingChannel = -50;
+		if (CurrentSelection == 9) Mix_PlayChannel(-1, MinigunSpindown, 0);
+	}
 }
 
 void NextLevel(int SpawnX, int SpawnY, std::string Level, const char *Text = NULL)
 {
 	ScreenAlpha = 1;
+
 	while (ScreenAlpha < 250)
 	{
 		DoThings();
-		DebugWindow(std::to_string(ScreenAlpha));
 		SDL_Delay(10);
 	}
 	
@@ -534,7 +546,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	goto Here; //Only used for debugging purposes I promise
+	goto Jump; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -598,7 +610,7 @@ void Game()
 
 				Enemy Temp(850,1000,13);
 
-				Temp.Health = 5000;
+				Temp.Health = 5500;
 				Temp.CollisionRect.w = 300;
 				Temp.CollisionRect.h = 300;
 				Temp.Frame = 0;
@@ -613,7 +625,7 @@ void Game()
 
 				Boss = true;
 				BossName = "W.A.R DEN";
-				Multiplier = (float)(ScreenWidth-50)/5000;
+				Multiplier = (float)(ScreenWidth-50)/5500;
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
 			}
@@ -683,7 +695,6 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-Here:
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
 	NextLevel(1000, 1950, "Resources/Levels/2");
 	float Vel = 0.01;
@@ -1266,9 +1277,11 @@ Here:
 				LevelProgress = 4;
 			}
 			break;
+
 		case 4:
 			if (Enemies == 0)
 			{
+				if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
 				bool CutsceneFinished = false;
 				int Stage = 0;
 				int Integer = 0;
@@ -1513,7 +1526,7 @@ Here:
 			break;
 
 		case 7:
-			if (Character.WorldY <= 50 && InBetween(Temp1 - 50, Character.WorldX, Temp2 + 150))
+			if (Character.WorldY <= 50 && InBetween(Temp1 -	100, Character.WorldX, Temp1 + 100))
 			{
 				Temp1 = Character.WorldX;
 				LevelFinished = true;
@@ -1523,7 +1536,20 @@ Here:
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-	NextLevel(Temp1, 50, "Resources/Levels/2");
+	LoadLevel("Resources/Levels/2");
+	Character.Lives += 3;
+	Character.Health = 100;
+	XSpawn = Temp1;
+	YSpawn = 30;
+	LevelProgress = 0;
+	LevelColour = 0x000000;
+	Camera.LevelHeight = LevelHeight;
+	Camera.LevelWidth = LevelWidth;
+	LevelFinished = false;
+	Laser = false;
+	Boss = false;
+	Enemies = 0;
+
 
 	while (!LevelFinished && State == GAME)
 	{
@@ -1805,6 +1831,7 @@ Here:
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
+Jump:
 	NextLevel(1000, 1000, "Resources/Levels/2");
 
 	while (!LevelFinished && State == GAME)
@@ -1817,34 +1844,52 @@ Here:
 		switch (LevelProgress)
 		{
 		case 0:
-			Pickup PICK;
-			PICK.Type = 4;
-			PICK.WorldX = 700;
-			PICK.WorldY = 500;
-
-			for (int j = 0; j <= 4; j++)
-			{
-				for (int p = 0; p < 5; p++)
-				{
-					PICK.WorldX += 100;
-					PickupVector.push_back(PICK);
-				}
-				PICK.WorldX = 700;
-				if (PICK.Type == 4) PICK.Type = 6;
-				else PICK.Type++;
-				PICK.WorldY += 100;
-			}
-
-			BossName = "Turrets:";
-			BossHealth = 40;
-			Multiplier = (float)(ScreenWidth - 50) / 40;
-			Boss = true;
-			Temp2 = 0;
+			SpawnVector.clear();
+			SpawnVector.push_back(30);
+			SpawnVector.push_back(30);
+			SpawnVector.push_back(3);
+			SpawnEnemies(SpawnVector);
 			LevelProgress = 1;
 
 		case 1:
+			if (Enemies == 0)
+			{
+				if (Character.WorldX - 400 < 20) Temp1 = 20;
+				else Temp1 = Character.WorldX - 400;
+
+				if (Character.WorldY - 400 < 20) Temp2 = 20;
+				else Temp2 = Character.WorldY - 400;
+				
+				Pickup PICK;
+				PICK.Type = 4;
+				PICK.WorldX = Temp1;
+				PICK.WorldY = Temp2;
+
+				for (int j = 0; j <= 4; j++)
+				{
+					for (int p = 0; p < 5; p++)
+					{
+						PICK.WorldX += 100;
+						PickupVector.push_back(PICK);
+					}
+					PICK.WorldX = Temp1;
+					if (PICK.Type == 4) PICK.Type = 6;
+					else PICK.Type++;
+					PICK.WorldY += 100;
+				}
+
+				BossName = "Turrets:";
+				BossHealth = 1;
+				Multiplier = (float)(ScreenWidth - 50) / 40;
+				Boss = true;
+				Temp2 = 0;
+				LevelProgress = 2;
+			}
+			break;
+
+		case 2:
 			Temp2++;
-			if (Temp2 == 250 && BossHealth > 0)
+			if (Temp2 == 200 && BossHealth > 0)
 			{
 				BossHealth--;
 				Temp2 = 0;
@@ -1860,6 +1905,13 @@ Here:
 					SpawnVector.push_back(15);
 				}
 
+				if (BossHealth < 10)
+				{
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(rand() % 1900 + 20);
+					SpawnVector.push_back(1);
+				}
+
 				if (BossHealth < 5)
 				{
 					SpawnVector.push_back(rand() % 1900 + 20);
@@ -1871,16 +1923,29 @@ Here:
 				SpawnVector.clear();
 			}
 
-			else if (BossHealth <= 0 && Enemies == 0)
+			else if (BossHealth <= 0)
 			{
-				LevelProgress = 2;
+				LevelProgress = 3;
 				Boss = false;
-				CreateAsteroid((1 - (int)Character.WorldX / 1000) * 1000, (1 - (int)Character.WorldY % 1000) * 1000, 400, 5, 5);
 			}
 			break;
 
-		case 2:
+		case 3:
+			if (Enemies == 0)
+			{
+				CreateAsteroid((1 - (int)Character.WorldX / 1000) * 1000, (1 - (int)Character.WorldY % 1000) * 1000, 400, 5, 5);
+				LevelProgress = 4;
+			}
+			break;
+
+		case 4:
 			if (AsteroidVector.size() == 0) LevelFinished = true;
+			else
+			{
+				SpareStream.str("");
+				SpareStream << AsteroidVector.at(0).AsteroidRect.x << " " << AsteroidVector.at(0).AsteroidRect.y;
+				DebugWindow(SpareStream.str().c_str());
+			}
 			break;
 		};
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());

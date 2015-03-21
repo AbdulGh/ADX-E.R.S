@@ -110,6 +110,7 @@ extern std::vector<Tile> LevelVector;
 extern std::vector<SDL_Rect> RectVector;
 extern std::vector<Projectile> ProjectileVector;
 extern std::vector <int> SpawnVector;
+extern std::vector <Mix_Chunk*> MetalSounds;
 
 extern std::stringstream SpareStream;
 
@@ -125,7 +126,6 @@ extern TTF_Font *SmallSmall;
 
 extern Mix_Music *BossTheme;
 
-extern Mix_Chunk *Metal;
 extern Mix_Chunk *ShotgunFire;
 extern Mix_Chunk *ShotgunPump;
 extern Mix_Chunk *MachineGunFire;
@@ -134,6 +134,9 @@ extern Mix_Chunk *Empty;
 extern Mix_Chunk *SmashDeath;
 extern Mix_Chunk *Impact;
 extern Mix_Chunk *Step;
+extern Mix_Chunk *MinigunSFX;
+extern Mix_Chunk *MinigunSpindown;
+extern Mix_Chunk *FlamethrowerSFX;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
 extern Gamestate State;

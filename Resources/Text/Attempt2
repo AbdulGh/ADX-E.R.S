@@ -1,7 +1,7 @@
 \0
 root@ADXERS~:;
-/3000
 \80
+/30
 ls;
 \0
 ;
@@ -9,33 +9,32 @@ bin boot dev etc lib media;
 sbin mnt tmp usr var;
 ;
 root@ADXERS~:;
-/4000
 \75
+/35
 ls -A;
 \0
 ;
 bin boot dev etc lib media;
 sbin mnt tmp usr var .PleaseStayOut;
-; 
+;
 root@ADXERS~:;
-/3000
 \85
+/20
 cd /.PleaseStayOut;
 \0
 ;
 root@ADXERS~:;
-/2000
 \70
+/20
 ls -A;
 \0
 ;
 BankDetails Directives Passwords BiologyHwk;
 ;
 root@ADXERS~:;
-/2500
 \95
+/30
 cat /dev/urandom > Directives;
 \0
 ;
 root@ADXERS~:;
-/2500

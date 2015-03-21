@@ -42,6 +42,7 @@ std::vector<Tile> LevelVector;
 std::vector<Projectile> ProjectileVector;
 std::vector<SDL_Rect> RectVector;
 std::vector <int> SpawnVector;
+std::vector <Mix_Chunk*> MetalSounds;
 
 std::stringstream SpareStream;
 
@@ -108,8 +109,10 @@ Mix_Chunk *Pistol = NULL;
 Mix_Chunk *Empty = NULL;
 Mix_Chunk *SmashDeath = NULL;
 Mix_Chunk *Impact = NULL;
-Mix_Chunk *Metal = NULL;
 Mix_Chunk *Step = NULL;
+Mix_Chunk *FlamethrowerSFX = NULL;
+Mix_Chunk *MinigunSFX = NULL;
+Mix_Chunk *MinigunSpindown = NULL;
 
 Mix_Music *BossTheme = NULL;
 
@@ -281,7 +284,16 @@ bool Load()
 	SmashDeath = Mix_LoadWAV("Resources/Sounds/Other/SmashDeath.wav");
 	Impact = Mix_LoadWAV("Resources/Sounds/Other/Impact.ogg");
 	Step = Mix_LoadWAV("Resources/Sounds/Other/Step1.ogg");
-	Metal = Mix_LoadWAV("Resources/Sounds/Weapons/Metal1.ogg");
+	MinigunSFX = Mix_LoadWAV("Resources/Sounds/Weapons/MinigunLoop.ogg");
+	MinigunSpindown = Mix_LoadWAV("Resources/Sounds/Weapons/MinigunSpindown.ogg");
+	FlamethrowerSFX = Mix_LoadWAV("Resources/Sounds/Weapons/Flamethrower.ogg");
+
+	for (int i = 1; i <= 23; i++)
+	{
+		SpareStream.str("");
+		SpareStream << "Resources/Sounds/Weapons/Metal" << i << ".ogg";
+		MetalSounds.push_back(Mix_LoadWAV(SpareStream.str().c_str()));
+	}
 
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");
 

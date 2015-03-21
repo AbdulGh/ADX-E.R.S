@@ -85,6 +85,12 @@ void Enemy::Gib()
 	case 13:
 		Sprite = Warden;
 		break;
+	case 14:
+		Sprite = Warkid;
+		break;
+	case 15:
+		Sprite = Turret;
+		break;
 	}
 
 	SDL_Rect Part;
@@ -379,11 +385,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					if (ProjectileVector.at(x).Type != 3 && ProjectileVector.at(x).Type != 4)
 					{
-						Mix_PlayChannel(-1, Metal, 0);
-						SpareStream.str("");
-						SpareStream << "Resources/Sounds/Weapons/Metal" << rand() % 23 + 1 << ".ogg";
-						Mix_FreeChunk(Metal);
-						Metal = Mix_LoadWAV(SpareStream.str().c_str());
+						Mix_PlayChannel(-1, MetalSounds.at(rand() % 23), 0);
 					}
 
 					if (ProjectileVector.at(x).Type == 5 || ProjectileVector.at(x).Type == 6)
@@ -458,7 +460,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 4: //SIS Boss
-						Temp.Health = 1000;
+						Temp.Health = 1500;
 						Temp.Speed = 5;
 						Temp.CollisionRect.w = 50;
 						Temp.CollisionRect.h = 20;
@@ -530,7 +532,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 13: //Warden;
-						Temp.Health = 5000;
+						Temp.Health = 5500;
 						Temp.CollisionRect.w = 300;
 						Temp.CollisionRect.h = 300;
 
@@ -553,7 +555,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						break;
 
 					case 15: //Turret
-						Temp.Health = 200;
+						Temp.Health = 250;
 						Temp.CollisionRect.w = 30;
 						Temp.CollisionRect.h = 30;
 						Temp.Moving = false;
@@ -1581,7 +1583,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 			}
 
-			if (CURRENTENEMY.Health == 4500)
+			if (CURRENTENEMY.Health == 5000)
 			{
 				Mix_PlayMusic(BossTheme, -1);
 				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat3.ogg");
@@ -1593,7 +1595,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Health -= 20;
 			}
 
-			else if (CURRENTENEMY.Health == 3200)
+			else if (CURRENTENEMY.Health == 3700)
 			{
 				Mix_PlayMusic(BossTheme, -1);
 				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat4.ogg");
@@ -1605,7 +1607,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Health -= 20;
 			}
 
-			else if (CURRENTENEMY.Health == 2000)
+			else if (CURRENTENEMY.Health == 2500)
 			{
 				Mix_PlayMusic(BossTheme, -1);
 
@@ -1617,7 +1619,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				CURRENTENEMY.Health -= 20;
 			}
 
-			else if (CURRENTENEMY.Health == 500)
+			else if (CURRENTENEMY.Health == 700)
 			{
 				Shake = true;
 				Mag = 20;
@@ -1638,16 +1640,16 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				if (rand() % 110 <= 1) CURRENTENEMY.Frametime *= -1;
 				if (CURRENTENEMY.ShotCounter > 120 && CURRENTENEMY.ShotCounter % 2 == 0) AngleOffset += 0.5 * CURRENTENEMY.Frametime;
 
-				if (CURRENTENEMY.Health < 4500 && CURRENTENEMY.ShotCounter % 50 == 0) CURRENTENEMY.Shoot(10, 1);
+				if (CURRENTENEMY.Health < 5000 && CURRENTENEMY.ShotCounter % 50 == 0) CURRENTENEMY.Shoot(10, 1);
 
-				if (CURRENTENEMY.Health < 3200 && CURRENTENEMY.ShotCounter % 60 == 0)
+				if (CURRENTENEMY.Health < 3700 && CURRENTENEMY.ShotCounter % 60 == 0)
 				{
 					for (int s = 0; s < 3; s++) CURRENTENEMY.Shoot(9, rand() % 360);
 				}
 
-				if (CURRENTENEMY.Health < 2000 && CURRENTENEMY.ShotCounter % 15 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
+				if (CURRENTENEMY.Health < 2500 && CURRENTENEMY.ShotCounter % 15 == 0) CURRENTENEMY.Shoot(3, rand() % 360);
 
-				if (CURRENTENEMY.Health < 500 && CURRENTENEMY.ShotCounter % 50 == 0)
+				if (CURRENTENEMY.Health < 700 && CURRENTENEMY.ShotCounter % 50 == 0)
 				{
 					int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, PlayerX, PlayerY);
 					for (int u = -45; u <= 45; u += 45)
@@ -1691,18 +1693,17 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 		case 15: //Turret
 			CURRENTENEMY.ShotCounter++;
 
-			if (CURRENTENEMY.ShotCounter % 50 == 0)
+			if (CURRENTENEMY.ShotCounter % 90 == 0)
 			{
-				int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, PlayerX, PlayerY);
-				for (int u = -45; u <= 45; u += 45)
+				for (int u = 0; u < 360; u += 90)
 				{
-					CURRENTENEMY.Shoot(3, Angle + u);
+					CURRENTENEMY.Shoot(3, u);
 				}
 
-				if (CURRENTENEMY.ShotCounter == 150)
+				if (CURRENTENEMY.ShotCounter == 270)
 					for (int p = 0; p <= 10; p++) CURRENTENEMY.Shoot(8, rand() % 360);
 
-				else if (CURRENTENEMY.ShotCounter == 300)
+				else if (CURRENTENEMY.ShotCounter == 900)
 				{
 					CURRENTENEMY.BulletPattern(5);
 					CURRENTENEMY.ShotCounter = 0;
@@ -1786,6 +1787,15 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					pukciP.WorldX = CURRENTENEMY.WorldX;
 					pukciP.WorldY = CURRENTENEMY.WorldY;
 					pukciP.Type = 4;
+					PickupVector.push_back(pukciP);
+				}
+
+				else if (tni > 60 && CURRENTENEMY.Type == 15)
+				{
+					Pickup pukciP;
+					pukciP.WorldX = CURRENTENEMY.WorldX;
+					pukciP.WorldY = CURRENTENEMY.WorldY;
+					pukciP.Type = 7;
 					PickupVector.push_back(pukciP);
 				}
 
