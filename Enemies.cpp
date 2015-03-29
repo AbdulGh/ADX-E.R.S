@@ -559,6 +559,20 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.w = 30;
 						Temp.CollisionRect.h = 30;
 						Temp.Moving = false;
+						break;
+
+					case 16: //Rush warden
+						Temp.Health = 3000;
+						Temp.CollisionRect.w = 300;
+						Temp.CollisionRect.h = 300;
+
+						Temp.Frametime = 1;
+
+						Boss = true;
+						BossName = "W.A.R DEN:";
+						Multiplier = Temp.Health / (ScreenWidth + 50);
+						Temp.Moving = false;
+						break;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -1569,7 +1583,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 		case 13: //WARDEN
 			BossHealth = CURRENTENEMY.Health;
-
 			CURRENTENEMY.ShotCounter++;
 
 			if (CURRENTENEMY.ShotCounter == 1)
@@ -1711,6 +1724,58 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			}
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Turret, Screen);
 			break;
+
+		case 16: //Rush warden
+			BossHealth = CURRENTENEMY.Health;
+
+			CURRENTENEMY.ShotCounter++;
+
+			if (CURRENTENEMY.ShotCounter > 120)
+			{
+				AngleOffset += 0.4;
+
+				if (CURRENTENEMY.ShotCounter == 220)
+				{
+					for (int d = 0; d <= 4; d++) CURRENTENEMY.Shoot(9, rand() % 360);
+				}
+
+				else if (CURRENTENEMY.ShotCounter == 320)
+				{
+					int f = rand() % 360;
+					for (int d = 0; d <= 270; d += 90) CURRENTENEMY.Shoot(10, f + d);
+				}
+
+				else if (CURRENTENEMY.ShotCounter == 420)
+				{
+					CURRENTENEMY.ShotCounter = 120;
+					EnemyProjectile Big(4);
+					Big.CollisionRect.w = 60;
+					Big.CollisionRect.h = 60;
+					Big.XVel = 0;
+					Big.YVel = 4;
+					Big.WorldY = 21;
+					Big.Damage = 100;
+
+					for (int f = 31; f <= LevelWidth - 81; f += 150)
+					{
+						Big.WorldX = f;
+						EnemyProjectileVector.push_back(Big);
+					}
+				}
+			}
+
+			else if (CURRENTENEMY.ShotCounter == 1)
+			{
+				WardenFlag = 1;
+				for (float o = 0; o < 6.28; o += 1.26)
+				{
+					for (int p = 100; p <= 1400; p += 70)
+					{
+						CURRENTENEMY.Shoot(11, OrbitX - 20 + p * cos(o), OrbitY - 20 + p * sin(o));
+					}
+				}
+			}
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Warden, Screen);
 		};
 
 		if (CURRENTENEMY.DamageFrames != 0)

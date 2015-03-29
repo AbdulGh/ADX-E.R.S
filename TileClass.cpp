@@ -10,6 +10,11 @@ bool Tile::IsOnScreen(int CameraX, int CameraY)
 	return !(WorldX > CameraX + SWidth || WorldX + Width < CameraX || WorldY > CameraY + SHeight || WorldY + Height < CameraY);
 }
 
+bool Tile::operator==(const Tile& rhs)
+{
+	return Height == rhs.Height && Width == rhs.Width && WorldY == rhs.WorldY && WorldX == rhs.WorldX;
+}
+
 SDL_Rect Tile::ScreenRect(int CameraX, int CameraY)
 {
 	int TempX = WorldX;

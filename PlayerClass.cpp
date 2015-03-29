@@ -109,25 +109,28 @@ void Player::Update()
 		if (abs(XVel) < 0.1) XVel = 0;
 		if (abs(YVel) < 0.1) YVel = 0;
 
-		PlayerRect.x = WorldX + XVel - (Camera.x + 1);
-		PlayerRect.y = WorldY + YVel - (Camera.y + 1);
-		PlayerRect.w = CurrentSprite->w + 1;
-		PlayerRect.h = CurrentSprite->h + 1;
+		PlayerRect.w = CurrentSprite->w;
+		PlayerRect.h = CurrentSprite->h;
 
 		for (int i = 0; i < RectVector.size(); i++)
 		{
-			if (IsIntersecting(PlayerRect, CURRENTRECT))
+			PlayerRect.x = WorldX + XVel - Camera.x;
+			PlayerRect.y = WorldY + YVel - Camera.y;
+
+			if (IsIntersecting(CURRENTRECT, PlayerRect))
 			{
 				PlayerRect.x -= XVel;
-				
-				if (!IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1.1;
-
+				if (!IsIntersecting(CURRENTRECT, PlayerRect)) XVel = -XVel/2;
 				else
 				{
 					PlayerRect.x += XVel;
 					PlayerRect.y -= YVel;
-					YVel *= -1.1;
-					if (IsIntersecting(PlayerRect, CURRENTRECT)) XVel *= -1.1;
+					YVel = -YVel/2;
+					if (IsIntersecting(CURRENTRECT, PlayerRect))
+					{
+						PlayerRect.x -= XVel;
+						XVel = -XVel/2;
+					}
 				}
 			}
 		}

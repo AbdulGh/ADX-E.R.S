@@ -14,6 +14,8 @@ public:
 	bool IsIntersecting(int x, int y, int w, int h);
 	bool IsOnScreen(int CameraX, int CameraY);
 
+	bool operator==(const Tile& rhs);
+
 	SDL_Rect ScreenRect(int CameraX, int CameraY);
 };
 

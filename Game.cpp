@@ -1831,7 +1831,6 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
 
-Jump:
 	NextLevel(1000, 1000, "Resources/Levels/2");
 
 	while (!LevelFinished && State == GAME)
@@ -1948,6 +1947,89 @@ Jump:
 			}
 			break;
 		};
+		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
+	}
+
+Jump:
+	NextLevel(1850, 3400, "Resources/Levels/1");
+
+	while (!LevelFinished && State == GAME)
+	{
+		FPSTimer.start();
+		DoThings();
+		HandleEvents();
+
+		switch (LevelProgress)
+		{
+		case 0:
+			AddObject(850, 1000, Warden);
+			AddObject(1750, 3400, PlayerNormal);
+			AddObject(1250, 3350, PlayerNormal);
+			AddObject(60, 3410, PlayerNormal);
+			AddObject(1090, 2530, RIP);
+			AddObject(250, 2550, PlayerNormal);
+			Camera.LevelHeight = LevelHeight;
+			LevelProgress = 1;
+			FrameCount = 0;
+			break;
+
+		case 1:
+			if (Character.WorldY < 1650)
+			{
+				LevelProgress = 2;
+				Laser = true;
+				LaserSpeed = 0;
+				LaserY = 2010;
+
+				Camera.TargetX = 0;
+				Camera.TargetY = 700;
+
+				Update = false;
+				Camera.LevelHeight = 2020;
+				Character.NormalMovement = false;
+			}
+			break;
+
+		case 2:
+			FrameCount++;
+
+			if (FrameCount % 70 == 0)
+			{
+				CreateDebris(6, 6, 850 + (rand() % 2) * 300, 1000 + (rand() % 2) * 300, rand() % 20 - 10, rand() % 20 - 10, 0xFFFFFF);
+				Shake = true;
+				Mag = 10;
+				Dur = 20;
+				Mix_PlayChannel(-1, Impact, 0);
+			}
+
+			if (FrameCount == 270)
+			{
+				Update = true;
+				LevelProgress = 3;
+
+				Enemy Temp(850, 1000, 16);
+
+				Temp.Health = 3000;
+				Temp.CollisionRect.w = 300;
+				Temp.CollisionRect.h = 300;
+				Temp.Frame = 0;
+				Temp.Frametime = 1;
+				AngleOffset = 0;
+
+				Temp.Moving = false;
+				Character.NormalMovement = true;
+
+				Boss = true;
+				BossName = "W.A.R DEN";
+				Multiplier = (float)(ScreenWidth - 50) / 3000;
+				EnemyVector.push_back(Temp);
+				ObjectVector.erase(ObjectVector.begin());
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat4.ogg");
+				Mix_PlayMusic(BossTheme, -1);
+			}
+			break;
+		}
+
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 	}
 

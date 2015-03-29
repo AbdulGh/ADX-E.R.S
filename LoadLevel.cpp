@@ -20,14 +20,15 @@ bool LoadLevel(std::string Filename)
 	int TempW;
 	int TempH;
 
-	while(!Input.eof())
+	while (!(Input.peek(), Input.eof()))
 	{
 		Input >> TempX;
 		Input >> TempY;
 		Input >> TempW;
 		Input >> TempH;
 
-		CreateTile(TempX,TempY,TempW,TempH);
+		if (LevelVector.size() < 2 || !(LevelVector.at(LevelVector.size() - 1) == LevelVector.at(LevelVector.size() - 2)))
+			CreateTile(TempX, TempY, TempW, TempH);
 	}
 	return true;
 }

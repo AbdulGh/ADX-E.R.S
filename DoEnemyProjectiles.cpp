@@ -6,6 +6,7 @@
 #include<math.h>
 
 std::vector <EnemyProjectile> EnemyProjectileVector;
+int WardenFlag = 0;
 
 void ClearProjectiles()
 {
@@ -416,8 +417,8 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 		else if (CURRENTENEMYPROJECTILE.Type == 12)
 		{
-			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180))) - 20;
-			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + AngleOffset) * (3.141 / 180))) - 20;
+			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + CURRENTENEMYPROJECTILE.Frame * AngleOffset) * (3.141 / 180))) - 20;
+			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + CURRENTENEMYPROJECTILE.Frame * AngleOffset) * (3.141 / 180))) - 20;
 		}
 
 		else
@@ -506,6 +507,15 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			Flower.WorldX -= 20;
 			Flower.WorldY -= 20;
 			Temp2 = 0;
+
+			if (WardenFlag != 0)
+			{
+				WardenFlag *= -1;
+				Flower.Frame = WardenFlag;
+			}
+
+			else Flower.Frame = 1;
+
 			EnemyProjectileVector.push_back(Flower);
 		}
 
