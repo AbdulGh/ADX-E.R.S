@@ -52,6 +52,7 @@ Player Character;
 
 SDL_Rect CharacterRect;
 SDL_Rect HealthRect;
+SDL_Rect DeathRect;
 
 SDL_Surface *ScreenShot;
 
@@ -113,12 +114,12 @@ void DeathScreen()
 		ApplySurface(0, 0, ScreenShot, Screen);
 		DoDebris(Camera.x, Camera.y, Screen);
 		
-		ApplyTextCentered("Lives:", SysSmall, Green, NULL, NULL, 0, -50);
+		ApplyTextCentered("Lives:", SysSmall, Green, NULL, NULL, 0, -100);
 
 		SpareStream.str("");
 		SpareStream << Character.Lives;
 
-		SDL_Surface *Zoomed = rotozoomSurface(TTF_RenderText_Solid(Start, SpareStream.str().c_str(), Green), 0, Zoom, 0);
+		SDL_Surface *Zoomed = rotozoomSurface(TTF_RenderText_Solid(StartBig, SpareStream.str().c_str(), Green), 0, Zoom, 0);
 		ApplySurface((ScreenWidth - Zoomed->w) / 2, (ScreenHeight - Zoomed->h) / 2, Zoomed, Screen);
 		SDL_FreeSurface(Zoomed);
 
@@ -154,7 +155,6 @@ void DoThings()
 	Camera.Update();
 
 	CheckShake();
-	DoMouse(&x,&y);
 	DoDebris(Camera.x,Camera.y,Screen);
 	Character.Update();
 	CharacterRect.x = Character.WorldX - Camera.x;
@@ -186,6 +186,36 @@ void DoThings()
 	if (CurrentSelection == 1) SpareStream << "Mining Laser: Infinite";
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
 	ApplyText(550, ScreenHeight - 30, SpareStream.str(), SysSmall, Green);
+
+	if (DeathRect.x != 0)
+	{
+		SDL_Rect LaserRect;
+
+		LaserRect.w = 3;
+		LaserRect.h = ScreenHeight;
+		LaserRect.y = 0;
+
+		LaserRect.x = DeathRect.x - Camera.x - 4;
+		SDL_FillRect(Screen, &LaserRect, 0xFF0000);
+		LaserRect.x = DeathRect.x + DeathRect.w - Camera.x;
+		SDL_FillRect(Screen, &LaserRect, 0xFF0000);
+
+		LaserRect.h = 3;
+		LaserRect.w = ScreenWidth;
+		LaserRect.x = 0;
+
+		LaserRect.y = DeathRect.y - Camera.y - 4;
+		SDL_FillRect(Screen, &LaserRect, 0xFF0000);
+		LaserRect.y = DeathRect.y + DeathRect.h - Camera.y;
+		SDL_FillRect(Screen, &LaserRect, 0xFF0000);
+
+		if (!IsIntersecting(Character.PlayerRect, DeathRect))
+		{
+			Invincible = false;
+			Damaged = true;
+			DamageDealt = 1000;
+		}
+	}
 
 	if (BlockHeight != 0)
 	{
@@ -250,6 +280,7 @@ void DoThings()
 		SDL_Delay(500);
 		Character.Render = false;
 		Boss = false;
+		DeathRect.x = 0;
 		Laser = false;
 		DamageDealt = 0;
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
@@ -283,7 +314,7 @@ void DoThings()
 		EnemyProjectileVector.clear();
 		Enemies = 0;
 	}
-
+	DoMouse(&x, &y);
 	CheckScreenFade();
 	SDL_Flip(Screen);
 }
@@ -525,6 +556,11 @@ void Game()
 
 	Character.CurrentSprite = PlayerNormal;
 
+	DeathRect.x = 0;
+	DeathRect.y = 0;
+	DeathRect.w = 300;
+	DeathRect.h = 300;
+
 	int Weapons = 0;
 	Timer FPSTimer;
 	CharacterRect.w = Character.CurrentSprite->w;
@@ -624,8 +660,8 @@ void Game()
 				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat2.ogg");
 
 				Boss = true;
-				BossName = "W.A.R DEN";
-				Multiplier = (float)(ScreenWidth-50)/5500;
+				BossName = "W.A.R DEN:";
+				Multiplier = (float)(ScreenWidth-50)/Temp.Health;
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
 			}
@@ -853,7 +889,6 @@ void Game()
 
 		case 6:
 			Number++;
-			if (Number == 2147483646) Number = 0;
 			if (Number % 30 == 0)
 			{
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
@@ -1282,7 +1317,7 @@ void Game()
 			if (Enemies == 0)
 			{
 				if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
-				bool CutsceneFinished = false;
+				CutsceneFinished = false;
 				int Stage = 0;
 				int Integer = 0;
 
@@ -1939,12 +1974,6 @@ void Game()
 
 		case 4:
 			if (AsteroidVector.size() == 0) LevelFinished = true;
-			else
-			{
-				SpareStream.str("");
-				SpareStream << AsteroidVector.at(0).AsteroidRect.x << " " << AsteroidVector.at(0).AsteroidRect.y;
-				DebugWindow(SpareStream.str().c_str());
-			}
 			break;
 		};
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
@@ -1962,6 +1991,8 @@ Jump:
 		switch (LevelProgress)
 		{
 		case 0:
+			ObjectVector.clear();
+			for (int p = 1; p <= WEAPONS - 1; p++) Ammo[p] = 0;
 			AddObject(850, 1000, Warden);
 			AddObject(1750, 3400, PlayerNormal);
 			AddObject(1250, 3350, PlayerNormal);
@@ -1974,7 +2005,7 @@ Jump:
 			break;
 
 		case 1:
-			if (Character.WorldY < 1650)
+			if (Character.WorldY < 1750)
 			{
 				LevelProgress = 2;
 				Laser = true;
@@ -2016,18 +2047,219 @@ Jump:
 				Temp.Frametime = 1;
 				AngleOffset = 0;
 
+				DeathRect.w = 300;
+				DeathRect.h = 300;
+				DeathRect.x = Character.WorldX - 150;
+				DeathRect.y = Character.WorldY - 150;
+
 				Temp.Moving = false;
 				Character.NormalMovement = true;
 
 				Boss = true;
-				BossName = "W.A.R DEN";
-				Multiplier = (float)(ScreenWidth - 50) / 3000;
+				BossName = "W.A.R DEN:";
+				Multiplier = Temp.Health / (ScreenWidth + 200);
 				EnemyVector.push_back(Temp);
 				ObjectVector.erase(ObjectVector.begin());
-				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat4.ogg");
-				Mix_PlayMusic(BossTheme, -1);
 			}
 			break;
+
+		case 3:
+			if (!Boss)
+			{
+				LevelProgress = 4;
+				EnemyProjectileVector.clear();
+				
+				Mix_HaltMusic();
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
+				Mix_PlayMusic(BossTheme, -1);
+
+				DeathRect.x = 0;
+
+				Pickup PICK;
+				PICK.Type = 1;
+				PICK.WorldX = Temp1 - 100;
+				PICK.WorldY = Temp2 - 100;
+				PickupVector.push_back(PICK);
+
+				for (int q = 0; q < 2; q++)
+				{
+					for (int p = 0; p < 5; p++)
+					{
+						PICK.WorldX += 100;
+						PickupVector.push_back(PICK);
+					}
+					PICK.WorldY++;
+				}
+
+				SpawnVector.clear();
+				SpawnVector.push_back(Temp1);
+				SpawnVector.push_back(Temp2);
+				SpawnVector.push_back(17);
+				SpawnEnemies(SpawnVector);
+
+				Boss = true;
+				Number = 0;
+			}
+			break;
+
+		case 4:
+			Number++;
+			if (Number % 30 == 0)
+			{
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+				SpawnVector.push_back(50);
+				SpawnVector.push_back((rand() % Camera.LevelHeight - 50) + 50);
+				SpawnVector.push_back(6);
+				SpawnEnemies(SpawnVector);
+			}
+			
+			else if (Number % 40 == 0)
+			{
+				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+				SpawnVector.push_back(LevelWidth - 50);
+				SpawnVector.push_back((rand() % Camera.LevelHeight - 50) + 50);
+				SpawnVector.push_back(5);
+				SpawnEnemies(SpawnVector);
+			}
+
+			if (Boss == false) LevelProgress = 5;
+			break;
+
+		case 5:
+			for (int i = 0; i < EnemyVector.size(); i++)
+			{
+				EnemyVector.at(i).Health = 0;
+			}
+
+			CutsceneFinished = false;
+			//Character.NormalMovement = false;
+			Update = false;
+			int Stage = 0;
+			int Integer = 0;
+
+			SDL_Rect *RenderRect = &TeleportClips[0];
+			SDL_Rect One;
+			SDL_Rect Two;
+			SDL_Rect Three;
+			SDL_Rect Four;
+			SDL_Rect Five;
+
+			Camera.MoveViewport(1000 - ScreenWidth / 2, 1300 - ScreenHeight / 2);
+
+			while (!CutsceneFinished)
+			{
+				FPSTimer.start();
+				DoThings();
+				HandleEvents();
+
+				switch (Stage)
+				{
+				case 0:
+					Integer++;
+					ApplySurface(985 - Camera.x, 1302 - Camera.y, TeleportSheet, Screen, &TeleportClips[Integer % 2]);
+					if (Integer == 61) Stage = 1;
+					break;
+				case 1:
+					Update = false;
+
+					Integer = 0;
+
+					Five.x = 1000 - Camera.x;
+					Five.y = 1300 - Camera.y;
+					Five.w = 10;
+					Five.h = 10;
+
+					One.x = Five.x - 15;
+					One.y = Five.y - 2120;
+					One.w = 40;
+					One.h = 100;
+
+					Two.x = Five.x + 2030;
+					Two.y = Five.y - 15;
+					Two.w = 100;
+					Two.h = 40;
+
+					Three.x = One.x;
+					Three.y = Five.y + 2030;
+					Three.w = 40;
+					Three.h = 100;
+
+					Four.x = Five.x - 2120;
+					Four.y = Two.y;
+					Four.w = 100;
+					Four.h = 40;
+
+					Stage = 2;
+				case 2:
+					Integer++;
+
+					*RenderRect = One;
+					SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+					*RenderRect = Two;
+					SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+					*RenderRect = Three;
+					SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+					*RenderRect = Four;
+					SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+					*RenderRect = Five;
+					SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+
+
+					One.y += 10;
+					Two.x -= 10;
+					Three.y -= 10;
+					Four.x += 10;
+
+					if (Integer == 200)
+					{
+						CutsceneFinished = true;
+
+						Enemy RUSHMARS(985, 1180, 18);
+						RUSHMARS.Health = 5000;
+						RUSHMARS.CollisionRect.w = 40;
+						RUSHMARS.CollisionRect.h = 100;
+						EnemyVector.push_back(RUSHMARS);
+
+						Shake = true;
+						Dur = 45;
+						Mag = 20;
+						Update = true;
+						Character.NormalMovement = true;
+					}
+					break;
+				}
+				SDL_Flip(Screen);
+				ClearScreen();
+				if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
+			}
+
+			LevelProgress = 6;
+
+			BossName = "M.A.R.S:";
+			BossHealth = 5000;
+			Multiplier = (float)(ScreenWidth - 50) / BossHealth;
+			Boss = true;
+
+			pukciP.WorldX = Character.WorldX - 200;
+			pukciP.WorldY = Character.WorldY;
+			pukciP.Type = 3;
+			PickupVector.push_back(pukciP);
+
+			for (int i = 0; i < 5; i++)
+			{
+				pukciP.WorldX += 100;
+				PickupVector.push_back(pukciP);
+			}
+
+			pukciP.WorldY += 100;
+			pukciP.Type = 4;
+			pukciP.WorldX = Character.WorldX - 200;
+
+			for (int i = 0; i < 5; i++)
+			{
+				pukciP.WorldX += 100;
+				PickupVector.push_back(pukciP);
+			}
 		}
 
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());

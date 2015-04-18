@@ -63,7 +63,7 @@ void Player::Update()
 		}
 	}
 
-	if (NormalMovement == true)
+	if (NormalMovement == true && InBetween(Camera.x, WorldX, Camera.x + Camera.ScreenWidth) && InBetween(Camera.y, WorldY, Camera.y + Camera.ScreenHeight))
 	{
 		SDL_PumpEvents();
 		Uint8 *Memestates = SDL_GetKeyState(NULL);
@@ -138,14 +138,14 @@ void Player::Update()
 		WorldX += XVel;
 		WorldY += YVel;
 
-		StepTimer -= abs(XVel + YVel);
+		PlayerRect.x = WorldX;
+		PlayerRect.y = WorldY;
+
+		StepTimer -= abs(XVel) + abs(YVel);
 		if (StepTimer <= 0)
 		{
 			StepTimer = 240;
-			Mix_PlayChannel(-1, Step, 0);
-			SpareStream.str("");
-			SpareStream << "Resources/Sounds/Other/Step" << rand() % 4 + 1 << ".ogg";
-			Step = Mix_LoadWAV(SpareStream.str().c_str());
+			Mix_PlayChannel(-1, StepSounds.at(rand() % 3 + 1), 0);
 		}
 	}
 

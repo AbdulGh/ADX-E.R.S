@@ -38,11 +38,12 @@ int Ammo[WEAPONS] = {1,0,0,0,0,0,0,0,0};
 
 Uint32 LevelColour = 0xFF0000;
 
-std::vector<Tile> LevelVector;
-std::vector<Projectile> ProjectileVector;
-std::vector<SDL_Rect> RectVector;
+std::vector <Tile> LevelVector;
+std::vector <Projectile> ProjectileVector;
+std::vector <SDL_Rect> RectVector;
 std::vector <int> SpawnVector;
 std::vector <Mix_Chunk*> MetalSounds;
+std::vector <Mix_Chunk*> StepSounds;
 
 std::stringstream SpareStream;
 
@@ -293,6 +294,13 @@ bool Load()
 		SpareStream.str("");
 		SpareStream << "Resources/Sounds/Weapons/Metal" << i << ".ogg";
 		MetalSounds.push_back(Mix_LoadWAV(SpareStream.str().c_str()));
+	}
+
+	for (int i = 1; i <= 4; i++)
+	{
+		SpareStream.str("");
+		SpareStream << "Resources/Sounds/Other/Step" << rand() % 4 + 1 << ".ogg";
+		StepSounds.push_back(Mix_LoadWAV(SpareStream.str().c_str()));
 	}
 
 	BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat1.ogg");

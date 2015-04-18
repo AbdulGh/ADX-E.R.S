@@ -91,6 +91,9 @@ void Enemy::Gib()
 	case 15:
 		Sprite = Turret;
 		break;
+	case 16:
+		Sprite = Warden;
+		break;
 	}
 
 	SDL_Rect Part;
@@ -115,9 +118,9 @@ void Enemy::Gib()
 void Enemy::StayInLevel()
 {
 	if (WorldX < 20) WorldX = 20;
-	else if (WorldX + CollisionRect.w > LevelWidth - 20) WorldX = LevelWidth - (CollisionRect.w + 20);
+	else if (WorldX + CollisionRect.w > Camera.LevelWidth - 20) WorldX = Camera.LevelWidth - (CollisionRect.w + 20);
 	if (WorldY < 20) WorldY = 20;
-	else if (WorldY + CollisionRect.h > LevelHeight - 20) WorldY = LevelHeight - (CollisionRect.h + 20);
+	else if (WorldY + CollisionRect.h > Camera.LevelHeight - 20) WorldY = Camera.LevelHeight - (CollisionRect.h + 20);
 }
 
 bool Enemy::IsNotActive() const
@@ -182,6 +185,7 @@ void Enemy::BulletPattern(int Type)
 #define CURRENTPICKUPTYPE PickupVector.at(i).Type
 #define CURRENTPICKUPX PickupVector.at(i).WorldX
 #define CURRENTPICKUPY PickupVector.at(i).WorldY
+
 void DoPickups(int CameraX, int CameraY, SDL_Rect PlayerRect)
 {
 	if (PickupVector.size() != 0)
@@ -540,7 +544,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 						Boss = true;
 						BossName = "W.A.R DEN:";
-						Multiplier = Temp.Health / (ScreenWidth + 50);
+						Multiplier = Temp.Health / (ScreenWidth + 200);
 						Temp.Moving = false;
 						break;
 
@@ -567,11 +571,33 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.CollisionRect.h = 300;
 
 						Temp.Frametime = 1;
+						Temp.Moving = false;
+						break;
+
+					case 17: //Rush SIS
+						Temp.Health = 800;
+						Temp.CollisionRect.w = 50;
+						Temp.CollisionRect.h = 20;
+
+						Temp.Angle = Temp.WorldX;
+						Temp.Timer = Temp.WorldY;
 
 						Boss = true;
-						BossName = "W.A.R DEN:";
-						Multiplier = Temp.Health / (ScreenWidth + 50);
-						Temp.Moving = false;
+						BossName = "SIS:";
+						Multiplier = (float)Temp.Health / (ScreenWidth + 100);
+						DebugWindow(std::to_string(Multiplier));
+						break;
+
+					case 18: //Rush MARS
+						Temp.CollisionRect.w = 40;
+						Temp.CollisionRect.h = 100;
+						Temp.Health = 5000;
+						Boss = true;
+						BossStage = 0;
+						Boss = true;
+						BossName = "M.A.R.S:";
+						Multiplier = (float)Temp.Health / (ScreenWidth + 100);
+						DebugWindow(std::to_string(Multiplier));
 						break;
 					};
 					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
@@ -1722,6 +1748,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					CURRENTENEMY.ShotCounter = 0;
 				}
 			}
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect))
+			{
+				Damaged = true;
+				DamageDealt = 20;
+			}
+
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Turret, Screen);
 			break;
 
@@ -1730,19 +1763,19 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 			CURRENTENEMY.ShotCounter++;
 
-			if (CURRENTENEMY.ShotCounter > 120)
+			if (CURRENTENEMY.ShotCounter >= 120)
 			{
 				AngleOffset += 0.4;
 
 				if (CURRENTENEMY.ShotCounter == 220)
 				{
-					for (int d = 0; d <= 4; d++) CURRENTENEMY.Shoot(9, rand() % 360);
+					int f = rand() % 360;
+					for (int d = 0; d < 360; d += 120) CURRENTENEMY.Shoot(10, f + d);
 				}
 
 				else if (CURRENTENEMY.ShotCounter == 320)
 				{
-					int f = rand() % 360;
-					for (int d = 0; d <= 270; d += 90) CURRENTENEMY.Shoot(10, f + d);
+					for (int d = 0; d <= 5; d++) CURRENTENEMY.Shoot(9, rand() % 360);
 				}
 
 				else if (CURRENTENEMY.ShotCounter == 420)
@@ -1755,12 +1788,18 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Big.YVel = 4;
 					Big.WorldY = 21;
 					Big.Damage = 100;
-
-					for (int f = 31; f <= LevelWidth - 81; f += 150)
-					{
+						
+					for	(int f = 31; f <= LevelWidth - 81; f += 200)
+					{	
 						Big.WorldX = f;
 						EnemyProjectileVector.push_back(Big);
 					}
+				}
+
+				if (CURRENTENEMY.Health <= 10)
+				{
+					CURRENTENEMY.Gib();
+					Boss = false;
 				}
 			}
 
@@ -1775,7 +1814,191 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					}
 				}
 			}
+			
+			else if (CURRENTENEMY.ShotCounter == 119)
+			{
+				BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Beat4.ogg");
+				Mix_PlayMusic(BossTheme, -1);
+			}
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect))
+			{
+				Damaged = true;
+				DamageDealt = 100;
+			}
+
 			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, Warden, Screen);
+			break;
+
+		case 17: //Rush SIS 
+			BossHealth = CURRENTENEMY.Health;
+			CURRENTENEMY.ShotCounter++;
+			
+			if (CURRENTENEMY.ShotCounter % 20 == 0) CURRENTENEMY.Shoot(2, 0);
+
+			if (CURRENTENEMY.ShotCounter == 40)
+			{
+				int Distance = rand() % 400 + 200;
+				CURRENTENEMY.Angle = PlayerY + YVel * Distance / 10;
+				CURRENTENEMY.Timer = PlayerX - Distance;
+				CURRENTENEMY.ShotCounter = 0;
+			}
+
+			CURRENTENEMY.XVel = (CURRENTENEMY.Timer - CURRENTENEMY.WorldX) / 10;
+			CURRENTENEMY.YVel = (CURRENTENEMY.Angle - CURRENTENEMY.WorldY) / 10;
+
+			if (abs(CURRENTENEMY.Timer - CURRENTENEMY.WorldX) > 1) CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+			if (abs(CURRENTENEMY.Angle - CURRENTENEMY.WorldY) > 1) CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+			CURRENTENEMY.StayInLevel();
+
+			CURRENTENEMY.Frametime++;
+
+			if (CURRENTENEMY.Frametime > 10)
+			{
+				CURRENTENEMY.Frame++;
+				CURRENTENEMY.Frametime = 0;
+				if (CURRENTENEMY.Frame > 2) CURRENTENEMY.Frame = 0;
+			}
+
+			if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect))
+			{
+				Damaged = true;
+				DamageDealt = 20;
+			}
+
+			ApplyThis = Ship;
+			ApplyThis->w = 50;
+			ApplyThis->h = 20;
+			ApplySurface(0, 0, Ship, ApplyThis, &ShipFrames[CURRENTENEMY.Frame]);
+			ApplyThis = rotozoomSurface(ApplyThis, CURRENTENEMY.YVel / 2, 1, 0);
+			ApplySurface(CURRENTENEMY.WorldX - CameraX, CURRENTENEMY.WorldY - CameraY, ApplyThis, Screen);
+			break;
+
+		case 18: //RUSH MARS
+			BossHealth = CURRENTENEMY.Health;
+
+			switch (BossStage)
+			{
+			case 0:
+				One.w = 40;
+				One.h = 100;
+
+				Two.w = 100;
+				Two.h = 40;
+
+				Three.w = 40;
+				Three.h = 100;
+
+				Four.w = 100;
+				Four.h = 40;
+
+				Five.w = 10;
+				Five.h = 10;
+
+				BossStage = 1;
+
+			case 1:
+				CURRENTENEMY.ShotCounter++;
+				if (CURRENTENEMY.ShotCounter % 20 == 0)
+				{
+					CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
+					CURRENTENEMY.ShotCounter = 0;
+				}
+
+				else if (CURRENTENEMY.ShotCounter == 70)
+				{
+					CURRENTENEMY.ShotCounter = 0;
+					CURRENTENEMY.BulletPattern(2);
+				}
+				
+				if (CURRENTENEMY.WorldY + 250 > Camera.LevelHeight - 20)
+				{
+					CURRENTENEMY.WorldY = Camera.LevelHeight - 270;
+					CURRENTENEMY.YVel *= -1;
+				}
+				else if (CURRENTENEMY.WorldY < 20)
+				{
+					CURRENTENEMY.WorldY = 20;
+					CURRENTENEMY.YVel *= -1;
+				}
+
+				if (CURRENTENEMY.WorldX - 105 < 20)
+				{
+					CURRENTENEMY.WorldX = 125;
+					CURRENTENEMY.XVel *= -1;
+				}
+				else if (CURRENTENEMY.WorldX + 145 > LevelWidth - 20)
+				{
+					CURRENTENEMY.WorldX = LevelWidth - 165;
+					CURRENTENEMY.XVel *= -1;
+				}
+
+				One.x = CURRENTENEMY.WorldX - Camera.x;
+				One.y = CURRENTENEMY.WorldY - Camera.y;
+
+				Five.x = One.x + 15;
+				Five.y = One.y + 120;
+
+				Two.x = Five.x + 30;
+				Two.y = Five.y - 15;
+
+				Three.x = One.x;
+				Three.y = Five.y + 30;
+
+				Four.x = Five.x - 120;
+				Four.y = Two.y;
+
+				*RenderRect = One;
+				SDL_FillRect(Screen, RenderRect, 0xFFFFFF);
+				*RenderRect = Two;
+				SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+				*RenderRect = Three;
+				SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+				*RenderRect = Four;
+				SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+				*RenderRect = Five;
+				SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+
+				if (CURRENTENEMY.WorldX < PlayerX)
+				{
+					if (CURRENTENEMY.XVel < 0) CURRENTENEMY.XVel += 0.4;
+					else CURRENTENEMY.XVel += 0.2;
+				}
+
+				else if (CURRENTENEMY.WorldX > PlayerX)
+				{
+					if (CURRENTENEMY.XVel > 0) CURRENTENEMY.XVel -= 0.4;
+					else CURRENTENEMY.XVel -= 0.2;
+				}
+
+				if (CURRENTENEMY.WorldY < PlayerY)
+				{
+					if (CURRENTENEMY.YVel < 0) CURRENTENEMY.YVel += 0.4;
+					else CURRENTENEMY.YVel += 0.2;
+				}
+
+				else if (CURRENTENEMY.WorldY > PlayerY)
+				{
+					if (CURRENTENEMY.YVel > 0) CURRENTENEMY.YVel -= 0.4;
+					else CURRENTENEMY.YVel -= 0.2;
+				}
+
+				if (abs(CURRENTENEMY.XVel) > 5) CURRENTENEMY.XVel = copysign(5, (float)CURRENTENEMY.XVel);
+				if (abs(CURRENTENEMY.XVel) > 5) CURRENTENEMY.XVel = copysign(5, (float)CURRENTENEMY.XVel);
+
+				CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+				CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+
+				PlayerRectangle.x = PlayerX - Camera.x;
+				PlayerRectangle.y = PlayerY - Camera.y;
+
+				if (IsIntersecting(PlayerRectangle, One) || IsIntersecting(PlayerRectangle, Two) || IsIntersecting(PlayerRectangle, Three) || IsIntersecting(PlayerRectangle, Four))
+				{
+					Damaged = true;
+					DamageDealt = 50;
+				}
+				break;
+			};
 		};
 
 		if (CURRENTENEMY.DamageFrames != 0)
@@ -1783,7 +2006,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			ApplyText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset - Camera.x, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset - Camera.y, std::to_string(CURRENTENEMY.Damage), Small, Red);
 			CURRENTENEMY.DamageFrames--;
 
-			if (CURRENTENEMY.Damage == 0)
+			if (CURRENTENEMY.DamageFrames == 0)
 			{
 				FloatSomeText(CURRENTENEMY.WorldX + CURRENTENEMY.XOffset, CURRENTENEMY.WorldY + CURRENTENEMY.YOffset, std::to_string(CURRENTENEMY.Damage), Red);
 				CURRENTENEMY.Damage = 0;
@@ -1875,7 +2098,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 			}
 
-			if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13)
+			if (CURRENTENEMY.Type == 4 || CURRENTENEMY.Type == 9 || CURRENTENEMY.Type == 13 || CURRENTENEMY.Type >= 16)
 			{
 				Boss = false;
 				Temp1 = CURRENTENEMY.WorldX;

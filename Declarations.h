@@ -106,11 +106,12 @@ extern int Ammo[WEAPONS];
 
 extern Uint32 LevelColour;
 
-extern std::vector<Tile> LevelVector;
-extern std::vector<SDL_Rect> RectVector;
-extern std::vector<Projectile> ProjectileVector;
+extern std::vector <Tile> LevelVector;
+extern std::vector <SDL_Rect> RectVector;
+extern std::vector <Projectile> ProjectileVector;
 extern std::vector <int> SpawnVector;
 extern std::vector <Mix_Chunk*> MetalSounds;
+extern std::vector <Mix_Chunk*> StepSounds;
 
 extern std::stringstream SpareStream;
 
