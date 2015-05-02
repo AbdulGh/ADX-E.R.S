@@ -94,6 +94,8 @@ void Enemy::Gib()
 	case 16:
 		Sprite = Warden;
 		break;
+	default:
+		Sprite = Warkid;
 	}
 
 	SDL_Rect Part;
@@ -594,11 +596,36 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.Health = 5000;
 						Boss = true;
 						BossStage = 0;
-						Boss = true;
 						BossName = "M.A.R.S:";
 						Multiplier = (float)Temp.Health / (ScreenWidth + 100);
-						DebugWindow(std::to_string(Multiplier));
 						break;
+
+					case 19: //ADXERS left arm
+						Temp.CollisionRect.w = 90;
+						Temp.CollisionRect.h = 90;
+						Temp.ShotCounter = 0;
+						Temp.Frame = PlayerX;
+						Temp.Frametime = PlayerY;
+						Temp.Speed = 10;
+						Temp.Health = 5000;
+						Boss = true;
+						BossStage = 0;
+						BossName = "ADXERS:";
+						Multiplier = (float)10000 / (ScreenWidth + 100);
+						break;
+
+					case 20: //ADXERS right arm
+						Temp.CollisionRect.w = 90;
+						Temp.CollisionRect.h = 90;
+						Temp.ShotCounter = 0;
+						Temp.Angle = 226;
+						Temp.Timer = -1;
+						Temp.Frame = PlayerX + 500;
+						Temp.Frametime = PlayerY;
+						Temp.Speed = 10;
+						Temp.Health = 5000;
+						break;
+
 					};
 					EnemyVector.erase(EnemyVector.begin() + i, EnemyVector.begin() + i + 1);
 					EnemyVector.push_back(Temp);
@@ -1999,6 +2026,127 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				}
 				break;
 			};
+			break;
+
+		case 19: //ADXERS Left Arm
+			CURRENTENEMY.WorldX += CURRENTENEMY.XVel * CURRENTENEMY.Speed;
+			CURRENTENEMY.WorldY += CURRENTENEMY.YVel * CURRENTENEMY.Speed;
+
+			CURRENTENEMY.StayInLevel();
+
+			if (rand() < 6000)
+			{
+				if (CURRENTENEMY.XVel != 0 && abs(CURRENTENEMY.Frametime - CURRENTENEMY.WorldY) >= 5)
+				{
+					CURRENTENEMY.XVel = 0;
+					CURRENTENEMY.YVel = copysign(1, PlayerY - CURRENTENEMY.WorldY);
+				}
+
+				else if (abs(CURRENTENEMY.Frame - CURRENTENEMY.WorldX) >= 5)
+				{
+					CURRENTENEMY.YVel = 0;
+					CURRENTENEMY.XVel = copysign(1, PlayerX - 500 - CURRENTENEMY.WorldX);
+				}
+			}
+
+			CURRENTENEMY.ShotCounter++;
+
+			if (CURRENTENEMY.ShotCounter % 30 == 0)
+			{
+				Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w/2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h/2, PlayerX, PlayerY);
+
+				for (int u = -45; u <= 45; u += 45) CURRENTENEMY.Shoot(3, Angle + u);
+			}
+
+			if (CURRENTENEMY.ShotCounter % 60 == 0)
+			{
+				CURRENTENEMY.Frame = PlayerX - 500;
+				CURRENTENEMY.Frametime = PlayerY;
+				CURRENTENEMY.XVel = rand() % 2 * copysign(1, PlayerX - 500 - CURRENTENEMY.WorldX);
+				CURRENTENEMY.YVel = (1 - abs(CURRENTENEMY.XVel)) * copysign(1, PlayerY - CURRENTENEMY.WorldY);
+			}
+
+			if (CURRENTENEMY.ShotCounter == 500)
+			{
+				CURRENTENEMY.BulletPattern(2);
+				CURRENTENEMY.ShotCounter = 0;
+			}
+
+			RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+			RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+			RenderRect->w = CURRENTENEMY.CollisionRect.w;
+			RenderRect->h = CURRENTENEMY.CollisionRect.h;
+			SDL_FillRect(Screen, RenderRect, 0xFFFFFF);
+
+			if (Camera.x <= 20)
+			{
+				RenderRect->x = 20 - Camera.x;
+				RenderRect->w = CURRENTENEMY.WorldX - 20;
+			}
+
+			else 
+			{
+				RenderRect->x = 0;
+				RenderRect->w = CURRENTENEMY.WorldX - Camera.x;
+			}
+
+			RenderRect->h = 10;
+			RenderRect->y = (CURRENTENEMY.CollisionRect.h - RenderRect->h) / 2 + CURRENTENEMY.WorldY - Camera.y;
+			SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+			break;
+
+		case 20: //ADXERS right arm
+			
+			CURRENTENEMY.Angle += CURRENTENEMY.Timer;
+
+			if (!InBetween(225, CURRENTENEMY.Angle, 315))
+			{
+				CURRENTENEMY.Timer *= -1;
+				CURRENTENEMY.Angle += CURRENTENEMY.Timer * 2;
+			}
+
+			CURRENTENEMY.ShotCounter++;
+			if (CURRENTENEMY.ShotCounter == 15) 
+			{
+				CURRENTENEMY.Shoot(3, CURRENTENEMY.Angle);
+				CURRENTENEMY.ShotCounter = 0;
+			}
+
+			if ((PlayerX + 500 - CURRENTENEMY.Frame) * (PlayerX + 500 - CURRENTENEMY.Frame) + (PlayerY - CURRENTENEMY.Frametime) * (PlayerY - CURRENTENEMY.Frametime) > 40000)
+			{
+				CURRENTENEMY.Frame = PlayerX + 500;
+				CURRENTENEMY.Frametime = PlayerY;
+			}
+
+			XDiff = CURRENTENEMY.Frame - CURRENTENEMY.WorldX;
+			YDiff = CURRENTENEMY.Frametime - CURRENTENEMY.WorldY;
+
+			if (abs(XDiff) > 5) CURRENTENEMY.WorldX += XDiff / 5;
+			if (abs(YDiff) > 5) CURRENTENEMY.WorldY += YDiff / 5;
+			CURRENTENEMY.StayInLevel();
+
+			RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+			RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+			RenderRect->w = CURRENTENEMY.CollisionRect.w;
+			RenderRect->h = CURRENTENEMY.CollisionRect.h;
+			SDL_FillRect(Screen, RenderRect, 0xFFFFFF);
+
+			if (Camera.y <= 20)
+			{
+				RenderRect->y = 20 - Camera.y;
+				RenderRect->h = CURRENTENEMY.WorldY - 20;
+			}
+
+			else
+			{
+				RenderRect->y = 0;
+				RenderRect->h = CURRENTENEMY.WorldY - Camera.y;
+			}
+
+			RenderRect->w = 10;
+			RenderRect->x = (CURRENTENEMY.CollisionRect.w - RenderRect->w) / 2 + CURRENTENEMY.WorldX - Camera.x;
+			SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+			break;
 		};
 
 		if (CURRENTENEMY.DamageFrames != 0)
