@@ -42,6 +42,7 @@ public:
 extern std::vector <EnemyProjectile> EnemyProjectileVector;
 
 extern int WardenFlag;
+extern int ADXERSFlag;
 
 void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect);
 void ClearProjectiles();

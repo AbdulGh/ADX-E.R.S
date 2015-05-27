@@ -102,6 +102,7 @@ SDL_Rect WormFrames[2];
 SDL_Rect AmmoFrames[2];
 SDL_Rect ShipFrames[3];
 SDL_Rect InvaderFrames[2];
+SDL_Rect DeathRect;
 
 Mix_Chunk *ShotgunFire = NULL;
 Mix_Chunk *ShotgunPump = NULL;

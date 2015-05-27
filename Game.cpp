@@ -43,7 +43,6 @@ bool Update = true;
 bool LevelFinished = false;
 bool CutsceneFinished = false;
 bool DebugBool = false;
-
 Timer SpareTimer;
 
 std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG", "Automatic Laser Shotgun", "Grenade Machinegun", "Minigun"};
@@ -52,7 +51,6 @@ Player Character;
 
 SDL_Rect CharacterRect;
 SDL_Rect HealthRect;
-SDL_Rect DeathRect;
 
 SDL_Surface *ScreenShot;
 
@@ -209,7 +207,7 @@ void DoThings()
 		LaserRect.y = DeathRect.y + DeathRect.h - Camera.y;
 		SDL_FillRect(Screen, &LaserRect, 0xFF0000);
 
-		if (!IsIntersecting(Character.PlayerRect, DeathRect))
+		if (Character.WorldX < DeathRect.x || Character.WorldX + CharacterRect.w > DeathRect.x + DeathRect.w || Character.WorldY < DeathRect.y || Character.WorldY + CharacterRect.h > DeathRect.y + DeathRect.h)
 		{
 			Invincible = false;
 			Damaged = true;
@@ -1923,7 +1921,7 @@ void Game()
 					}
 
 					BossName = "Turrets:";
-					BossHealth = 1;
+					BossHealth = 40;
 					Multiplier = (float)(ScreenWidth - 50) / 40;
 					Boss = true;
 					Temp2 = 0;
@@ -2072,7 +2070,7 @@ void Game()
 
 						Boss = true;
 						BossName = "W.A.R DEN:";
-						Multiplier = Temp.Health / (ScreenWidth + 200);
+						Multiplier = (float)(ScreenWidth - 50) / Temp.Health;
 						EnemyVector.push_back(Temp);
 						ObjectVector.erase(ObjectVector.begin());
 					}
@@ -2311,6 +2309,9 @@ void Game()
 	Jump:
 	Temp1 = 1000;
 	Temp2 = 1000;
+
+	OrbitX = 1000;
+	OrbitY = 20;
 	NextLevel(Temp1, Temp2, "Resources/Levels/1");
 
 	Camera.LevelHeight = 2020;
@@ -2329,11 +2330,26 @@ void Game()
 				LaserY = 2010;
 				LaserSpeed = 0;
 				Laser = true;
-				break;
-			}
 
-			case 1:
-			{
+				pukciP.WorldX = Character.WorldX - 200;
+				pukciP.WorldY = Character.WorldY;
+				pukciP.Type = 6;
+
+				for (int u = 0; u <= 3; u++)
+				{
+					for (int i = 0; i < 5; i++)
+					{
+						pukciP.WorldX += 100;
+						PickupVector.push_back(pukciP);
+					}
+					pukciP.WorldX = Character.WorldX - 200;
+					pukciP.WorldY += 100;
+				}
+
+				Boss = true;
+				BossName = "ADXERS:";
+				Multiplier = (float)(ScreenWidth - 50) / 6000;
+
 				SpawnVector.clear();
 				SpawnVector.push_back(500);
 				SpawnVector.push_back(500);
@@ -2342,7 +2358,65 @@ void Game()
 				SpawnVector.push_back(500);
 				SpawnVector.push_back(20);
 				SpawnEnemies(SpawnVector);
-				LevelProgress = 2;
+
+				break;
+			}
+
+			case 1:
+			{
+				Boss = true;
+				BossHealth = 0;
+				for (int i = 0; i < EnemyVector.size(); i++) BossHealth += EnemyVector.at(i).Health;
+				if (BossHealth <= 0)
+				{
+					LevelProgress = 2;
+					DeathRect.w = 600;
+					DeathRect.h = 600;
+					DeathRect.x = Character.WorldX - 300;
+					DeathRect.y = Character.WorldY - 300;
+					DeathRect.x = DeathRect.x - DeathRect.x % 5;
+					DeathRect.y = DeathRect.y - DeathRect.y % 5;
+
+					SpareTimer.start();
+				}
+				break;
+			}
+
+			case 2:
+			{
+				if (SpareTimer.get_ticks() > 3000)
+				{
+					if (DeathRect.x < 850) DeathRect.x += 5;
+					else if (DeathRect.x != 850) DeathRect.x -= 5;
+					if (DeathRect.y < 400) DeathRect.y += 5;
+					else if (DeathRect.y != 400) DeathRect.y -= 5;
+
+					if (DeathRect.w > 300) 
+					{
+						DeathRect.w--;
+						DeathRect.h--;
+					}
+
+				}
+
+				if (DeathRect.x == 850 && DeathRect.y == 400 && DeathRect.w == 300) 
+				{
+					SpawnVector.clear();
+					SpawnVector.push_back(985);
+					SpawnVector.push_back(-40);
+					SpawnVector.push_back(21);
+					SpawnEnemies(SpawnVector);
+
+					Boss = true;
+					Multiplier = (float)(ScreenWidth - 50) / 4000;
+					LevelProgress = 3;
+				}
+				break;
+			}
+
+			case 3:
+			{
+				
 			}
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());

@@ -73,6 +73,7 @@ extern SDL_Rect WormFrames[2];
 extern SDL_Rect AmmoFrames[2];
 extern SDL_Rect ShipFrames[3];
 extern SDL_Rect InvaderFrames[2];
+extern SDL_Rect DeathRect;
 
 extern bool Damaged;
 extern bool Invincible;

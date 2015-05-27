@@ -7,6 +7,7 @@
 
 std::vector <EnemyProjectile> EnemyProjectileVector;
 int WardenFlag = 0;
+int ADXERSFlag = 0;
 
 void ClearProjectiles()
 {
@@ -417,8 +418,14 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 
 		else if (CURRENTENEMYPROJECTILE.Type == 12)
 		{
+			GetXYRatio(&CURRENTENEMYPROJECTILE.WorldX, &CURRENTENEMYPROJECTILE.WorldY, CURRENTENEMYPROJECTILE.Spare2 + CURRENTENEMYPROJECTILE.Frame * AngleOffset, CURRENTENEMYPROJECTILE.Spare1);
+			CURRENTENEMYPROJECTILE.WorldX += OrbitX;
+			CURRENTENEMYPROJECTILE.WorldY += OrbitY;
+			
+			/*
 			CURRENTENEMYPROJECTILE.WorldX = static_cast<float>(OrbitX + CURRENTENEMYPROJECTILE.Spare1 * sin((CURRENTENEMYPROJECTILE.Spare2 + CURRENTENEMYPROJECTILE.Frame * AngleOffset) * (3.141 / 180))) - 20;
 			CURRENTENEMYPROJECTILE.WorldY = static_cast<float>(OrbitY + CURRENTENEMYPROJECTILE.Spare1 * cos((CURRENTENEMYPROJECTILE.Spare2 + CURRENTENEMYPROJECTILE.Frame * AngleOffset) * (3.141 / 180))) - 20;
+			*/
 		}
 
 		else
@@ -500,12 +507,10 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			Flower.Damage = 50;
 			Flower.Collides = false;
 
-			Flower.WorldX += 20;
-			Flower.WorldY += 20;
 			Flower.Spare1 = sqrt((Flower.WorldX - OrbitX) * (Flower.WorldX - OrbitX) + (Flower.WorldY - OrbitY) * (Flower.WorldY - OrbitY));
 			Flower.Spare2 = CalculateProjectileAngle(OrbitX, OrbitY, Flower.WorldX, Flower.WorldY);
-			Flower.WorldX -= 20;
-			Flower.WorldY -= 20;
+			Flower.Spare2 -= AngleOffset;
+
 			Temp2 = 0;
 
 			if (WardenFlag != 0)
@@ -515,6 +520,8 @@ void DoEnemyProjectiles(int CameraX, int CameraY, SDL_Rect PlayerRect)
 			}
 
 			else Flower.Frame = 1;
+
+			if (ADXERSFlag == 1) Flower.Collides = true;
 
 			EnemyProjectileVector.push_back(Flower);
 		}

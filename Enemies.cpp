@@ -7,6 +7,8 @@
 #include"MiscObject.h"
 #include<time.h>
 
+#define PI 3.1415
+
 int BossStage = 0;
 int BosNum1 = 0;
 int BossHealth = 0;
@@ -30,8 +32,6 @@ std::vector <Pickup> PickupVector;
 std::vector <Enemy> EnemyVector;
 
 std::string BossName;
-
-
 
 Enemy::Enemy(int x = 0, int y = 0, int IType = 0)
 {
@@ -95,7 +95,7 @@ void Enemy::Gib()
 		Sprite = Warden;
 		break;
 	default:
-		Sprite = Warkid;
+		return;
 	}
 
 	SDL_Rect Part;
@@ -396,7 +396,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					if (ProjectileVector.at(x).Type == 5 || ProjectileVector.at(x).Type == 6)
 					{
-						CreateExplosion(ProjectileVector.at(x).WorldX, ProjectileVector.at(x).WorldY);
+						CreateExplosion(ProjectileVector.at(x).WorldX - 2 * ProjectileVector.at(x).XInc, ProjectileVector.at(x).WorldY - 2 *ProjectileVector.at(x).YInc);
 					}
 
 					if (CURRENTENEMY.Moving & ProjectileVector.at(x).Damage <= 100)
@@ -546,7 +546,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 						Boss = true;
 						BossName = "W.A.R DEN:";
-						Multiplier = Temp.Health / (ScreenWidth + 200);
+						Multiplier = (float)(ScreenWidth - 50) / Temp.Health;
 						Temp.Moving = false;
 						break;
 
@@ -586,8 +586,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 						Boss = true;
 						BossName = "SIS:";
-						Multiplier = (float)Temp.Health / (ScreenWidth + 100);
-						DebugWindow(std::to_string(Multiplier));
+						Multiplier = (float)(ScreenWidth - 50) / Temp.Health;
 						break;
 
 					case 18: //Rush MARS
@@ -597,7 +596,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Boss = true;
 						BossStage = 0;
 						BossName = "M.A.R.S:";
-						Multiplier = (float)Temp.Health / (ScreenWidth + 100);
+						Multiplier = (float)(ScreenWidth - 50) / Temp.Health;
 						break;
 
 					case 19: //ADXERS left arm
@@ -606,12 +605,12 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.ShotCounter = 0;
 						Temp.Frame = PlayerX;
 						Temp.Frametime = PlayerY;
-						Temp.Speed = 10;
-						Temp.Health = 5000;
+						Temp.Speed = 12;
+						Temp.Health = 3000;
 						Boss = true;
 						BossStage = 0;
 						BossName = "ADXERS:";
-						Multiplier = (float)10000 / (ScreenWidth + 100);
+						Multiplier = (float)(ScreenWidth - 50) / 6000;
 						break;
 
 					case 20: //ADXERS right arm
@@ -623,7 +622,21 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.Frame = PlayerX + 500;
 						Temp.Frametime = PlayerY;
 						Temp.Speed = 10;
-						Temp.Health = 5000;
+						Temp.Health = 3000;
+						break;
+
+					case 21: //ADXERS
+						BossStage = 0;
+						Temp.Health = 16000;
+						Temp.ShotCounter = 0;
+						Temp.Angle = 0;
+						Temp.Timer = 0;
+						Temp.Frame = 2;
+						Temp.Frametime = 2;
+						Temp.CollisionRect.w = 30;
+						Temp.CollisionRect.h = 50;
+						Temp.Moving = false;
+						ADXERSFlag = 1;
 						break;
 
 					};
@@ -2146,6 +2159,138 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 			RenderRect->w = 10;
 			RenderRect->x = (CURRENTENEMY.CollisionRect.w - RenderRect->w) / 2 + CURRENTENEMY.WorldX - Camera.x;
 			SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+			break;
+
+		case 21: //ADXERS
+			{
+				BossHealth = CURRENTENEMY.Health % 4000;
+
+				if (rand() < 1000) CURRENTENEMY.Frame *= -1;
+				if (rand() < 1000) CURRENTENEMY.Frametime *= -1;
+
+				if (DeathRect.x + DeathRect.w + CURRENTENEMY.Frame > LevelWidth - 20) CURRENTENEMY.Frame *= -1;
+				else if (DeathRect.x + CURRENTENEMY.Frame < 20) CURRENTENEMY.Frame *= -1;
+				if (DeathRect.y + DeathRect.h + CURRENTENEMY.Frametime > 700) CURRENTENEMY.Frametime *= -1;
+				else if (DeathRect.y + CURRENTENEMY.Frametime < 100) CURRENTENEMY.Frametime *= -1;
+
+				DeathRect.x += CURRENTENEMY.Frame;
+				DeathRect.y += CURRENTENEMY.Frametime;
+
+				switch (BossStage)
+				{
+				case 0:
+					if (CURRENTENEMY.WorldY < 20) CURRENTENEMY.WorldY++;
+					else 
+					{
+						CURRENTENEMY.CollisionRect.x = CURRENTENEMY.WorldX;
+						CURRENTENEMY.CollisionRect.y = CURRENTENEMY.WorldY;
+						BossStage = 1;
+					}
+
+					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+					RenderRect->w = CURRENTENEMY.CollisionRect.w;
+					RenderRect->h = CURRENTENEMY.CollisionRect.h;
+					SDL_FillRect(Screen,RenderRect,0xFFFFFF);
+					break;
+
+				case 1:
+
+					CURRENTENEMY.ShotCounter++;
+					if (CURRENTENEMY.ShotCounter % 25 == 0) CURRENTENEMY.Shoot(3,PlayerX,PlayerY);
+					else if (CURRENTENEMY.ShotCounter == 210)
+					{
+						CURRENTENEMY.ShotCounter = 0;
+						for (int u = 120; u <= 240; u += 60)
+						{
+							CURRENTENEMY.CollisionRect.h *= 2;
+							CURRENTENEMY.Shoot(9,u);
+							CURRENTENEMY.Shoot(4,u);
+							CURRENTENEMY.CollisionRect.h /= 2;
+						}
+					}
+
+					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+					RenderRect->w = CURRENTENEMY.CollisionRect.w;
+					RenderRect->h = CURRENTENEMY.CollisionRect.h;
+					SDL_FillRect(Screen, RenderRect, 0xFFFFFF);
+
+					if (CURRENTENEMY.Health <= 12000)
+					{
+						CreateDebris(5, 6, CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, 0, 0, 0xFFFFFF);
+						BossStage = 2;
+						CURRENTENEMY.WorldY = -40;
+						CURRENTENEMY.WorldX = 850;
+						CURRENTENEMY.ShotCounter = 0;
+						CURRENTENEMY.Angle = 0;
+					}
+
+					break;
+
+				case 2:
+
+					CURRENTENEMY.WorldY++;
+					if (CURRENTENEMY.WorldY == 40) BossStage = 3;
+
+					RenderRect->x = 850 - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - 20 - Camera.y;
+					RenderRect->w = 300;
+					RenderRect->h = 20;
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+
+					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+					RenderRect->w = 30;
+					RenderRect->h = 50;
+					SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
+
+					RenderRect->x += 270;
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+					break;
+
+				case 3:
+					
+					CURRENTENEMY.ShotCounter++;
+					CURRENTENEMY.Health = 1;
+
+					if (CURRENTENEMY.ShotCounter % 40 == 0) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
+					
+					else if (CURRENTENEMY.ShotCounter == 70) 
+					{
+						Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
+						if (CURRENTENEMY.Angle == 0) CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX - Distance , 30);
+						else CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX + Distance, 30);
+						CURRENTENEMY.ShotCounter = 0;
+					}
+
+					if (rand() < 100)
+					{
+						CURRENTENEMY.Angle = 1-CURRENTENEMY.Angle;
+						CURRENTENEMY.WorldX = 850 + 270 * CURRENTENEMY.Angle;
+					}
+
+					if (CURRENTENEMY.Angle == 0) AngleOffset -= 0.5;
+					else AngleOffset += 0.5;
+
+					RenderRect->x = 850 - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - 20 - Camera.y;
+					RenderRect->w = 300;
+					RenderRect->h = 20;
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+
+					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+					RenderRect->w = 30;
+					RenderRect->h = 50;
+					SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
+
+					if (CURRENTENEMY.Angle == 0) RenderRect->x += 270;
+					else RenderRect->x -= 270;
+
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+				}
+			}
 			break;
 		};
 
