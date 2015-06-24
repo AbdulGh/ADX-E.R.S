@@ -129,3 +129,4 @@
 6  -  RPG
 7  -  Laser Shotgun
 8  -  Grenade Machinegun
+9  -  Minigun

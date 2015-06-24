@@ -15,6 +15,7 @@ public:
 	int Timer;
 	int Frame;
 	int Angle;
+	int Spare;
 	int Frametime;
 	int ShotCounter;
 	int Speed;

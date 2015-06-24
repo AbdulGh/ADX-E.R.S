@@ -185,7 +185,7 @@ void DoThings()
 	else SpareStream << AmmoNames[CurrentSelection - 1] << ": " << Ammo[CurrentSelection - 1];
 	ApplyText(550, ScreenHeight - 30, SpareStream.str(), SysSmall, Green);
 
-	if (DeathRect.x != 0)
+	if (DeathRect.w != 0)
 	{
 		SDL_Rect LaserRect;
 
@@ -299,6 +299,7 @@ void DoThings()
 			main(NULL,NULL);
 		}
 
+		DeathRect.w = 0;
 		Character.Health = 100;
 		Character.Reset = false;
 		Character.Render = true;
@@ -556,7 +557,7 @@ void Game()
 
 	DeathRect.x = 0;
 	DeathRect.y = 0;
-	DeathRect.w = 300;
+	DeathRect.w = 0;
 	DeathRect.h = 300;
 
 	int Weapons = 0;
@@ -1987,7 +1988,8 @@ void Game()
 			if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 		}
 
-		NextLevel(1850, 3400, "Resources/Levels/1");
+
+		NextLevel(1850, 3400, "Resources/Levels/1", "Resources/Text/Antimov");
 
 		while (!LevelFinished && State == GAME)
 		{
@@ -2359,6 +2361,7 @@ void Game()
 				SpawnVector.push_back(20);
 				SpawnEnemies(SpawnVector);
 
+
 				break;
 			}
 
@@ -2372,8 +2375,12 @@ void Game()
 					LevelProgress = 2;
 					DeathRect.w = 600;
 					DeathRect.h = 600;
-					DeathRect.x = Character.WorldX - 300;
-					DeathRect.y = Character.WorldY - 300;
+
+					if (Character.WorldX - 300 < 20) DeathRect.x = 20;
+					else DeathRect.x = Character.WorldX - 300;
+					if (Character.WorldY - 300 < 20) DeathRect.y = 20;
+					else DeathRect.y = Character.WorldY - 300;
+
 					DeathRect.x = DeathRect.x - DeathRect.x % 5;
 					DeathRect.y = DeathRect.y - DeathRect.y % 5;
 
@@ -2391,7 +2398,7 @@ void Game()
 					if (DeathRect.y < 400) DeathRect.y += 5;
 					else if (DeathRect.y != 400) DeathRect.y -= 5;
 
-					if (DeathRect.w > 300) 
+					if (DeathRect.w > 400) 
 					{
 						DeathRect.w--;
 						DeathRect.h--;
@@ -2399,13 +2406,28 @@ void Game()
 
 				}
 
-				if (DeathRect.x == 850 && DeathRect.y == 400 && DeathRect.w == 300) 
+				if (DeathRect.x == 850 && DeathRect.y == 400 && DeathRect.w == 400) 
 				{
 					SpawnVector.clear();
 					SpawnVector.push_back(985);
 					SpawnVector.push_back(-40);
 					SpawnVector.push_back(21);
 					SpawnEnemies(SpawnVector);
+
+					pukciP.WorldX = Character.WorldX - 300;
+					pukciP.WorldY = Character.WorldY - 300;
+					pukciP.Type = 9;
+
+					for (int u = 0; u <= 3; u++)
+					{
+						for (int i = 0; i < 5; i++)
+						{
+							pukciP.WorldX += 100;
+							PickupVector.push_back(pukciP);
+						}
+						pukciP.WorldX = Character.WorldX - 200;
+						pukciP.WorldY += 100;
+					}
 
 					Boss = true;
 					Multiplier = (float)(ScreenWidth - 50) / 4000;

@@ -2163,7 +2163,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 		case 21: //ADXERS
 			{
-				BossHealth = CURRENTENEMY.Health % 4000;
+				BossHealth = (CURRENTENEMY.Health - 1) % 4000;
 
 				if (rand() < 1000) CURRENTENEMY.Frame *= -1;
 				if (rand() < 1000) CURRENTENEMY.Frametime *= -1;
@@ -2252,7 +2252,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				case 3:
 					
 					CURRENTENEMY.ShotCounter++;
-					CURRENTENEMY.Health = 1;
 
 					if (CURRENTENEMY.ShotCounter % 40 == 0) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
 					
@@ -2289,6 +2288,105 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					else RenderRect->x -= 270;
 
 					SDL_FillRect(Screen, RenderRect, 0x262626);
+
+					if (CURRENTENEMY.Health <= 8000)
+					{
+						CreateDebris(5, 6, CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, 0, 0, 0xFFFFFF);
+						BossStage = 4;
+						DeathRect.w = 0;
+						CURRENTENEMY.WorldY = 20;
+						CURRENTENEMY.WorldX = 850;
+						CURRENTENEMY.ShotCounter = 0;
+						CURRENTENEMY.Angle = 0;
+						CURRENTENEMY.CollisionRect.w = 60;
+						CURRENTENEMY.CollisionRect.h = 60;
+						CURRENTENEMY.YVel = 10;
+						CURRENTENEMY.OnFire == true;
+						CURRENTENEMY.BurnTimer = 5;
+						EnemyProjectileVector.clear();
+					}
+
+					break;
+
+				case 4:
+					{
+						CURRENTENEMY.ShotCounter++;
+						CURRENTENEMY.BurnTimer = 5;
+						if (CURRENTENEMY.ShotCounter % 15 == 0)
+						{
+							CURRENTENEMY.Shoot(3,CURRENTENEMY.ShotCounter);
+						}
+
+						if (CURRENTENEMY.ShotCounter % 90 == 0)
+						{
+							CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
+						}
+
+						else if (CURRENTENEMY.ShotCounter % 190 == 0)
+						{
+							CURRENTENEMY.BulletPattern(1);
+						}
+
+						if (CURRENTENEMY.ShotCounter % 250 == 0)
+						{
+							CURRENTENEMY.BulletPattern(5);
+						}
+
+						else if (CURRENTENEMY.ShotCounter == 361)
+						{
+							CURRENTENEMY.BulletPattern(2);
+							CURRENTENEMY.ShotCounter == 0;
+						}
+
+
+						if (CURRENTENEMY.WorldX < PlayerX && CURRENTENEMY.XVel <= 8) CURRENTENEMY.XVel+=0.5;
+						else if (CURRENTENEMY.WorldX > PlayerX && CURRENTENEMY.XVel >= -8) CURRENTENEMY.XVel-=0.5;
+						if (CURRENTENEMY.WorldY < PlayerY && CURRENTENEMY.YVel <= 8) CURRENTENEMY.YVel+=0.5;
+						else if (CURRENTENEMY.WorldY > PlayerY && CURRENTENEMY.YVel >= -8) CURRENTENEMY.YVel-=0.5;
+
+						if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel < 20) CURRENTENEMY.YVel *= -1;
+						else if (CURRENTENEMY.WorldY + CURRENTENEMY.YVel > LevelHeight - 80) CURRENTENEMY.YVel *= -1;
+						if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel > LevelWidth - 80) CURRENTENEMY.XVel *= -1;
+						
+						CURRENTENEMY.WorldY += CURRENTENEMY.YVel;
+						CURRENTENEMY.WorldX += CURRENTENEMY.XVel;
+
+						
+						RenderRect->w = 20;
+						RenderRect->h = 20;
+						int X = 840;
+						int Y = 20;
+
+						SDL_FillRect(Screen, RenderRect, 0x262626);
+
+						XDiff = CURRENTENEMY.WorldX - 830;
+						YDiff = CURRENTENEMY.WorldY - 20;
+
+						for (int u = 0; u < 16; u++)
+						{
+							X += XDiff / 16;
+							Y += YDiff / 16;
+							RenderRect->x = X - Camera.x;
+							RenderRect->y = Y - Camera.y;
+							RenderRect->w = 20;
+							RenderRect->h = 20;
+							SDL_FillRect(Screen, RenderRect, 0x262626);
+						}
+
+						RenderRect->w = 60;
+						RenderRect->h = 60;
+						RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+						RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+						SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
+
+						if (IsIntersecting(CURRENTENEMY.CollisionRect, PlayerRect))
+						{
+							Damaged = true;
+							DamageDealt = 50;
+						}
+						
+					}
+
 				}
 			}
 			break;
