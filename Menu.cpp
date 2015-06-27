@@ -3,7 +3,7 @@
 #include"CreateButton.h"
 
 Gamestate Menu()
-{
+{	
 	SDL_Surface *NewGame = TTF_RenderText_Blended(Start,"New Game",White);
 	SDL_Surface *NewGameMouseover = TTF_RenderText_Blended(Start,"New Game",Green);
 	SDL_Surface *Options = TTF_RenderText_Blended(Start,"Options",White);
@@ -53,12 +53,13 @@ Gamestate Menu()
 		SDL_Flip(Screen);
 		while(SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_TAB) MapCreator();
+			//if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_TAB) MapCreator();
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) return QUIT;
 		}
 		SDL_Delay(10);
 	}
 
+	ClearButtons();
 	SDL_FreeSurface(Message);
 	SDL_FreeSurface(Message2);
 

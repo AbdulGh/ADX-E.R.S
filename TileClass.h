@@ -19,4 +19,6 @@ public:
 	SDL_Rect ScreenRect(int CameraX, int CameraY);
 };
 
+void SetTileScreen(int Width, int Height);
+
 #endif

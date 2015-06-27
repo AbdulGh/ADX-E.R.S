@@ -56,7 +56,7 @@ SDL_Surface *ScreenShot;
 
 void CheckShake()
 {
-	if (Shake == true)
+	if (ScreenShake && Shake == true)
 	{
 		Camera.x += (rand() % Mag) - Mag/2;
 		Camera.y += (rand() % Mag) - Mag/2;
@@ -284,19 +284,22 @@ void DoThings()
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5, Character.YVel * 5, 0xFF0000);
 		CreateDebris(5,10,Character.WorldX,Character.WorldY,Character.XVel * 5,Character.YVel * 5,0xFFFFFF);
 		SpareTimer.start();
-		ScreenShot = SDL_ConvertSurface(Screen, Screen->format, 0);
-		DeathScreen();
-		SDL_FreeSurface(ScreenShot);
 
-		if (Character.Lives < 0)
+		if (Character.Lives <= 0)
 		{
 			ClearScreen();
-			ApplySurface(20,20,Fail,Screen);
-			SDL_Flip(Screen);
+			Terminal("Resources/Text/Dead");
 			SDL_Delay(2000);
 			State = QUIT;
 			LevelFinished = true;
-			main(NULL,NULL);
+			main(NULL, NULL);
+		}
+
+		else
+		{
+			ScreenShot = SDL_ConvertSurface(Screen, Screen->format, 0);
+			DeathScreen();
+			SDL_FreeSurface(ScreenShot);
 		}
 
 		DeathRect.w = 0;
@@ -581,7 +584,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	goto Jump; //Only used for debugging purposes I promise
+	//goto Jump; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -1001,7 +1004,6 @@ void Game()
 	while(LevelFinished == false && State == GAME)
 	{
 		FPSTimer.start();
-
 		DoThings();
 
 		HandleEvents();

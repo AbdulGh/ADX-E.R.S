@@ -50,3 +50,9 @@ SDL_Rect Tile::ScreenRect(int CameraX, int CameraY)
 	ReturnThis.h = TempHeight;
 	return ReturnThis;
 }
+
+void SetTileScreen(int Width, int Height)
+{
+	SWidth = Width;
+	SHeight = Height;
+}

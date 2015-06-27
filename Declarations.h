@@ -30,6 +30,7 @@ extern int ScreenHeight;
 
 extern SDL_Surface *Screen;
 extern SDL_Surface *Gunman;
+extern SDL_Surface *Arrow;
 extern SDL_Surface *Rocket;
 extern SDL_Surface *PlayerNormal;
 extern SDL_Surface *CursorSheet;
@@ -81,6 +82,11 @@ extern bool Boss;
 extern bool Shake;
 extern bool Laser;
 extern bool SpawnFlowers;
+extern bool ScreenShake;
+extern bool StepSoundsEnabled;
+extern bool FirstTime;
+extern bool Windowed;
+
 
 extern float LaserY;
 extern float AngleOffset;
@@ -89,6 +95,7 @@ extern int XChange;
 extern int YChange;
 extern int LevelWidth;
 extern int LevelHeight;
+extern int Volume;
 extern int Frame;
 extern int Frametime;
 extern int DamageDealt;

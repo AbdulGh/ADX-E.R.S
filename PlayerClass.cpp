@@ -29,7 +29,6 @@ void Player::Update()
 	if (Health <= 0)
 	{
 		Health = 0;
-		Lives -= 1;
 		Reset = true;
 	}
 	
@@ -115,23 +114,19 @@ void Player::Update()
 		for (int i = 0; i < RectVector.size(); i++)
 		{
 			PlayerRect.x = WorldX + XVel - Camera.x;
-			PlayerRect.y = WorldY + YVel - Camera.y;
+			PlayerRect.y = WorldY - Camera.y;
 
-			if (IsIntersecting(CURRENTRECT, PlayerRect))
+			if (IsIntersecting(CURRENTRECT, PlayerRect)) 
 			{
 				PlayerRect.x -= XVel;
-				if (!IsIntersecting(CURRENTRECT, PlayerRect)) XVel = -XVel/2;
-				else
-				{
-					PlayerRect.x += XVel;
-					PlayerRect.y -= YVel;
-					YVel = -YVel/2;
-					if (IsIntersecting(CURRENTRECT, PlayerRect))
-					{
-						PlayerRect.x -= XVel;
-						XVel = -XVel/2;
-					}
-				}
+				XVel *= -1;
+			}
+
+			PlayerRect.y += YVel;
+			if (IsIntersecting(CURRENTRECT, PlayerRect))
+			{
+				PlayerRect.y -= YVel;
+				YVel *= -1;
 			}
 		}
 
@@ -141,11 +136,14 @@ void Player::Update()
 		PlayerRect.x = WorldX;
 		PlayerRect.y = WorldY;
 
-		StepTimer -= abs(XVel) + abs(YVel);
-		if (StepTimer <= 0)
+		if (StepSoundsEnabled)
 		{
-			StepTimer = 240;
-			Mix_PlayChannel(-1, StepSounds.at(rand() % 3 + 1), 0);
+			StepTimer -= abs(XVel) + abs(YVel);
+			if (StepTimer <= 0)
+			{
+				StepTimer = 240;
+				Mix_PlayChannel(-1, StepSounds.at(rand() % 3 + 1), 0);
+			}
 		}
 	}
 

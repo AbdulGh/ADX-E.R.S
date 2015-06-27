@@ -3,6 +3,11 @@
 #include<iostream>
 #include<fstream>
 
+inline bool operator==(const SDL_Rect& One, const SDL_Rect& Two)
+{
+	return One.x == Two.x && One.y == Two.y && One.w == Two.w && One.h == Two.h;
+}
+
 bool LoadLevel(std::string Filename)
 {
 	std::ifstream Input;
@@ -26,9 +31,14 @@ bool LoadLevel(std::string Filename)
 		Input >> TempY;
 		Input >> TempW;
 		Input >> TempH;
-
-		if (LevelVector.size() < 2 || !(LevelVector.at(LevelVector.size() - 1) == LevelVector.at(LevelVector.size() - 2)))
+		
+		if (LevelVector.empty() || !(LevelVector.back().WorldX == TempX && LevelVector.back().WorldY == TempY
+			&& LevelVector.back().Width == TempW && LevelVector.back().Height == TempH))
+		{
 			CreateTile(TempX, TempY, TempW, TempH);
+		}
+
+		else DebugWindow("Purge");
 	}
 	return true;
 }

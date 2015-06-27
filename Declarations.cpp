@@ -12,6 +12,10 @@ bool Boss = false;
 bool Shake = 0;
 bool Laser = false;
 bool SpawnFlowers = true;
+bool ScreenShake = true;
+bool StepSoundsEnabled = true;
+bool Windowed = false;
+bool FirstTime = false;
 
 float LaserY = 0;
 float AngleOffset = 0;
@@ -29,6 +33,7 @@ int Temp2 = 0;
 int Temp3 = 0;
 int Dur = 0;
 int Mag = 0;
+int Volume = 0;
 int OrbitX = 1000;
 int OrbitY = 1150;
 
@@ -50,6 +55,7 @@ std::stringstream SpareStream;
 Viewport Camera;
 
 SDL_Surface *Screen = NULL;
+SDL_Surface *Arrow = NULL;
 SDL_Surface *Serious = NULL;
 SDL_Surface *Gunman = NULL;
 SDL_Surface *PlayerNormal = NULL;
@@ -226,11 +232,40 @@ bool Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) return false;
 	if(TTF_Init() == -1) return false;
-	Screen = SDL_SetVideoMode(ScreenWidth,ScreenHeight,32,SDL_SWSURFACE|SDL_FULLSCREEN);
+	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1) return false;
+	std::fstream SettingsInput;
+	SettingsInput.open("Resources/Settings");
+	
+	if (!SettingsInput.good())
+	{
+		DebugWindow("Settings file not found, creating a default");
+		SettingsInput << 100;
+		SettingsInput << 1;
+		SettingsInput << 1;
+		SettingsInput << 1;
+		SettingsInput << 1366;
+		SettingsInput << 768;
+		SettingsInput << 0;
+	}
+
+	SettingsInput >> Volume;
+	SettingsInput >> ScreenShake;
+	SettingsInput >> StepSoundsEnabled;
+	SettingsInput >> Windowed;
+	SettingsInput >> ScreenWidth;
+	SettingsInput >> ScreenHeight;
+	SettingsInput >> FirstTime;
+	
+	SettingsInput.close();
+
+	Mix_Volume(-1,Volume);
+	if(!Windowed) Screen = SDL_SetVideoMode(ScreenWidth, ScreenHeight, 32, SDL_SWSURFACE | SDL_FULLSCREEN);
+	else if (!Windowed) Screen = SDL_SetVideoMode(ScreenWidth, ScreenHeight, 32, SDL_SWSURFACE);
 	if (Screen == NULL) return false;
-    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
-	Mix_AllocateChannels(16);
-    SDL_WM_SetCaption("ADXERS", NULL);
+	void SetTileScreen(int ScreenWidth, int ScreenHeight);
+	Camera.ScreenWidth = ScreenWidth;
+	Camera.ScreenHeight = ScreenHeight;
+	SDL_WM_SetCaption("ADXERS", NULL);
     SDL_EnableUNICODE(SDL_ENABLE);
 	Fader = SDL_CreateRGBSurface(0, ScreenWidth, ScreenHeight, 32, Screen->format->Rmask, Screen->format->Gmask, Screen->format->Bmask, Screen->format->Amask);
 	SDL_Rect ScreenRect;
@@ -320,6 +355,7 @@ bool Load()
 	Invader = LoadImage("Resources/Images/Invader.png");
 	Health = LoadImage("Resources/Images/Health.png");
 	Worm = LoadImage("Resources/Images/Worm.png");
+	Arrow = LoadImage("Resources/Images/Arrow.png");
 	ShipProjectile = LoadImage("Resources/Images/EnemyProjectile.png");
 	MachineGun = LoadImage("Resources/Images/MachineGun.png");
 	DoorGuard = LoadImage("Resources/Images/DoorGuard.png");
