@@ -23,6 +23,8 @@ int DoButtons()
 {
 	bool MouseOver = false;
 	bool Click = false;
+	int ReturnThis = 0;
+
 	SDL_PumpEvents();
 	if (ButtonVector.size() != 0)
 	{
@@ -35,22 +37,25 @@ int DoButtons()
 				MouseOver = true;
 				ApplySurface(CURRENTBUTTON.ButtonRect.x - CURRENTBUTTON.Offset,CURRENTBUTTON.ButtonRect.y - CURRENTBUTTON.Offset,CURRENTBUTTON.NotNormal,Screen);
 			}
+
 			else 
 			{
 				MouseOver = false;
 				ApplySurface(CURRENTBUTTON.ButtonRect.x,CURRENTBUTTON.ButtonRect.y,CURRENTBUTTON.Normal,Screen);
 			}
-			if(Click == true && MouseOver == true) return CURRENTBUTTON.ID;
+
+			if (Click == true && MouseOver == true) ReturnThis = CURRENTBUTTON.ID;
 		}
 	}
-	return 0;
+	return ReturnThis;
 }
+
 void ClearButtons()
 {
 	for (int i = 0; i < ButtonVector.size(); i++)
 	{
-		SDL_FreeSurface(CURRENTBUTTON.Normal);
-		SDL_FreeSurface(CURRENTBUTTON.NotNormal);
+		if (CURRENTBUTTON.Normal != NULL) SDL_FreeSurface(CURRENTBUTTON.Normal);
+		if (CURRENTBUTTON.NotNormal != NULL) SDL_FreeSurface(CURRENTBUTTON.NotNormal);
 	}
 	ButtonVector.clear();
 }

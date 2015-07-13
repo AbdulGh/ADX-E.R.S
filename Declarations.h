@@ -62,6 +62,7 @@ extern SDL_Surface *Warkid;
 extern SDL_Surface *Turret;
 extern SDL_Surface *Fader;
 extern SDL_Surface *Minigun;
+extern SDL_Surface *GreenArrow;
 
 extern SDL_Colour White;
 extern SDL_Colour Green;
@@ -86,7 +87,6 @@ extern bool ScreenShake;
 extern bool StepSoundsEnabled;
 extern bool FirstTime;
 extern bool Windowed;
-
 
 extern float LaserY;
 extern float AngleOffset;
@@ -157,7 +157,9 @@ bool InBetween (int Min, int Value, int Max);
 void ApplySurface( int x, int y, SDL_Surface* Source, SDL_Surface* Destination, SDL_Rect* Clip = NULL );
 void ApplyText(int x, int y, std::string String, TTF_Font *Font, SDL_Color Color, int *Width = NULL, int *Height = NULL);
 void ApplyTextCentered(std::string String, TTF_Font *Font, SDL_Color Color, int *Width = NULL, int *Height = NULL, int XOffset = 0, int YOffset = 0);
+void QuitGame(bool Restart = false);
 bool Load();
+bool LoadGameFiles();
 void ClearScreen();
 void SetClips();
 void DoMouse(int * ex, int * why);

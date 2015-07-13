@@ -56,6 +56,7 @@ Viewport Camera;
 
 SDL_Surface *Screen = NULL;
 SDL_Surface *Arrow = NULL;
+SDL_Surface *GreenArrow = NULL;
 SDL_Surface *Serious = NULL;
 SDL_Surface *Gunman = NULL;
 SDL_Surface *PlayerNormal = NULL;
@@ -236,31 +237,36 @@ bool Init()
 	std::fstream SettingsInput;
 	SettingsInput.open("Resources/Settings");
 	
-	if (!SettingsInput.good())
+	if (SettingsInput.is_open())
 	{
-		DebugWindow("Settings file not found, creating a default");
-		SettingsInput << 100;
-		SettingsInput << 1;
-		SettingsInput << 1;
-		SettingsInput << 1;
-		SettingsInput << 1366;
-		SettingsInput << 768;
-		SettingsInput << 0;
+		SettingsInput >> Volume;
+		SettingsInput >> ScreenShake;
+		SettingsInput >> StepSoundsEnabled;
+		SettingsInput >> Windowed;
+		SettingsInput >> ScreenWidth;
+		SettingsInput >> ScreenHeight;
+		SettingsInput >> FirstTime;
 	}
 
-	SettingsInput >> Volume;
-	SettingsInput >> ScreenShake;
-	SettingsInput >> StepSoundsEnabled;
-	SettingsInput >> Windowed;
-	SettingsInput >> ScreenWidth;
-	SettingsInput >> ScreenHeight;
-	SettingsInput >> FirstTime;
-	
+	else
+	{
+		DebugWindow("Settings file not found, using defaults");
+		Volume = 100;
+		ScreenShake = true;
+		StepSoundsEnabled = true;
+		Windowed = true;
+		ScreenWidth = 1366;
+		ScreenHeight = 768;
+		FirstTime = true;
+	}
+
+
+
 	SettingsInput.close();
 
 	Mix_Volume(-1,Volume);
 	if(!Windowed) Screen = SDL_SetVideoMode(ScreenWidth, ScreenHeight, 32, SDL_SWSURFACE | SDL_FULLSCREEN);
-	else if (!Windowed) Screen = SDL_SetVideoMode(ScreenWidth, ScreenHeight, 32, SDL_SWSURFACE);
+	else Screen = SDL_SetVideoMode(ScreenWidth, ScreenHeight, 32, SDL_SWSURFACE);
 	if (Screen == NULL) return false;
 	void SetTileScreen(int ScreenWidth, int ScreenHeight);
 	Camera.ScreenWidth = ScreenWidth;
@@ -303,16 +309,46 @@ void ApplyTextCentered(std::string String, TTF_Font *Font, SDL_Color Color, int 
 	SDL_FreeSurface(AppliedText);
 }
 
+void QuitGame(bool Restart)
+{
+	SDL_FreeSurface(CursorSheet);
+	SDL_FreeSurface(Arrow);
+	SDL_FreeSurface(GreenArrow);
+
+	TTF_CloseFont(Start);
+	TTF_CloseFont(Small);
+	TTF_CloseFont(StartBig);
+	TTF_CloseFont(Sys);
+
+	TTF_Quit();
+	Mix_Quit();
+	SDL_Quit();
+
+	if (Restart) State = GAME;
+	else State = QUIT;
+	main(NULL,NULL);
+}
+
 bool Load()
 {
-	Start = TTF_OpenFont("Resources/Fonts/Start.ttf",40);
-	Small = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",14);
-	SmallSmall = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf",12);
-	StartBig = TTF_OpenFont("Resources/Fonts/Start.ttf",128);
-	Sys = TTF_OpenFont("Resources/Fonts/Sys.ttf",160);
-	SysMid = TTF_OpenFont("Resources/Fonts/Sys.ttf", 64);
-	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf",32);
+	CursorSheet = LoadImage("Resources/Images/Cursor.png");
+	Arrow = LoadImage("Resources/Images/Arrow.png");
+	GreenArrow = LoadImage("Resources/Images/GreenArrow.png");
+
+	Start = TTF_OpenFont("Resources/Fonts/Start.ttf", 40);
+	Small = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf", 14);
+	StartBig = TTF_OpenFont("Resources/Fonts/Start.ttf", 128);
+	Sys = TTF_OpenFont("Resources/Fonts/Sys.ttf", 160);
 	if (Start == NULL || Sys == NULL || Small == NULL) return false;
+	
+	return true;
+}
+
+bool LoadGameFiles()
+{
+	SmallSmall = TTF_OpenFont("Resources/Fonts/Pixelmix.ttf", 12);
+	SysMid = TTF_OpenFont("Resources/Fonts/Sys.ttf", 64);
+	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf", 32);
 
 	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Shotgun1.wav");
 	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun1.wav");
@@ -344,7 +380,6 @@ bool Load()
 	PlayerNormal = LoadImage("Resources/Images/Player.png");
 	Spawner = LoadImage("Resources/Images/Spawner.png");
 	Serious = LoadImage("Resources/Images/Serious.png");
-	CursorSheet = LoadImage("Resources/Images/Cursor.png");
 	TeleportSheet = LoadImage("Resources/Images/Teleport.png");
 	Suicide = LoadImage("Resources/Images/Suicide.png");
 	Gunman = LoadImage("Resources/Images/Gunman.png");
@@ -355,7 +390,6 @@ bool Load()
 	Invader = LoadImage("Resources/Images/Invader.png");
 	Health = LoadImage("Resources/Images/Health.png");
 	Worm = LoadImage("Resources/Images/Worm.png");
-	Arrow = LoadImage("Resources/Images/Arrow.png");
 	ShipProjectile = LoadImage("Resources/Images/EnemyProjectile.png");
 	MachineGun = LoadImage("Resources/Images/MachineGun.png");
 	DoorGuard = LoadImage("Resources/Images/DoorGuard.png");

@@ -52,7 +52,7 @@ bool EnemyProjectile::IsNotActive() const
 	return !(EnemyProjectile::Active);
 }
 
-void Enemy::Shoot(int Type, int TargetX, int TargetY)
+void Enemy::Shoot(int Type, int TargetX, int TargetY, int Speed)
 {
 	EnemyProjectile PushThis(Type);
 	double Bearing = 0;
@@ -88,7 +88,9 @@ void Enemy::Shoot(int Type, int TargetX, int TargetY)
 
 	case 3: //Large projectile
 		Bearing = CalculateProjectileAngle(WorldX,WorldY,TargetX,TargetY);
-		GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 6);
+		
+		if (Speed == 0) GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, 6);
+		else GetXYRatio(&PushThis.XVel, &PushThis.YVel, Bearing, Speed);
 
 		PushThis.CollisionRect.w = 30;
 		PushThis.CollisionRect.h = 30;

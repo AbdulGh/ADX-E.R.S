@@ -6,6 +6,7 @@
 #include"DoEnemyProjectiles.h"
 #include"MiscObject.h"
 #include<time.h>
+#include<math.h>
 
 #define PI 3.1415
 
@@ -633,8 +634,8 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						Temp.Timer = 0;
 						Temp.Frame = 2;
 						Temp.Frametime = 2;
-						Temp.CollisionRect.w = 30;
-						Temp.CollisionRect.h = 50;
+						Temp.CollisionRect.w = 60;
+						Temp.CollisionRect.h = 100;
 						Temp.Moving = false;
 						ADXERSFlag = 1;
 						break;
@@ -2235,14 +2236,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					RenderRect->x = 850 - Camera.x;
 					RenderRect->y = CURRENTENEMY.WorldY - 20 - Camera.y;
-					RenderRect->w = 300;
+					RenderRect->w = 330;
 					RenderRect->h = 20;
 					SDL_FillRect(Screen, RenderRect, 0x262626);
 
 					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
 					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
-					RenderRect->w = 30;
-					RenderRect->h = 50;
+					RenderRect->w = 60;
+					RenderRect->h = 100;
 					SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
 
 					RenderRect->x += 270;
@@ -2274,14 +2275,14 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					RenderRect->x = 850 - Camera.x;
 					RenderRect->y = CURRENTENEMY.WorldY - 20 - Camera.y;
-					RenderRect->w = 300;
+					RenderRect->w = 330;
 					RenderRect->h = 20;
 					SDL_FillRect(Screen, RenderRect, 0x262626);
 
 					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
 					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
-					RenderRect->w = 30;
-					RenderRect->h = 50;
+					RenderRect->w = 60;
+					RenderRect->h = 100;
 					SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
 
 					if (CURRENTENEMY.Angle == 0) RenderRect->x += 270;
@@ -2298,6 +2299,96 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						CURRENTENEMY.WorldX = 850;
 						CURRENTENEMY.ShotCounter = 0;
 						CURRENTENEMY.Angle = 0;
+
+						DeathRect.x += 200;
+						DeathRect.y += 200;
+					}
+					break;
+
+				case 4:
+					
+					CURRENTENEMY.ShotCounter++;
+
+					if (CURRENTENEMY.ShotCounter % 3 == 0) 
+					{
+						int x;
+						if (CURRENTENEMY.Angle == 0) x = 270;
+						else x = -270;
+
+						EnemyProjectile OtherOne(3);
+						OtherOne.WorldX = CURRENTENEMY.WorldX;
+						OtherOne.WorldY = 20;
+						OtherOne.Damage = 30;
+						OtherOne.CollisionRect.w = 30;
+						OtherOne.CollisionRect.h = 30;
+
+						XDiff = CURRENTENEMY.WorldX - DeathRect.x;
+						YDiff = CURRENTENEMY.WorldY - DeathRect.x;
+						Distance = sqrt(XDiff * XDiff + YDiff * YDiff);
+						int WastingMemory = atan(float(300.0/Distance)) * 180 / PI;
+						int Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX, CURRENTENEMY.WorldY, DeathRect.x, DeathRect.y);
+						GetXYRatio(&OtherOne.XVel, &OtherOne.YVel, Angle + WastingMemory, 25);
+						EnemyProjectileVector.push_back(OtherOne);
+						GetXYRatio(&OtherOne.XVel, &OtherOne.YVel, Angle - WastingMemory, 25);
+						EnemyProjectileVector.push_back(OtherOne);
+
+						DebugWindow(std::to_string(WastingMemory));
+						DebugWindow(std::to_string(Distance));
+						DebugWindow(std::to_string(float(300.0 / Distance)));
+
+						OtherOne.WorldX = CURRENTENEMY.WorldX + x;
+						XDiff = CURRENTENEMY.WorldX - DeathRect.x + x;
+						Distance = sqrt(XDiff * XDiff + YDiff * YDiff);
+						WastingMemory = atan(float(300.0 / Distance)) * 180 / PI;
+						Angle = CalculateProjectileAngle(CURRENTENEMY.WorldX + x, CURRENTENEMY.WorldY, DeathRect.x, DeathRect.y);
+						GetXYRatio(&OtherOne.XVel, &OtherOne.YVel, Angle + WastingMemory, 25);
+						EnemyProjectileVector.push_back(OtherOne);
+						GetXYRatio(&OtherOne.XVel, &OtherOne.YVel, Angle - WastingMemory, 25);
+						EnemyProjectileVector.push_back(OtherOne);
+					}
+
+					if (CURRENTENEMY.ShotCounter == 70)
+					{
+						Distance = sqrt((CURRENTENEMY.WorldX - PlayerX) * (CURRENTENEMY.WorldX - PlayerX) + (CURRENTENEMY.WorldY - PlayerY) * (CURRENTENEMY.WorldY - PlayerY));
+						if (CURRENTENEMY.Angle == 0) CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX - Distance, 30);
+						else CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX + Distance, 30);
+						CURRENTENEMY.ShotCounter = 0;
+					}
+
+					if (rand() < 100)
+					{
+						CURRENTENEMY.Angle = 1 - CURRENTENEMY.Angle;
+						CURRENTENEMY.WorldX = 850 + 270 * CURRENTENEMY.Angle;
+					}
+
+					if (CURRENTENEMY.Angle == 0) AngleOffset -= 0.5;
+					else AngleOffset += 0.5;
+
+					RenderRect->x = 850 - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - 20 - Camera.y;
+					RenderRect->w = 330;
+					RenderRect->h = 20;
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+
+					RenderRect->x = CURRENTENEMY.WorldX - Camera.x;
+					RenderRect->y = CURRENTENEMY.WorldY - Camera.y;
+					RenderRect->w = 60;
+					RenderRect->h = 100;
+					SDL_FillRect(Screen, RenderRect, 0xFFFFFFF);
+
+					if (CURRENTENEMY.Angle == 0) RenderRect->x += 270;
+					else RenderRect->x -= 270;
+
+					SDL_FillRect(Screen, RenderRect, 0x262626);
+
+					if (CURRENTENEMY.Health <= 2000)
+					{
+						CreateDebris(5, 6, CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, 0, 0, 0xFFFFFF);
+						BossStage = 5;
+						CURRENTENEMY.WorldY = 20;
+						CURRENTENEMY.WorldX = 850;
+						CURRENTENEMY.ShotCounter = 0;
+						CURRENTENEMY.Angle = 0;
 						CURRENTENEMY.CollisionRect.w = 60;
 						CURRENTENEMY.CollisionRect.h = 60;
 						CURRENTENEMY.YVel = 10;
@@ -2308,7 +2399,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					break;
 
-				case 4:
+				case 5:
 					{
 						CURRENTENEMY.ShotCounter++;
 						CURRENTENEMY.BurnTimer = 5;

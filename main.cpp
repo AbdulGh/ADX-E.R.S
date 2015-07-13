@@ -9,12 +9,6 @@
 
 int main(int argc, char *argv[])
 {
-	if (FirstTime)
-	{
-		FirstTime = false;
-		Options();
-	}
-	
 	if (State != QUIT)
 	{
 		srand(time(NULL));
@@ -30,7 +24,14 @@ int main(int argc, char *argv[])
 			DebugWindow("Failed to load all files!");
 		}
 
+		if (FirstTime)
+		{
+			FirstTime = false;
+			Options();
+		}
+		
 		SDL_ShowCursor(SDL_DISABLE);
+
 		SetClips();
 
 		std::string IntroText = "ADX E.R.S";
@@ -66,9 +67,12 @@ int main(int argc, char *argv[])
 
 		State = Menu();
 		if (State == QUIT) return 0;
-		else if (State == GAME) Game();
-		else if (State == OPTIONS) Options();
+		else if (State == GAME) 
+		{
+			LoadGameFiles();
+			Game();
+		}
+		else Options();
 	}
-
 	return 0;
 }

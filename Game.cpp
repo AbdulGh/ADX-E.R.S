@@ -292,7 +292,7 @@ void DoThings()
 			SDL_Delay(2000);
 			State = QUIT;
 			LevelFinished = true;
-			main(NULL, NULL);
+			QuitGame();
 		}
 
 		else
@@ -328,7 +328,23 @@ void HandleEvents()
 	{
 		if (event.type == SDL_KEYDOWN)
 		{
-			if (event.key.keysym.sym == SDLK_ESCAPE) {State = QUIT; LevelFinished = true;}
+			if (event.key.keysym.sym == SDLK_ESCAPE) 
+			{
+				SDL_SetAlpha(Fader, SDL_SRCALPHA, 126);
+				ApplySurface(0, 0, Fader, Screen);
+				ApplyTextCentered("Quit? Y/N", Start, White);
+				SDL_Flip(Screen);
+				bool Done = false;
+				while (!Done)
+				{
+					while (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN)
+					{
+						if (event.key.keysym.sym == SDLK_y) QuitGame();
+						else if (event.key.keysym.sym == SDLK_n || event.key.keysym.sym == SDLK_ESCAPE) Done = true;
+					}
+				}
+			}
+
 			else if (event.key.keysym.sym == SDLK_e && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(false);
 			else if (event.key.keysym.sym == SDLK_TAB)
@@ -584,7 +600,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	//goto Jump; //Only used for debugging purposes I promise
+	goto Jump; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -1316,257 +1332,257 @@ void Game()
 
 		case 4:
 		{
-				  if (Enemies == 0)
-				  {
-					  if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
-					  CutsceneFinished = false;
-					  int Stage = 0;
-					  int Integer = 0;
+			if (Enemies == 0)
+			{
+				if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
+				CutsceneFinished = false;
+				int Stage = 0;
+				int Integer = 0;
 
-					  SDL_Rect One;
-					  SDL_Rect Two;
-					  SDL_Rect Three;
-					  SDL_Rect Four;
-					  SDL_Rect Five;
+				SDL_Rect One;
+				SDL_Rect Two;
+				SDL_Rect Three;
+				SDL_Rect Four;
+				SDL_Rect Five;
 
-					  Camera.MoveViewport(Character.WorldX - ScreenWidth / 2, (Character.WorldY + 300) - ScreenHeight / 2);
-					  Character.NormalMovement = false;
+				Camera.MoveViewport(Character.WorldX - ScreenWidth / 2, (Character.WorldY + 300) - ScreenHeight / 2);
+				Character.NormalMovement = false;
 
-					  while (!CutsceneFinished)
-					  {
-						  FPSTimer.start();
+				while (!CutsceneFinished)
+				{
+					FPSTimer.start();
 
-						  Camera.Update();
-						  CheckShake();
-						  DoDebris(Camera.x, Camera.y, Screen);
-						  DoTiles(Camera.x, Camera.y);
-						  DoMouse(&x, &y);
-						  Damaged = false;
-						  Character.Update();
-						  //CheckText();
-						  DoPickups(Camera.x, Camera.y, CharacterRect);
-						  Character.InvunFrames = 100;
-						  DoEnemyProjectiles(Camera.x, Camera.y, CharacterRect);
-						  DoEnemies(Camera.x, Camera.y, 0, 0, CharacterRect, 0, 0);
-						  DoFloat(Camera.x, Camera.y);
-						  DoProjectiles(Camera.x, Camera.y);
+					Camera.Update();
+					CheckShake();
+					DoDebris(Camera.x, Camera.y, Screen);
+					DoTiles(Camera.x, Camera.y);
+					DoMouse(&x, &y);
+					Damaged = false;
+					Character.Update();
+					//CheckText();
+					DoPickups(Camera.x, Camera.y, CharacterRect);
+					Character.InvunFrames = 100;
+					DoEnemyProjectiles(Camera.x, Camera.y, CharacterRect);
+					DoEnemies(Camera.x, Camera.y, 0, 0, CharacterRect, 0, 0);
+					DoFloat(Camera.x, Camera.y);
+					DoProjectiles(Camera.x, Camera.y);
 
-						  switch (Stage)
-						  {
-						  case 0:
-							  Integer++;
-							  ApplySurface(Character.WorldX - 15 - Camera.x, (Character.WorldY + 302) - Camera.y, TeleportSheet, Screen, &TeleportClips[Integer % 2]);
-							  if (Integer == 61) Stage = 1;
-							  break;
-						  case 1:
-							  Update = false;
+					switch (Stage)
+					{
+					case 0:
+						Integer++;
+						ApplySurface(Character.WorldX - 15 - Camera.x, (Character.WorldY + 302) - Camera.y, TeleportSheet, Screen, &TeleportClips[Integer % 2]);
+						if (Integer == 61) Stage = 1;
+						break;
+					case 1:
+						Update = false;
 
-							  Integer = 0;
+						Integer = 0;
 
-							  Five.x = Character.WorldX - Camera.x;
-							  Five.y = (Character.WorldY + 300) - Camera.y;
-							  Five.w = 10;
-							  Five.h = 10;
+						Five.x = Character.WorldX - Camera.x;
+						Five.y = (Character.WorldY + 300) - Camera.y;
+						Five.w = 10;
+						Five.h = 10;
 
-							  One.x = Five.x - 15;
-							  One.y = Five.y - 2120;
-							  One.w = 40;
-							  One.h = 100;
+						One.x = Five.x - 15;
+						One.y = Five.y - 2120;
+						One.w = 40;
+						One.h = 100;
 
-							  Two.x = Five.x + 2030;
-							  Two.y = Five.y - 15;
-							  Two.w = 100;
-							  Two.h = 40;
+						Two.x = Five.x + 2030;
+						Two.y = Five.y - 15;
+						Two.w = 100;
+						Two.h = 40;
 
-							  Three.x = One.x;
-							  Three.y = Five.y + 2030;
-							  Three.w = 40;
-							  Three.h = 100;
+						Three.x = One.x;
+						Three.y = Five.y + 2030;
+						Three.w = 40;
+						Three.h = 100;
 
-							  Four.x = Five.x - 2120;
-							  Four.y = Two.y;
-							  Four.w = 100;
-							  Four.h = 40;
+						Four.x = Five.x - 2120;
+						Four.y = Two.y;
+						Four.w = 100;
+						Four.h = 40;
 
-							  Stage = 2;
-						  case 2:
-							  Integer++;
+						Stage = 2;
+					case 2:
+						Integer++;
 
-							  *RenderRect = One;
-							  SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
-							  *RenderRect = Two;
-							  SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
-							  *RenderRect = Three;
-							  SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
-							  *RenderRect = Four;
-							  SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
-							  *RenderRect = Five;
-							  SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+						*RenderRect = One;
+						SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+						*RenderRect = Two;
+						SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+						*RenderRect = Three;
+						SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+						*RenderRect = Four;
+						SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
+						*RenderRect = Five;
+						SDL_FillRect(Screen, RenderRect, 0xC0C0C0);
 
 
-							  One.y += 10;
-							  Two.x -= 10;
-							  Three.y -= 10;
-							  Four.x += 10;
+						One.y += 10;
+						Two.x -= 10;
+						Three.y -= 10;
+						Four.x += 10;
 
-							  if (Integer == 200)
-							  {
-								  CutsceneFinished = true;
+						if (Integer == 200)
+						{
+							CutsceneFinished = true;
 
-								  SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
-								  SpawnVector.push_back(Character.WorldX - 15);
-								  SpawnVector.push_back(Character.WorldY + 180);
-								  SpawnVector.push_back(9);
-								  SpawnEnemies(SpawnVector);
-								  EnemyVector.at(EnemyVector.size() - 1).Frame = 3;
-								  EnemyVector.at(EnemyVector.size() - 1).Frametime = 15;
+							SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
+							SpawnVector.push_back(Character.WorldX - 15);
+							SpawnVector.push_back(Character.WorldY + 180);
+							SpawnVector.push_back(9);
+							SpawnEnemies(SpawnVector);
+							EnemyVector.at(EnemyVector.size() - 1).Frame = 3;
+							EnemyVector.at(EnemyVector.size() - 1).Frametime = 15;
 
-								  Shake = true;
-								  Dur = 45;
-								  Mag = 20;
-							  }
-							  break;
-						  }
-						  SDL_Flip(Screen);
-						  ClearScreen();
-						  if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
-					  }
-					  LevelProgress = 5;
-					  Character.NormalMovement = true;
-					  Update = true;
+							Shake = true;
+							Dur = 45;
+							Mag = 20;
+						}
+						break;
+					}
+					SDL_Flip(Screen);
+					ClearScreen();
+					if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
+				}
+				LevelProgress = 5;
+				Character.NormalMovement = true;
+				Update = true;
 
-					  BossName = "M.A.R.S:";
-					  BossHealth = 14000;
-					  Multiplier = (float)(ScreenWidth - 50) / BossHealth;
-					  Boss = true;
+				BossName = "M.A.R.S:";
+				BossHealth = 14000;
+				Multiplier = (float)(ScreenWidth - 50) / BossHealth;
+				Boss = true;
 
-					  pukciP.WorldX = Character.WorldX - 200;
-					  pukciP.WorldY = Character.WorldY;
-					  PickupVector.push_back(pukciP);
+				pukciP.WorldX = Character.WorldX - 200;
+				pukciP.WorldY = Character.WorldY;
+				PickupVector.push_back(pukciP);
 
-					  for (int i = 0; i < 5; i++)
-					  {
-						  pukciP.WorldX += 100;
-						  PickupVector.push_back(pukciP);
-					  }
-				  }
-				  break;
+				for (int i = 0; i < 5; i++)
+				{
+					pukciP.WorldX += 100;
+					PickupVector.push_back(pukciP);
+				}
+			}
+			break;
 		}
 
 		case 5:
 		{
-				  if (Boss == false)
-				  {
-					  LevelProgress = 6;
-					  EnemyVector.erase(EnemyVector.begin(), EnemyVector.end());
-				  }
-				  break;
+			if (Boss == false)
+			{
+				LevelProgress = 6;
+				EnemyVector.erase(EnemyVector.begin(), EnemyVector.end());
+			}
+			break;
 		}
 
 		case 6:
 		{
-				  Update = false;
+			Update = false;
 
-				  SDL_Rect Five;
-				  Five.x = Temp1;
-				  Five.y = Temp2;
-				  Five.w = 10;
-				  Five.h = 10;
+			SDL_Rect Five;
+			Five.x = Temp1;
+			Five.y = Temp2;
+			Five.w = 10;
+			Five.h = 10;
 
-				  SpareTimer.stop();
+			SpareTimer.stop();
 
-				  while (!CutsceneFinished)
-				  {
-					  FPSTimer.start();
-					  Camera.Update();
-					  CheckShake();
-					  DoTiles(Camera.x, Camera.y);
-					  DoMouse(&x, &y);
-					  Character.XVel = 0;
-					  Character.YVel = 0;
-					  Damaged = false;
-					  Character.Update();
-					  DoPickups(Camera.x, Camera.y, CharacterRect);
-					  Character.InvunFrames = 100;
-					  DoEnemyProjectiles(Camera.x, Camera.y, CharacterRect);
-					  DoEnemies(Camera.x, Camera.y, 0, 0, CharacterRect, 0, 0);
-					  DoFloat(Camera.x, Camera.y);
-					  DoProjectiles(Camera.x, Camera.y);
-					  DoDebris(Camera.x, Camera.y, Screen);
-					  Camera.MoveViewport(Temp1 - ScreenWidth / 2, Temp2 - ScreenHeight / 2);
+			while (!CutsceneFinished)
+			{
+				FPSTimer.start();
+				Camera.Update();
+				CheckShake();
+				DoTiles(Camera.x, Camera.y);
+				DoMouse(&x, &y);
+				Character.XVel = 0;
+				Character.YVel = 0;
+				Damaged = false;
+				Character.Update();
+				DoPickups(Camera.x, Camera.y, CharacterRect);
+				Character.InvunFrames = 100;
+				DoEnemyProjectiles(Camera.x, Camera.y, CharacterRect);
+				DoEnemies(Camera.x, Camera.y, 0, 0, CharacterRect, 0, 0);
+				DoFloat(Camera.x, Camera.y);
+				DoProjectiles(Camera.x, Camera.y);
+				DoDebris(Camera.x, Camera.y, Screen);
+				Camera.MoveViewport(Temp1 - ScreenWidth / 2, Temp2 - ScreenHeight / 2);
 
-					  if (BoxXVel >= 0) BoxXVel += 0.1;
-					  else BoxXVel -= 0.1;
-					  if (BoxYVel >= 0) BoxYVel += 0.1;
-					  else BoxYVel -= 0.1;
+				if (BoxXVel >= 0) BoxXVel += 0.1;
+				else BoxXVel -= 0.1;
+				if (BoxYVel >= 0) BoxYVel += 0.1;
+				else BoxYVel -= 0.1;
 
-					  if (Temp1 + BoxXVel + 20 > LevelWidth - 20 || Temp1 + BoxXVel < 20)
-					  {
-						  BoxXVel *= -0.9;
-						  Shake = true;
-						  Mag = 20;
-						  Dur = 30;
-					  }
+				if (Temp1 + BoxXVel + 20 > LevelWidth - 20 || Temp1 + BoxXVel < 20)
+				{
+					BoxXVel *= -0.9;
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
+				}
 
-					  if (Temp2 + BoxYVel + 20 > LevelHeight - 20 || Temp2 + BoxYVel < 20)
-					  {
-						  BoxYVel *= -0.9;
-						  Shake = true;
-						  Mag = 20;
-						  Dur = 30;
+				if (Temp2 + BoxYVel + 20 > LevelHeight - 20 || Temp2 + BoxYVel < 20)
+				{
+					BoxYVel *= -0.9;
+					Shake = true;
+					Mag = 20;
+					Dur = 30;
 
-						  if (BoxYVel >= 0)
-						  {
-							  TopBounces--;
-							  if (TopBounces == -1)
-							  {
-								  LevelVector.erase(LevelVector.begin() + 1);
-								  Tile TempTile;
-								  TempTile.Height = 20;
-								  TempTile.WorldX = 0;
-								  TempTile.WorldY = 0;
-								  TempTile.Width = Temp1 - 50;
-								  LevelVector.push_back(TempTile);
+					if (BoxYVel >= 0)
+					{
+						TopBounces--;
+						if (TopBounces == -1)
+						{
+							LevelVector.erase(LevelVector.begin() + 1);
+							Tile TempTile;
+							TempTile.Height = 20;
+							TempTile.WorldX = 0;
+							TempTile.WorldY = 0;
+							TempTile.Width = Temp1 - 50;
+							LevelVector.push_back(TempTile);
 
-								  TempTile.WorldX = Temp1 + 50;
-								  TempTile.Width = LevelWidth - (Temp1 + 50);
-								  LevelVector.push_back(TempTile);
+							TempTile.WorldX = Temp1 + 50;
+							TempTile.Width = LevelWidth - (Temp1 + 50);
+							LevelVector.push_back(TempTile);
 
-								  CreateDebris(6, 8, Temp1, 20, 0, 15, 0xFFFFFF);
-								  CreateDebris(5, 10, Temp1, 20, 0, 15, 0xFF0000);
+							CreateDebris(6, 8, Temp1, 20, 0, 15, 0xFFFFFF);
+							CreateDebris(5, 10, Temp1, 20, 0, 15, 0xFF0000);
 
-								  Shake = true;
-								  Mag = 30;
-								  Dur = 50;
+							Shake = true;
+							Mag = 30;
+							Dur = 50;
 
-								  SpareTimer.start();
-							  }
-						  }
-					  }
+							SpareTimer.start();
+						}
+					}
+				}
 
-					  if (TopBounces >= 0)
-					  {
-						  Temp1 += BoxXVel;
-						  Temp2 += BoxYVel;
-						  Five.x = Temp1 - Camera.x;
-						  Five.y = Temp2 - Camera.y;
-						  Five.w = 20;
-						  Five.h = 20;
-						  SDL_FillRect(Screen, &Five, 0xFF0000);
-					  }
+				if (TopBounces >= 0)
+				{
+					Temp1 += BoxXVel;
+					Temp2 += BoxYVel;
+					Five.x = Temp1 - Camera.x;
+					Five.y = Temp2 - Camera.y;
+					Five.w = 20;
+					Five.h = 20;
+					SDL_FillRect(Screen, &Five, 0xFF0000);
+				}
 
-					  if (SpareTimer.is_started() && SpareTimer.get_ticks() > 2000)
-					  {
-						  CutsceneFinished = true;
-						  LevelProgress = 7;
-					  }
+				if (SpareTimer.is_started() && SpareTimer.get_ticks() > 2000)
+				{
+					CutsceneFinished = true;
+					LevelProgress = 7;
+				}
 
-					  SDL_Flip(Screen);
-					  ClearScreen();
-					  if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
-				  }
-				  Update = true;
-				  break;
+				SDL_Flip(Screen);
+				ClearScreen();
+				if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
+			}
+			Update = true;
+			break;
 		}
 
 		case 7:
@@ -2412,7 +2428,7 @@ void Game()
 				{
 					SpawnVector.clear();
 					SpawnVector.push_back(985);
-					SpawnVector.push_back(-40);
+					SpawnVector.push_back(-110);
 					SpawnVector.push_back(21);
 					SpawnEnemies(SpawnVector);
 
