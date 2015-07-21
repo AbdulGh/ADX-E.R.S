@@ -59,6 +59,7 @@ extern std::string BossName;
 extern SDL_Rect BossHealthRect;
 
 extern int BossHealth;
+extern int BossStage;
 extern double Multiplier;
 
 void SpawnEnemies(std::vector <int> Enemus); //X Y Type

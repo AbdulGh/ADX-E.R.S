@@ -122,6 +122,8 @@ Mix_Chunk *Step = NULL;
 Mix_Chunk *FlamethrowerSFX = NULL;
 Mix_Chunk *MinigunSFX = NULL;
 Mix_Chunk *MinigunSpindown = NULL;
+Mix_Chunk *RocketSFX = NULL;
+Mix_Chunk *ExplosionSFX = NULL;
 
 Mix_Music *BossTheme = NULL;
 
@@ -351,7 +353,7 @@ bool LoadGameFiles()
 	SysSmall = TTF_OpenFont("Resources/Fonts/Sys.ttf", 32);
 
 	ShotgunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Shotgun1.wav");
-	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun1.wav");
+	MachineGunFire = Mix_LoadWAV("Resources/Sounds/Weapons/Machinegun.ogg");
 	Pistol = Mix_LoadWAV("Resources/Sounds/Weapons/Laser1.ogg");
 	Empty = Mix_LoadWAV("Resources/Sounds/Weapons/Empty.ogg");
 	SmashDeath = Mix_LoadWAV("Resources/Sounds/Other/SmashDeath.wav");
@@ -360,6 +362,9 @@ bool LoadGameFiles()
 	MinigunSFX = Mix_LoadWAV("Resources/Sounds/Weapons/MinigunLoop.ogg");
 	MinigunSpindown = Mix_LoadWAV("Resources/Sounds/Weapons/MinigunSpindown.ogg");
 	FlamethrowerSFX = Mix_LoadWAV("Resources/Sounds/Weapons/Flamethrower.ogg");
+	RocketSFX = Mix_LoadWAV("Resources/Sounds/Weapons/Rocket.ogg");
+	ExplosionSFX = Mix_LoadWAV("Resources/Sounds/Weapons/Explosion1.ogg");
+
 
 	for (int i = 1; i <= 23; i++)
 	{

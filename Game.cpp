@@ -347,13 +347,20 @@ void HandleEvents()
 
 			else if (event.key.keysym.sym == SDLK_e && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(true);
 			else if (event.key.keysym.sym == SDLK_q && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT))) SwapWeapons(false);
+
 			else if (event.key.keysym.sym == SDLK_TAB)
 			{
 				DebugBool = !DebugBool;
 				DumpDebugWindowTostderr();
 				for (int i = 0; i < WEAPONS; i++) Ammo[i] = 9999;
 			}
-			else if (event.key.keysym.sym == SDLK_k) Character.Health = 100;
+			else if (event.key.keysym.sym == SDLK_k)
+			{
+				for (int u = 0; u < EnemyVector.size(); u++)
+				{
+					EnemyVector.at(u).Health -= 999;
+				}
+			}
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && CurrentSelection == 1)
@@ -423,7 +430,7 @@ void HandleEvents()
 			else
 			{
 				Ammo[3]-=1;
-				if (LoopingChannel == -50) LoopingChannel = Mix_PlayChannel(-1, FlamethrowerSFX, -1);
+				if (LoopingChannel == -50) LoopingChannel = Mix_FadeInChannel(-1, FlamethrowerSFX, -1, 200);
 				for (int e = 0; e < 3; e++)
 				{
 					Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x + (rand() % 16) - 8, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y) + (rand() % 16) - 8;
@@ -459,6 +466,7 @@ void HandleEvents()
 			else
 			{
 				Ammo[5]--;
+				Mix_PlayChannel(-1, RocketSFX, 0);
 				Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y, x, y);
 				GetXYRatio(&XRatio, &YRatio, Angle, 20);
 				CreateProjectile(Character.WorldX + (Character.CurrentSprite->w / 2), Character.WorldY + (Character.CurrentSprite->h / 2), XRatio, YRatio, 5);
@@ -520,9 +528,15 @@ void HandleEvents()
 
 	else if (LoopingChannel != -50 && !(MouseStates & SDL_BUTTON(SDL_BUTTON_LEFT)))
 	{
-		Mix_HaltChannel(LoopingChannel);
+		if (CurrentSelection == 9) 
+		{
+			Mix_PlayChannel(-1, MinigunSpindown, 0);
+			Mix_HaltChannel(LoopingChannel);
+		}
+
+		else Mix_FadeOutChannel(LoopingChannel,1000);
+
 		LoopingChannel = -50;
-		if (CurrentSelection == 9) Mix_PlayChannel(-1, MinigunSpindown, 0);
 	}
 }
 
@@ -600,7 +614,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	goto Jump; //Only used for debugging purposes I promise
+	//goto Jump; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -1235,6 +1249,7 @@ void Game()
 			pukciP.WorldX = 800;
 			pukciP.WorldY = 800;
 			PickupVector.push_back(pukciP);
+			BossTheme = Mix_LoadMUS("Resources/Sounds/Music/One.ogg");
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -1455,6 +1470,8 @@ void Game()
 				BossHealth = 14000;
 				Multiplier = (float)(ScreenWidth - 50) / BossHealth;
 				Boss = true;
+
+				Mix_PlayMusic(BossTheme, -1);
 
 				pukciP.WorldX = Character.WorldX - 200;
 				pukciP.WorldY = Character.WorldY;
@@ -2171,7 +2188,8 @@ void Game()
 					}
 
 					CutsceneFinished = false;
-					//Character.NormalMovement = false;
+					Mix_HaltMusic();
+					BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Four.ogg");
 					Update = false;
 					int Stage = 0;
 					int Integer = 0;
@@ -2267,6 +2285,8 @@ void Game()
 									RUSHMARS.CollisionRect.h = 100;
 									EnemyVector.push_back(RUSHMARS);
 
+									Mix_PlayMusic(BossTheme, -1);
+
 									Shake = true;
 									Dur = 45;
 									Mag = 20;
@@ -2326,7 +2346,7 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 	}
 
-	Jump:
+Jump:
 	Temp1 = 1000;
 	Temp2 = 1000;
 
@@ -2401,6 +2421,9 @@ void Game()
 
 					DeathRect.x = DeathRect.x - DeathRect.x % 5;
 					DeathRect.y = DeathRect.y - DeathRect.y % 5;
+					
+					BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Wan.ogg");
+					Mix_PlayMusic(BossTheme, -1);
 
 					SpareTimer.start();
 				}
@@ -2432,8 +2455,11 @@ void Game()
 					SpawnVector.push_back(21);
 					SpawnEnemies(SpawnVector);
 
-					pukciP.WorldX = Character.WorldX - 300;
-					pukciP.WorldY = Character.WorldY - 300;
+					BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Too.ogg");
+					Mix_PlayMusic(BossTheme, -1);
+
+					pukciP.WorldX = DeathRect.x;
+					pukciP.WorldY = DeathRect.y;
 					pukciP.Type = 9;
 
 					for (int u = 0; u <= 3; u++)
@@ -2443,8 +2469,24 @@ void Game()
 							pukciP.WorldX += 100;
 							PickupVector.push_back(pukciP);
 						}
-						pukciP.WorldX = Character.WorldX - 200;
+						pukciP.WorldX = DeathRect.x;
 						pukciP.WorldY += 100;
+					}
+
+					pukciP.WorldX = DeathRect.x;
+					pukciP.WorldY = DeathRect.y;
+					pukciP.Type = 1;
+
+					for (int u = 0; u <= 3; u++)
+					{
+						for (int i = 0; i < 5; i++)
+						{
+							pukciP.WorldX += 100;
+							PickupVector.push_back(pukciP);
+						}
+						pukciP.WorldX = DeathRect.x;
+						pukciP.WorldY += 100;
+						pukciP.Type++;
 					}
 
 					Boss = true;
@@ -2456,7 +2498,12 @@ void Game()
 
 			case 3:
 			{
-				
+				if (BossStage == 6)
+				{
+					LaserSpeed = 0;
+					Laser = true;
+					LaserY = 900;
+				}
 			}
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());

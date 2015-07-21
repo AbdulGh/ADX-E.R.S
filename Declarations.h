@@ -145,6 +145,8 @@ extern Mix_Chunk *Impact;
 extern Mix_Chunk *Step;
 extern Mix_Chunk *MinigunSFX;
 extern Mix_Chunk *MinigunSpindown;
+extern Mix_Chunk *RocketSFX;
+extern Mix_Chunk *ExplosionSFX;
 extern Mix_Chunk *FlamethrowerSFX;
 
 extern enum Gamestate {GAME,OPTIONS,QUIT};
