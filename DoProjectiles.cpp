@@ -73,7 +73,7 @@ void CreateExplosion(int X, int Y)
 
 	Mix_PlayChannel(-1,ExplosionSFX,0);
 	SpareStream.str("");
-	SpareStream << "Resources/Sounds/Weapons/Explosion" << rand() % 3 + 1 << ".ogg";
+	SpareStream << "Resources/Sounds/Weapons/Explosion" << rand() % 5 + 1 << ".ogg";
 	ExplosionSFX = Mix_LoadWAV(SpareStream.str().c_str());
 
 	for (int i = 0; i <= 360; i += 2)

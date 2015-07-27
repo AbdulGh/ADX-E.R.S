@@ -1087,7 +1087,8 @@ void Game()
 				SpawnEnemies(SpawnVector);
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 			}
-			if (Character.WorldY < -10) LevelFinished = true;
+
+			if (Character.WorldY < -40) LevelFinished = true;
 		};
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
@@ -2455,9 +2456,6 @@ Jump:
 					SpawnVector.push_back(21);
 					SpawnEnemies(SpawnVector);
 
-					BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Too.ogg");
-					Mix_PlayMusic(BossTheme, -1);
-
 					pukciP.WorldX = DeathRect.x;
 					pukciP.WorldY = DeathRect.y;
 					pukciP.Type = 9;
@@ -2504,14 +2502,85 @@ Jump:
 					Laser = true;
 					LaserY = 900;
 				}
+
+				if (Boss == false) LevelProgress = 4;
+				break;
+			}
+
+			case 4:
+			{
+				CutsceneFinished = false;
+				int FPS = 60;
+				Character.NormalMovement = false;
+				Update = false;
+				SDL_Rect Rect = TeleportClips[0];
+				Number = 0;
+				Mix_HaltMusic();
+
+				while (!CutsceneFinished)
+				{
+					FPSTimer.start();
+					DoThings();
+					HandleEvents();
+					Number++;
+
+					Camera.MoveViewport(Temp1 - ScreenWidth/2 + 30, Temp2 - ScreenHeight/2 + 30);
+
+					if (Number < 250)
+					{
+						if (rand() < 2000) CreateExplosion(Temp1 - 10 + rand() % 70, Temp2 - 10 + rand() % 70);
+
+						Rect.w = 60;
+						Rect.h = 60;
+						Rect.x = Temp1 - Camera.x;
+						Rect.y = Temp2 - Camera.y;
+						SDL_FillRect(Screen, &Rect, 0xFFFFFF);
+
+						int XInc = (Temp1 - 830) / 16;
+						int YInc = (Temp2 - 20) / 16;
+						int X = 850;
+						int Y = 20;
+
+						for (int u = 0; u < 16; u++)
+						{
+							X += XInc;
+							Y += YInc;
+							Rect.x = X - Camera.x;
+							Rect.y = Y - Camera.y;
+							Rect.w = 20;
+							Rect.h = 20;
+							SDL_FillRect(Screen, &Rect, 0x262626);
+						}
+
+						SDL_Flip(Screen);
+					}
+
+					else if (Number == 250) 
+					{
+						CreateDebris(16,5,Temp1 + 30, Temp2 + 30, 0,0, 0xFFFFFF);
+						CreateExplosion(Temp1 + 30, Temp2 + 30);
+						FPS = 15;
+					}
+
+					else if (Number == 295) FPS = 60;
+
+					else if (Number == 500) ScreenAlpha = 1;
+
+					else if (ScreenAlpha == 249)
+					{
+						CutsceneFinished = true;
+						LevelFinished = true;
+					}
+					if (FPSTimer.get_ticks() < 1000 / FPS) SDL_Delay(1000 / FPS - FPSTimer.get_ticks());
+				}
 			}
 		}
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 	}
 
 	ClearScreen();
-	ApplySurface(20, 20, Win, Screen);
+	Terminal("Resources/Text/End");
 	SDL_Flip(Screen);
 	SDL_Delay(2000);
-	State = QUIT;
+	QuitGame(true);
 }

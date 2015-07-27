@@ -2108,11 +2108,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				RenderRect->w = CURRENTENEMY.WorldX - 20;
 			}
 
-			else 
+			else if (CURRENTENEMY.WorldX > Camera.x)
 			{
 				RenderRect->x = 0;
 				RenderRect->w = CURRENTENEMY.WorldX - Camera.x;
 			}
+
+			else RenderRect->w = 0;
 
 			RenderRect->h = 10;
 			RenderRect->y = (CURRENTENEMY.CollisionRect.h - RenderRect->h) / 2 + CURRENTENEMY.WorldY - Camera.y;
@@ -2161,11 +2163,13 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				RenderRect->h = CURRENTENEMY.WorldY - 20;
 			}
 
-			else
+			else if (CURRENTENEMY.WorldY > Camera.y)
 			{
 				RenderRect->y = 0;
 				RenderRect->h = CURRENTENEMY.WorldY - Camera.y;
 			}
+
+			else RenderRect->h = 0;
 
 			RenderRect->w = 10;
 			RenderRect->x = (CURRENTENEMY.CollisionRect.w - RenderRect->w) / 2 + CURRENTENEMY.WorldX - Camera.x;
@@ -2244,7 +2248,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					{
 						BossStage = 3;
 
-						BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Free.ogg");
+						BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Too.ogg");
 						Mix_PlayMusic(BossTheme, -1);
 
 						Pickup pukciP;
@@ -2326,7 +2330,6 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					{
 						CreateDebris(5, 6, CURRENTENEMY.WorldX + CURRENTENEMY.CollisionRect.w / 2, CURRENTENEMY.WorldY + CURRENTENEMY.CollisionRect.h / 2, 0, 0, 0xFFFFFF);
 						BossStage = 5;
-						DeathRect.w = 0;
 						CURRENTENEMY.WorldY = 20;
 						CURRENTENEMY.WorldX = 500;
 						CURRENTENEMY.ShotCounter = 0;
@@ -2338,8 +2341,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 						pukciP.WorldY = PlayerY;
 						pukciP.Type = 3;
 
-						BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Faar.ogg");
-						Mix_PlayMusic(BossTheme, -1);
+						EnemyProjectileVector.clear();
 
 						for (int u = 0; u <= 3; u++)
 						{
@@ -2360,6 +2362,10 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					if (CURRENTENEMY.WorldY == 40) 
 					{
 						BossStage = 6;
+						DeathRect.w = 0;
+
+						BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Free.ogg");
+						Mix_PlayMusic(BossTheme, -1);
 					}
 
 					RenderRect->x = 500 - Camera.x;
@@ -2417,9 +2423,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 					if (CURRENTENEMY.ShotCounter == 70)
 					{
-						Distance = sqrt((CURRENTENEMY.WorldX + 30 - PlayerX) * (CURRENTENEMY.WorldX + 30 - PlayerX) + (CURRENTENEMY.WorldY + 50 - PlayerY) * (CURRENTENEMY.WorldY + 50 - PlayerY));
-						if (CURRENTENEMY.Angle == 0) CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX - Distance, 90);
-						else CURRENTENEMY.Shoot(11, CURRENTENEMY.WorldX + Distance, 90);
+						CURRENTENEMY.BulletPattern(rand() % 5 + 1);
 						CURRENTENEMY.ShotCounter = 0;
 					}
 
