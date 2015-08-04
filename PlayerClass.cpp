@@ -118,15 +118,15 @@ void Player::Update()
 
 			if (IsIntersecting(CURRENTRECT, PlayerRect)) 
 			{
-				PlayerRect.x -= XVel * 2;
-				XVel *= -1;
+				PlayerRect.x -= XVel * 2.5;
+				XVel *= -1.5;
 			}
 
 			PlayerRect.y += YVel;
 			if (IsIntersecting(CURRENTRECT, PlayerRect))
 			{
-				PlayerRect.y -= YVel * 2;
-				YVel *= -1;
+				PlayerRect.y -= YVel * 2.5;
+				YVel *= -1.5;
 			}
 		}
 

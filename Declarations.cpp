@@ -314,8 +314,6 @@ void ApplyTextCentered(std::string String, TTF_Font *Font, SDL_Color Color, int 
 void QuitGame(bool Restart)
 {
 	SDL_FreeSurface(CursorSheet);
-	SDL_FreeSurface(Arrow);
-	SDL_FreeSurface(GreenArrow);
 
 	TTF_CloseFont(Start);
 	TTF_CloseFont(Small);

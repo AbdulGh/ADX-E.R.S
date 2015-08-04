@@ -8,32 +8,43 @@ void Options()
 
 	SDL_Surface *ArrowRotated = rotateSurface90Degrees(Arrow,2); //rotozoomSurface(Arrow,3.1418,1,0);
 	SDL_Surface *GreenArrowRotated = rotateSurface90Degrees(GreenArrow, 2);
-	CreateButton(20, 200, 1, ArrowRotated, GreenArrowRotated, 0);
-	CreateButton(420, 200, 2, Arrow, GreenArrow, 0);
-	CreateButton(20, 300, 3, ArrowRotated, GreenArrowRotated, 0);
-	CreateButton(420, 300, 4, Arrow, GreenArrow, 0);
-	CreateButton(20, 400, 5, ArrowRotated, GreenArrowRotated, 0);
-	CreateButton(420, 400, 6, Arrow, GreenArrow, 0);
-	CreateButton(20, 500, 7, ArrowRotated, GreenArrowRotated, 0);
-	CreateButton(420, 500, 8, Arrow, GreenArrow, 0);
-	CreateButton(20, 600, 9, ArrowRotated, GreenArrowRotated, 0);
-	CreateButton(420, 600, 10, Arrow, GreenArrow, 0);
 
-	SDL_Surface *Quit = TTF_RenderText_Blended(Start, "Exit", White);
-	SDL_Surface *QuitMouseover = TTF_RenderText_Blended(Start, "Exit", Green);
+	SDL_Surface *ScreenShakeNormal = TTF_RenderText_Blended(Small, "Screen Shake:", White);
+	SDL_Surface *ScreenShakeOver = TTF_RenderText_Blended(Small, "Screen Shake:", Green);
+	SDL_Surface *StepSoundsNormal = TTF_RenderText_Blended(Small, "Step Sounds:", White);
+	SDL_Surface *StepSoundsOver = TTF_RenderText_Blended(Small, "Step Sounds:", Green);
+	SDL_Surface *WindowedNormal = TTF_RenderText_Blended(Small, "Windowed:", White);
+	SDL_Surface *WindowedOver = TTF_RenderText_Blended(Small, "Windowed:", Green);
+	SDL_Surface *ExitNormal = TTF_RenderText_Blended(Start, "Exit", White);
+	SDL_Surface *Resolution1 = TTF_RenderText_Blended(Small, "1366 x 768", White);
+	SDL_Surface *Resolution2 = TTF_RenderText_Blended(Small, "1440 x 900", White);
+	SDL_Surface *Resolution3 = TTF_RenderText_Blended(Small, "1920 x 1080", White);
+	SDL_Surface *Resolution1O = TTF_RenderText_Blended(Small, "1366 x 768", Green);
+	SDL_Surface *Resolution2O = TTF_RenderText_Blended(Small, "1440 x 900", Green);
+	SDL_Surface *Resolution3O = TTF_RenderText_Blended(Small, "1920 x 1080", Green);
+	SDL_Surface *ExitOver = TTF_RenderText_Blended(Start, "Exit", Green);
 
-	CreateButton((ScreenWidth - Quit->w) / 2, ScreenHeight - 150, 11, Quit, QuitMouseover, 0);
-
-	int ScreenWidths[] = {1366, 1440, 1920};
-	int ScreenHeights[] = {768, 900, 1080};
+	CreateButton(ScreenWidth / 2.2, 200, 1, ArrowRotated, GreenArrowRotated, 0);
+	CreateButton(ScreenWidth - ScreenWidth / 2.2, 200, 2, Arrow, GreenArrow, 0);
+	CreateButton((ScreenWidth - ScreenShakeNormal->w) / 2, 300, 3, ScreenShakeNormal, ScreenShakeOver, 0);
+	CreateButton((ScreenWidth - StepSoundsNormal->w) / 2, 400, 4, StepSoundsNormal, StepSoundsOver, 0);
+	CreateButton((ScreenWidth - WindowedNormal->w) / 2, 500, 5, WindowedNormal, WindowedOver, 0);
+	CreateButton((ScreenWidth - Resolution1->w) / 3, 600, 6, Resolution1, Resolution1O, 0);
+	CreateButton((ScreenWidth - Resolution2->w) / 2 , 600, 7, Resolution2, Resolution2O, 0);
+	CreateButton((2 * ScreenWidth) / 3 - (2 * Resolution1->w) / 3  /*HELP*/, 600, 8, Resolution3, Resolution3O, 0);
+	CreateButton((ScreenWidth - ExitNormal->w) / 2, ScreenHeight - 150, 9, ExitNormal, ExitOver, 0);
 
 	int TempW = ScreenWidth, TempH = ScreenHeight;
-	int Delay = 500;
+	int Delay = 200;
 
-	int ResolutionIncrement;
-	if (ScreenWidth == 1366) ResolutionIncrement = 0;
-	else if (ScreenWidth == 1440) ResolutionIncrement = 1;
-	else ResolutionIncrement = 2;
+	SDL_Rect SelectedRes;
+	SelectedRes.w = 10;
+	SelectedRes.h = 10;
+	SelectedRes.y = 603;
+
+	if (TempW == 1366) SelectedRes.x = (ScreenWidth - Resolution1->w) / 3 - 20;
+	else if (TempW == 1440) SelectedRes.x = (ScreenWidth - Resolution2->w) / 2 - 20;
+	else SelectedRes.x = (2 * ScreenWidth) / 3 - (2 * Resolution1->w) / 3 - 20;
 
 	SDL_Surface *Text;
 	int x = 0, y = 0;
@@ -57,36 +68,36 @@ void Options()
 				break;
 
 			case 3: //Screen shake
-			case 4:
 				ScreenShake = !ScreenShake;
 				break;
 
-			case 5: //Step sounds
-			case 6:
+			case 4: //Step sounds
 				StepSoundsEnabled = !StepSoundsEnabled;
 				break;
 
-
-			case 7: //Windowed
-			case 8:
+			case 5: //Windowed
 				Windowed = !Windowed;
 				break;
 
-			case 9: //Resolution down
-				if (ResolutionIncrement == 0) ResolutionIncrement = 2;
-				else ResolutionIncrement--;
-				TempW = ScreenWidths[ResolutionIncrement];
-				TempH = ScreenHeights[ResolutionIncrement];
+			case 6: //Resolutions
+				TempW = 1366;
+				TempH = 768;
+				SelectedRes.x = (ScreenWidth - Resolution1->w) / 3 - 20;
 				break;
 
-			case 10: //Resolution up
-				ResolutionIncrement++;
-				ResolutionIncrement %= 3;
-				TempW = ScreenWidths[ResolutionIncrement];
-				TempH = ScreenHeights[ResolutionIncrement];
+			case 7: 
+				TempW = 1440;
+				TempH = 900;
+				SelectedRes.x = (ScreenWidth - Resolution2->w) / 2 - 20;
 				break;
 
-			case 11: //Exit
+			case 8:
+				TempW = 1920;
+				TempH = 1080;
+				SelectedRes.x = (2 * ScreenWidth) / 3 - (2 * Resolution1->w) / 3 - 20;
+				break;
+
+			case 9: //Exit
 				Done = true;
 				break;
 
@@ -95,32 +106,27 @@ void Options()
 		}
 
 		ApplyTextCentered("Options",Start,White,0,0,0,-(ScreenHeight / 2) + 50);
-		if (ResolutionIncrement != 2) ApplyTextCentered("This game is best played at a 1920x1080 resolution", Small, White, 0, 0, 0, (ScreenHeight / 2) - 30);
+		if (TempW != 1920) ApplyTextCentered("This game is best played at a 1920x1080 resolution", Small, White, 0, 0, 0, (ScreenHeight / 2) - 30);
 
 		SpareStream.str("");
 		SpareStream << "Volume: " << Volume;
 		Text = TTF_RenderText_Solid(Small, SpareStream.str().c_str(), White);
-		ApplySurface(20 + (400 - Text->w)/ 2, 200, Text, Screen);
+		ApplySurface((ScreenWidth - Text->w) / 2, 200, Text, Screen);
+		SDL_FreeSurface(Text);
 
-		SpareStream.str("");
-		SpareStream << "Screen shake: " << ScreenShake;
-		Text = TTF_RenderText_Solid(Small, SpareStream.str().c_str(), White);
-		ApplySurface(20 + (400 - Text->w) / 2, 300, Text, Screen);
+		Text = TTF_RenderText_Solid(Small, std::to_string(ScreenShake).c_str(), White);
+		ApplySurface((ScreenWidth - ScreenShakeNormal->w) / 2 + ScreenShakeNormal->w + 10, 300, Text, Screen);
+		SDL_FreeSurface(Text);
+		
+		Text = TTF_RenderText_Solid(Small, std::to_string(StepSoundsEnabled).c_str(), White);
+		ApplySurface((ScreenWidth - StepSoundsNormal->w) / 2 + StepSoundsNormal->w + 10, 400, Text, Screen);
+		SDL_FreeSurface(Text);
 
-		SpareStream.str("");
-		SpareStream << "Step sounds: " << StepSoundsEnabled;
-		Text = TTF_RenderText_Solid(Small, SpareStream.str().c_str(), White);
-		ApplySurface(20 + (400 - Text->w) / 2, 400, Text, Screen);
+		Text = TTF_RenderText_Solid(Small, std::to_string(Windowed).c_str(), White);
+		ApplySurface((ScreenWidth - WindowedNormal->w) / 2 + WindowedNormal->w + 10, 500, Text, Screen);
+		SDL_FreeSurface(Text);
 
-		SpareStream.str("");
-		SpareStream << "Windowed: " << Windowed;
-		Text = TTF_RenderText_Solid(Small, SpareStream.str().c_str(), White);
-		ApplySurface(20 + (400 - Text->w) / 2, 500, Text, Screen);
-
-		SpareStream.str("");
-		SpareStream << "Resolution: " << TempW << " x " << TempH;
-		Text = TTF_RenderText_Solid(Small, SpareStream.str().c_str(), White);
-		ApplySurface(20 + (400 - Text->w) / 2, 600, Text, Screen);
+		SDL_FillRect(Screen, &SelectedRes, 0x00FF00);
 
 		SDL_Flip(Screen);
 		SDL_Delay(Delay);
@@ -140,11 +146,11 @@ void Options()
 	SettingsOutput << 0;
 	SettingsOutput.close();
 
-	SDL_FreeSurface(ArrowRotated);
+	ClearButtons();
+	/*SDL_FreeSurface(ArrowRotated);
 	SDL_FreeSurface(Quit);
 	SDL_FreeSurface(GreenArrowRotated);
 	SDL_FreeSurface(QuitMouseover);
-	SDL_FreeSurface(Text);
-	ButtonVector.clear();
+	SDL_FreeSurface(Text);*/
 	QuitGame(true);
 }

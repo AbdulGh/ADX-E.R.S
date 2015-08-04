@@ -55,7 +55,9 @@ void ClearButtons()
 	for (int i = 0; i < ButtonVector.size(); i++)
 	{
 		if (CURRENTBUTTON.Normal != NULL) SDL_FreeSurface(CURRENTBUTTON.Normal);
+		CURRENTBUTTON.Normal = NULL;
 		if (CURRENTBUTTON.NotNormal != NULL) SDL_FreeSurface(CURRENTBUTTON.NotNormal);
+		CURRENTBUTTON.NotNormal = NULL;
 	}
 	ButtonVector.clear();
 }

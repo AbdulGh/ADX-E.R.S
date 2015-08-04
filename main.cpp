@@ -74,5 +74,5 @@ int main(int argc, char *argv[])
 		}
 		else Options();
 	}
-	return 0;
+	else return 0;
 }

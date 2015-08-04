@@ -43,6 +43,7 @@ bool Update = true;
 bool LevelFinished = false;
 bool CutsceneFinished = false;
 bool DebugBool = false;
+bool Ded = false;
 Timer SpareTimer;
 
 std::string AmmoNames[WEAPONS] = {"Pistol","Shotgun","Machinegun","Flamethrower","Laser SMG", "RPG", "Automatic Laser Shotgun", "Grenade Machinegun", "Minigun"};
@@ -84,6 +85,8 @@ void CheckScreenFade()
 
 void SwapWeapons(bool Right)
 {
+	if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
+
 	if (Right)
 	{
 		do 
@@ -276,6 +279,7 @@ void DoThings()
 	if (Character.Reset == true)
 	{
 		SDL_Delay(500);
+		if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
 		Character.Render = false;
 		Boss = false;
 		DeathRect.x = 0;
@@ -290,9 +294,8 @@ void DoThings()
 			ClearScreen();
 			Terminal("Resources/Text/Dead");
 			SDL_Delay(2000);
-			State = QUIT;
-			LevelFinished = true;
-			QuitGame();
+			QuitGame(false);
+			exit(0);
 		}
 
 		else
@@ -430,7 +433,7 @@ void HandleEvents()
 			else
 			{
 				Ammo[3]-=1;
-				if (LoopingChannel == -50) LoopingChannel = Mix_FadeInChannel(-1, FlamethrowerSFX, -1, 200);
+				if (LoopingChannel == -50) LoopingChannel = Mix_FadeInChannel(-1, FlamethrowerSFX, -1, 1000);
 				for (int e = 0; e < 3; e++)
 				{
 					Angle = CalculateProjectileAngle(Character.WorldX + (Character.CurrentSprite->w / 2) - Camera.x + (rand() % 16) - 8, Character.WorldY + (Character.CurrentSprite->h / 2) - Camera.y,x,y) + (rand() % 16) - 8;
@@ -534,22 +537,25 @@ void HandleEvents()
 			Mix_HaltChannel(LoopingChannel);
 		}
 
-		else Mix_FadeOutChannel(LoopingChannel,1000);
+		else Mix_FadeOutChannel(LoopingChannel, 200);
 
 		LoopingChannel = -50;
 	}
 }
 
-void NextLevel(int SpawnX, int SpawnY, std::string Level, const char *Text = NULL)
+void NextLevel(int SpawnX, int SpawnY, std::string Level, const char *Text = NULL, bool Fade = true)
 {
-	ScreenAlpha = 1;
-
-	while (ScreenAlpha < 250)
+	if (Fade)
 	{
-		DoThings();
-		SDL_Delay(10);
+		ScreenAlpha = 1;
+		
+		while (ScreenAlpha < 250)
+		{
+			DoThings();
+			SDL_Delay(8);
+		}
 	}
-	
+
 	EnemyVector.clear();
 	SpawnVector.clear();
 	ProjectileVector.clear();
@@ -614,7 +620,7 @@ void Game()
 	LevelColour = 0x000000;
 	int FrameCount = 0;
 
-	//goto Jump; //Only used for debugging purposes I promise
+	goto Jump; //Only used for debugging purposes I promise
 
 	Camera.x = 0;
 	Camera.y = 2000;
@@ -1088,7 +1094,7 @@ void Game()
 				SpawnVector.erase(SpawnVector.begin(), SpawnVector.end());
 			}
 
-			if (Character.WorldY < -40) LevelFinished = true;
+			if (Character.WorldY < 0) LevelFinished = true;
 		};
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay (1000/60 - FPSTimer.get_ticks());
 	}
@@ -1508,6 +1514,9 @@ void Game()
 			Five.h = 10;
 
 			SpareTimer.stop();
+			CutsceneFinished = false;
+			Mix_HaltMusic();
+			if (LoopingChannel != -50) Mix_HaltChannel(LoopingChannel);
 
 			while (!CutsceneFinished)
 			{
@@ -1958,8 +1967,8 @@ void Game()
 					}
 
 					BossName = "Turrets:";
-					BossHealth = 40;
-					Multiplier = (float)(ScreenWidth - 50) / 40;
+					BossHealth = 30;
+					Multiplier = (float)(ScreenWidth - 50) / 30;
 					Boss = true;
 					Temp2 = 0;
 					LevelProgress = 2;
@@ -1977,7 +1986,7 @@ void Game()
 					SpawnVector.push_back(rand() % 1900 + 20);
 					SpawnVector.push_back(15);
 
-					if (BossHealth < 20)
+					if (BossHealth < 15)
 					{
 						SpawnVector.push_back(rand() % 1900 + 20);
 						SpawnVector.push_back(rand() % 1900 + 20);
@@ -2024,6 +2033,7 @@ void Game()
 			if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 		}
 
+	Jump:
 
 		NextLevel(1850, 3400, "Resources/Levels/1", "Resources/Text/Antimov");
 
@@ -2126,7 +2136,7 @@ void Game()
 						BossTheme = Mix_LoadMUS("Resources/Sounds/Music/Smash.ogg");
 						Mix_PlayMusic(BossTheme, -1);
 
-						DeathRect.x = 0;
+						DeathRect.w = 0;
 
 						Pickup PICK;
 						PICK.Type = 1;
@@ -2281,7 +2291,7 @@ void Game()
 									CutsceneFinished = true;
 
 									Enemy RUSHMARS(985, 1180, 18);
-									RUSHMARS.Health = 5000;
+									RUSHMARS.Health = 3000;
 									RUSHMARS.CollisionRect.w = 40;
 									RUSHMARS.CollisionRect.h = 100;
 									EnemyVector.push_back(RUSHMARS);
@@ -2340,6 +2350,7 @@ void Game()
 					LevelFinished = true;
 					Temp1 = Character.WorldX;
 					Temp2 = Character.WorldY;
+					Mix_HaltMusic();
 				}
 				break;
 			}
@@ -2347,14 +2358,9 @@ void Game()
 		if (FPSTimer.get_ticks() < 1000 / 60) SDL_Delay(1000 / 60 - FPSTimer.get_ticks());
 	}
 
-Jump:
-	Temp1 = 1000;
-	Temp2 = 1000;
-
 	OrbitX = 1000;
 	OrbitY = 20;
-	NextLevel(Temp1, Temp2, "Resources/Levels/1");
-
+	NextLevel(Temp1, Temp2, "Resources/Levels/1", NULL, false);
 	Camera.LevelHeight = 2020;
 
 	while (!LevelFinished && State == GAME)

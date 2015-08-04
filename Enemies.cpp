@@ -14,7 +14,7 @@ int BossStage = 0;
 int BosNum1 = 0;
 int BossHealth = 0;
 double Multiplier = 0;
-int Direction = 3;
+int Direction = 4;
 int SFXTimer = 0;
 
 float XDiff;
@@ -1463,7 +1463,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				else if (CURRENTENEMY.WorldY > PlayerY - 10) CURRENTENEMY.WorldY -= YDiff;
 
 				CURRENTENEMY.ShotCounter++;
-				if (CURRENTENEMY.ShotCounter % 10 == 0)
+				if (CURRENTENEMY.ShotCounter % 15 == 0)
 				{
 					CURRENTENEMY.Shoot(3, rand() % 360);
 					CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
@@ -1523,7 +1523,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 				break;
 
 			case 8:
-				if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 10 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20)
+				/*if (CURRENTENEMY.WorldX + CURRENTENEMY.XVel + 10 > LevelWidth - 20 || CURRENTENEMY.WorldX + CURRENTENEMY.XVel < 20)
 				{
 					Shake = true;
 					Mag = 20;
@@ -1537,7 +1537,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 					Mag = 20;
 					Dur = 30;
 					CURRENTENEMY.YVel *= -0.3;
-				}
+				}*/
 
 				CURRENTENEMY.ShotCounter++;
 
@@ -1545,7 +1545,7 @@ void DoEnemies(int CameraX, int CameraY, float PlayerX, float PlayerY, SDL_Rect 
 
 				if (CURRENTENEMY.ShotCounter == 100)
 				{
-					for (int w = 0; w < 360; w += 20) CURRENTENEMY.Shoot(1, w);
+					for (int w = 0; w < 360; w += 20) CURRENTENEMY.Shoot(3, PlayerX, PlayerY);
 				}
 
 				if (CURRENTENEMY.ShotCounter == 200)
